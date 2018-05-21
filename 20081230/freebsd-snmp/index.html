@@ -34,7 +34,7 @@
   <div class="nav-container">
     <nav class="home-menu pure-menu pure-menu-horizontal">
   <a class="pure-menu-heading" href="/">
-    <img class="avatar" src="http://localhost:4000/images/avatar.jpeg">
+    <img class="avatar" src="http://jianzi0307.github.io/images/avatar.jpeg">
     <span class="title">健子的博客</span>
   </a>
 
@@ -97,7 +97,7 @@
     <div class="post-content">
       <p>要用到cacti通过net-snmp监控各个服务器的运行情况，这样要为每一台服务器安装snmp，虽然安装比较简单，还是偷偷懒写个脚本吧，CentOS下安装要换用yum来安装了。</p>
 <p>!/bin/sh<br>SNMPD_CONF_DIR=/usr/local/share/snmp</p>
-<p>if [ -f ‘/usr/local/sbin/snmpd’ ]<br>then<br>echo ‘snmpd already installed!’<br>else<br>cd /usr/ports/net-mgmt/net-snmp<br>echo “Installing…”<br>make install &gt; /dev/null<br>cd ~/manage_tools<br>echo “Setting…”<br>sleep 3<br>cat &lt;<eof> snmpd.conf<br>syslocation beijing<br>syscontact  jiangjian <a href="mailto:&#106;&#x69;&#97;&#x6e;&#122;&#105;&#x30;&#51;&#48;&#x37;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;" target="_blank" rel="noopener">&#106;&#x69;&#97;&#x6e;&#122;&#105;&#x30;&#51;&#48;&#x37;&#64;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#111;&#109;</a><br>sysservices 77<br>rocommunity jiangjian<br>load 12 12 12<br>EOF<br>mv snmpd.conf $SNMPD_CONF_DIR</eof></p>
+<p>if [ -f ‘/usr/local/sbin/snmpd’ ]<br>then<br>echo ‘snmpd already installed!’<br>else<br>cd /usr/ports/net-mgmt/net-snmp<br>echo “Installing…”<br>make install &gt; /dev/null<br>cd ~/manage_tools<br>echo “Setting…”<br>sleep 3<br>cat &lt;<eof> snmpd.conf<br>syslocation beijing<br>syscontact  jiangjian <a href="mailto:&#x6a;&#x69;&#x61;&#x6e;&#122;&#105;&#x30;&#51;&#x30;&#55;&#x40;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#x6f;&#x6d;" target="_blank" rel="noopener">&#x6a;&#x69;&#x61;&#x6e;&#122;&#105;&#x30;&#51;&#x30;&#55;&#x40;&#103;&#109;&#97;&#105;&#108;&#46;&#99;&#x6f;&#x6d;</a><br>sysservices 77<br>rocommunity jiangjian<br>load 12 12 12<br>EOF<br>mv snmpd.conf $SNMPD_CONF_DIR</eof></p>
 <p>cat &lt;<eof> snmpd.start</eof></p>
 <p>!/bin/sh<br>/usr/local/sbin/snmpd<br>EOF</p>
 <p>cat &lt;<eof> snmpd.stop</eof></p>
