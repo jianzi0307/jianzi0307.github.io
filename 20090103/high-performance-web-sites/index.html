@@ -1,0 +1,334 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+  
+    <meta name="keywords" content="前端优化," />
+  
+
+  
+    <meta name="description" content="海纳百川 有容乃大" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>高性能网站前端优化，读后总结 [ 健子的博客 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+</head>
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="http://localhost:4000/images/avatar.jpeg">
+    <span class="title">健子的博客</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="https://jianzi0307.github.io" class="pure-menu-link">关于</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/atom.xml" class="pure-menu-link">订阅</a></li>
+          
+      
+  </ul>
+   
+</nav>
+
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        高性能网站前端优化，读后总结
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2009-01-02T16:00:00.000Z">
+        2009-01-03
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/前端优化/">前端优化</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+      <span class="slash">/</span>
+    </header>
+
+    <div class="post-content">
+      <p>昨天晚上看了大牛stave souders的&lt;&lt;High.Performance.Web.Sites&gt;&gt;，结合其他一些文章，对其搭建高效网站前端优化的14条原则作一下总结：<br>BTW: 使用ySlow工具可以更容易分析和进行网站前端优化</p>
+<p>搭建高性能网站，前端优化的14条规则：</p>
+<blockquote>
+<ol>
+<li>Make fewer HTTP requests</li>
+<li>Use a CDN</li>
+<li>Add an Expires header</li>
+<li>Gzip components</li>
+<li>Put stylesheets at the top</li>
+<li>Put scripts at the bottom</li>
+<li>Avoid CSS expressions</li>
+<li>Make JS and CSS external</li>
+<li>Reduce DNS lookups</li>
+<li>Minify JS</li>
+<li>Avoid redirects</li>
+<li>Remove duplicate scripts</li>
+<li>Configure ETags</li>
+<li>Make AJAX cacheable<br><a href="http://stevesouders.com/hpws/rules.php" target="_blank" rel="noopener">http://stevesouders.com/hpws/rules.php</a></li>
+</ol>
+</blockquote>
+<ol>
+<li><p>Make fewer HTTP requests — 尽可能少的http请求<br>也就是说页面中尽量少的引用外部静态资源，js、css以及图片 </p>
+</li>
+<li><p>Use a CDN  — 使用CDN CDN大家应该不陌生，内容分发网络，U966的图片服务器开始负载相当的大，使用cdn之后，基本上所有的请求都被squid挡了，主服务器只有极少数的请求。即，将页面中的静态资源分布到离用户最近的网络节点上。 </p>
+</li>
+</ol>
+<p>3.Add an Expires header — 为静态资源文件增加过期时间 设置Expires Header，说白了是将js,css, 图片, Flash等静态元素缓存在用户浏览器的缓存中，让用户通过本地缓存来更快的访问网站。用户第二次使用的时候，就不会下载全部内容，只是进行状态检查； </p>
+<p>4.Gzip components  — Gzip压缩静态资源内容 Gzip格式是一种很普遍的压缩技术，几乎所有的浏览器都有解压Gzip格式的能力，而且它可以压缩的比例非常大，一般压缩率为85%，就是说服务器端100K的页面可以压缩到25K左右的Gzip格式的数据发给客户端，客户端收到Gzip格式的数据后自动解压缩后显示页面。提高页面下载速度，减少网络传输时间，减少带宽消耗的好办法 </p>
+<p>5.Put CSS at the top — 将css放在网页顶部 能够更快渲染页面，其实这个原则我们一般都遵守的,不多说 </p>
+<p>6.Put JS at the bottom — 把js脚本尽量放到页面底部<br>一般情况下JS的下载是阻塞模式的，放在页面顶部会阻塞其他资源的下载</p>
+<p>7.Avoid CSS expressions — 避免CSS表达式<br>因为CSS表达式需要很多资源，有时甚至会造成页面假死</p>
+<p>8.Make JS and CSS external — 将CSS和JS使用外部的独立文件</p>
+<p>9.Reduce DNS lookups — 减少DNS查找<br>(暂时没弄很明白，看文章后面摘录的一段)</p>
+<p>10.Minify JS   — 尽可能压缩你的js代码，使之更mini<br>使用YUI Compressor或者JSMin将JS文件进行分析，最小化，我们写的JS往往包含空格、TAB等对JS执行没用影响的字符，但是这却实实在在的增加了JS的体积，使用工具能够去除这些无用的字符，减少文件体积。但是同样带来的问题就是，JS不能有错误，另外压缩后的JS代码很难阅读，所以如何在开发时和发布时协调好就是很大的问题，为了这点我们使用不同的文件引用，在开发时(DEBUG)使用未压缩版，在发布时(RELEASE)使用压缩版。</p>
+<ol start="11">
+<li>Avoid redirects  — 避免无意义的跳转</li>
+</ol>
+<p>12.Remove duplicate scripts  — 去除重复的脚本<br>不光是文件，甚至是同功能的函数</p>
+<ol start="13">
+<li>Configure ETags  — 设置Etags,配置实体标签</li>
+</ol>
+<h2 id="摘录（关于减少DNS查找）："><a href="#摘录（关于减少DNS查找）：" class="headerlink" title="摘录（关于减少DNS查找）："></a>摘录（关于减少DNS查找）：</h2><p>详细解释下YSlow的第9点，减少DNS查找。<br>通常情况下按照我们的理解，静态资源文件都是放在本站点目录下的。由于以前大家的网络速度都不快，IE浏览器为了防止大量的http请求阻塞了网络连接，所以同一域名下的http请求，只允许2个并发线程，所以这就导致我们看到有的页面的图片是逐步逐步显示出来的。通过Safari的网络时间线工具就能看出来。<br>显而易见，为了突破这个限制，我们可以增加几个域名，从而增加并发下载，加快速度。<br>最好的方式是自己指定每个文件的域名，按照i1、i1、i2、i2、i3、i3、i1、i1的排列方式，但是同时还要考虑引用的文件大小，进行合理的排列，这对于团队开发就过于复杂了。我们使用了i1.dpfile.com、i2.dpfile.com和i3.dpfile.com三个域名，然后在每个调用静态资源文件地方都是用函数调用：DianPing.Common.StaticFile(“/s/js/g.mt.min.js”)，函数会根据文件进行hash，分配一个域名，这样就能最大化的散列静态文件的域名，虽然有缺点，却是比较平衡的方式。</p>
+<p>就在我写文章的同时，Figo仔细分析了YSlow的评分标准，找到我们丢失的一分原因，也是因为第9点。第9点满分是100分，YSlow认为一个页面上最合理的是2个以内域名，每增加一个扣除5分，我们的页面有4个域名（www\i1\i2\i3），扣除了10分。这个占总比例的1/12，所以四舍五入，被扣除了1分。（不过我认为这1分还是值得的，页面加速很明显，而且DNS查找是可以缓存哒～～～）</p>
+<p>从Safari的网络时间线工具上看到JS（橙色）的加载会阻塞其他资源的下载，所以我打算再独立一个域名j1.dpfile.com，专门加载JS文件。</p>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#摘录（关于减少DNS查找）："><span class="toc-text">摘录（关于减少DNS查找）：</span></a></li></ol>
+  </div>
+
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share">
+
+</div>
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/20081230/freebsd-snmp/" rel="next" title="Freebsd下安装snmp">
+          Freebsd下安装snmp
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/20090210/php-3des-for-csharp-java/" rel="prev" title="php 的 3des加解密类，兼容C#/java">
+            php 的 3des加解密类，兼容C#/java
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://jianzi0307.github.io">首页</a> |
+        <a class="bottom-item" href="https://jianzi0307.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/jianzi0307" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

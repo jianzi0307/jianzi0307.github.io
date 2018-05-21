@@ -1,0 +1,861 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title><![CDATA[ARGB颜色合成与提取公式]]></title>
+    <url>%2F20180522%2Fargb%2F</url>
+    <content type="text"><![CDATA[色彩合成:12//设alpha,red,green,blue都是0~255之间的数color32 = alpha &lt;&lt; 24 | red &lt;&lt; 16 | green &lt;&lt; 8 | blue; 色彩提取:1234alpha = color32 &gt;&gt; 24;red = color32 &gt;&gt; 16 &amp; 0xFF;green = color32 &gt;&gt; 8 &amp; 0xFF;blue = color32 &amp; 0xFF;]]></content>
+      <tags>
+        <tag>as3</tag>
+        <tag>颜色合成</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[mysql优化]]></title>
+    <url>%2F20180516%2Fmysql-index-oprimize%2F</url>
+    <content type="text"><![CDATA[第一方面：30种mysql优化sql语句查询的方法1.对查询进行优化，应尽量避免全表扫描，首先应考虑在 where 及 order by 涉及的列上建立索引。 2.应尽量避免在 where 子句中使用!=或&lt;&gt;操作符，否则将引擎放弃使用索引而进行全表扫描。 3.应尽量避免在 where 子句中对字段进行 null 值判断，否则将导致引擎放弃使用索引而进行全表扫描，如： select id from t where num is null 可以在num上设置默认值0，确保表中num列没有null值，然后这样查询： select id from t where num=0 4.应尽量避免在 where 子句中使用 or 来连接条件，否则将导致引擎放弃使用索引而进行全表扫描，如： select id from t where num=10 or num=20 可以这样查询： select id from t where num=10 union all select id from t where num=20 5.下面的查询也将导致全表扫描： select id from t where name like ‘%abc%’ 若要提高效率，可以考虑全文检索。 6.in 和 not in 也要慎用，否则会导致全表扫描，如： select id from t where num in(1,2,3) 对于连续的数值，能用 between 就不要用 in 了： select id from t where num between 1 and 3 7.如果在 where 子句中使用参数，也会导致全表扫描。因为SQL只有在运行时才会解析局部变量，但优化程序不能将访问计划的选择推迟到运行时;它必须在编译时进行选择。然而，如果在编译时建立访问计划，变量的值还是未知的，因而无法作为索引选择的输入项。如下面语句将进行全表扫描： select id from t where num=@num 可以改为强制查询使用索引： select id from t with(index(索引名)) where num=@num 8.应尽量避免在 where 子句中对字段进行表达式操作，这将导致引擎放弃使用索引而进行全表扫描。如： select id from t where num/2=100 应改为: select id from t where num=100*2 9.应尽量避免在where子句中对字段进行函数操作，这将导致引擎放弃使用索引而进行全表扫描。如： select id from t where substring(name,1,3)=’abc’–name以abc开头的id select id from t where datediff(day,createdate,’2005-11-30’)=0–’2005-11-30’生成的id 应改为: select id from t where name like ‘abc%’ select id from t where createdate&gt;=’2005-11-30’ and createdate&lt;’2005-12-1’ 10.不要在 where 子句中的“=”左边进行函数、算术运算或其他表达式运算，否则系统将可能无法正确使用索引。 11.在使用索引字段作为条件时，如果该索引是复合索引，那么必须使用到该索引中的第一个字段作为条件时才能保证系统使用该索引，否则该索引将不会被使用，并且应尽可能的让字段顺序与索引顺序相一致。 12.不要写一些没有意义的查询，如需要生成一个空表结构： select col1,col2 into #t from t where 1=0 这类代码不会返回任何结果集，但是会消耗系统资源的，应改成这样： create table #t(…) 13.很多时候用 exists 代替 in 是一个好的选择： select num from a where num in(select num from b) 用下面的语句替换： select num from a where exists(select 1 from b where num=a.num) 14.并不是所有索引对查询都有效，SQL是根据表中数据来进行查询优化的，当索引列有大量数据重复时，SQL查询可能不会去利用索引，如一表中有字段sex，male、female几乎各一半，那么即使在sex上建了索引也对查询效率起不了作用。 15.索引并不是越多越好，索引固然可以提高相应的 select 的效率，但同时也降低了 insert 及 update 的效率，因为 insert 或 update 时有可能会重建索引，所以怎样建索引需要慎重考虑，视具体情况而定。一个表的索引数最好不要超过6个，若太多则应考虑一些不常使用到的列上建的索引是否有必要。 16.应尽可能的避免更新 clustered 索引数据列，因为 clustered 索引数据列的顺序就是表记录的物理存储顺序，一旦该列值改变将导致整个表记录的顺序的调整，会耗费相当大的资源。若应用系统需要频繁更新 clustered 索引数据列，那么需要考虑是否应将该索引建为 clustered 索引。 17.尽量使用数字型字段，若只含数值信息的字段尽量不要设计为字符型，这会降低查询和连接的性能，并会增加存储开销。这是因为引擎在处理查询和连接时会逐个比较字符串中每一个字符，而对于数字型而言只需要比较一次就够了。 18.尽可能的使用 varchar/nvarchar 代替 char/nchar ，因为首先变长字段存储空间小，可以节省存储空间，其次对于查询来说，在一个相对较小的字段内搜索效率显然要高些。 19.任何地方都不要使用 select from t ，用具体的字段列表代替“”，不要返回用不到的任何字段。 20.尽量使用表变量来代替临时表。如果表变量包含大量数据，请注意索引非常有限(只有主键索引)。 21.避免频繁创建和删除临时表，以减少系统表资源的消耗。 22.临时表并不是不可使用，适当地使用它们可以使某些例程更有效，例如，当需要重复引用大型表或常用表中的某个数据集时。但是，对于一次性事件，最好使用导出表。 23.在新建临时表时，如果一次性插入数据量很大，那么可以使用 select into 代替 create table，避免造成大量 log ，以提高速度;如果数据量不大，为了缓和系统表的资源，应先create table，然后insert。 24.如果使用到了临时表，在存储过程的最后务必将所有的临时表显式删除，先 truncate table ，然后 drop table ，这样可以避免系统表的较长时间锁定。 25.尽量避免使用游标，因为游标的效率较差，如果游标操作的数据超过1万行，那么就应该考虑改写。 26.使用基于游标的方法或临时表方法之前，应先寻找基于集的解决方案来解决问题，基于集的方法通常更有效。 27.与临时表一样，游标并不是不可使用。对小型数据集使用 FAST_FORWARD 游标通常要优于其他逐行处理方法，尤其是在必须引用几个表才能获得所需的数据时。在结果集中包括“合计”的例程通常要比使用游标执行的速度快。如果开发时间允许，基于游标的方法和基于集的方法都可以尝试一下，看哪一种方法的效果更好。 28.在所有的存储过程和触发器的开始处设置 SET NOCOUNT ON ，在结束时设置 SET NOCOUNT OFF 。无需在执行存储过程和触发器的每个语句后向客户端发送 DONE_IN_PROC 消息。 29.尽量避免向客户端返回大数据量，若数据量过大，应该考虑相应需求是否合理。 30.尽量避免大事务操作，提高系统并发能力。 上面有几句写的有问题。 第二方面：select Count ()和Select Count(1)以及Select Count(column)区别一般情况下，Select Count ()和Select Count(1)两着返回结果是一样的 假如表沒有主键(Primary key), 那么count(1)比count()快， 如果有主键的話，那主键作为count的条件时候count(主键)最快 如果你的表只有一个字段的话那count()就是最快的 count(*) 跟 count(1) 的结果一样，都包括对NULL的统计，而count(column) 是不包括NULL的统计 第三方面：索引列上计算引起的索引失效及优化措施以及注意事项 创建索引、优化查询以便达到更好的查询优化效果。但实际上，MySQL有时并不按我们设计的那样执行查询。MySQL是根据统计信息来生成执行计划的，这就涉及索引及索引的刷选率，表数据量，还有一些额外的因素。Each table index is queried, and the best index is used unless the optimizer believes that it is more efficient to use a table scan. At one time, a scan was used based on whether the best index spanned more than 30% of the table, but a fixed percentage no longer determines the choice between using an index or a scan. The optimizer now is more complex and bases its estimate on additional factors such as table size, number of rows, and I/O block size.简而言之，当MYSQL认为符合条件的记录在30%以上，它就不会再使用索引，因为mysql认为走索引的代价比不用索引代价大，所以优化器选择了自己认为代价最小的方式。事实也的确如此 是MYSQL认为记录是30%以上，而不是实际MYSQL去查完再决定的。都查完了，还用什么索引啊？！MYSQL会先估算，然后决定是否使用索引。]]></content>
+      <tags>
+        <tag>mysql优化</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[如何选择MongoDB片键？]]></title>
+    <url>%2F20150129%2Fmongo-shard-key%2F</url>
+    <content type="text"><![CDATA[本文探讨了如何合理设置MongoDB片键以发挥分片机制的优势英文出处：https://bugsnag.com/blog/mongo-shard-key 简而言之，使用 {_id: ‘hashed’} 或 {projectId: 1, _id: 1} 来作为片键。几个月前，我们对MongoDB集群进行分片(shard)处理，数据设置了两个副本集合(replica set)。上周，我们添加了一个新的分片。首次分片花了一些功夫，不过我们仍然在没有停机的情况下完成了这个工作，如今添加一个新的分片是很轻而易举的事情。 MongoDB的分片是如何工作的？ MongoDB的分片机制能够帮助你将你的数据库划分到多个服务器，通常在生产环境中可以将数据集划分到多个副本集中。但分片最好在数据库建立早期划分，因为一旦你的数据大于512GB那么分片划分就不是那么容易了。这受到MongoDB纵向扩展能力的限制。 为了实现分片，你必须向MongoDB指定使用哪个索引作为片键，然后MongoDB会根据你的设置将你的数据划分到有着相同片键的数据块(Chunk)中。而后这些数据块将根据片键的大致顺序分散到副本集中。 如何选择MongoDB片键 正如你所见，分片之后数据的存放位置依赖于片键，所以合理的选择片键十分重要。 怎样设置一个好的片键 ( shard key ) MongoDB的内部机制保证了每个副本集(RS)包含了同样数量的块，在上图中一个RS包含两个块，而在Bugsnag.com的集群中，每个RS包含6300个块。但这几乎是唯一的保证机制了。 片键的选择决定了三个重要的方面： 读和写的分布 其中最重要的一点是读和写的分布。如果你总是朝一台机器写，那么这台机器将会成为写瓶颈，则你的集群的写性能将会降低。这无关乎你的集群有多少个节点，因为所有的写操作都只在一个地方进行。因此，你不应该使用单调递增的_id或时间戳作为片键，这样将会导致你一直往最后一个副本集中添加数据。 相类似的是如果你的读操作一直都在同一个副本集上，那么你最好祈求你的任务能在机器内存所能承受的范围之内。通过副本集将读请求划分开能够使你的工作数据集大小随着分片数线性扩展。这样的话你能够将负载压力均分到各台机器的内存和磁盘之上。 数据块的大小 其次是数据块的大小。MongoDB能够将大的数据块划分成更小的，但这种情况仅仅在片键不同的情况下发生。如果你有巨量的数据文档都使用了同样的片键，那么你相应的会得到巨大的数据块。出现巨大块是非常不好的，不仅仅因为它会导致数据的不平均分布，还因为一旦这个数据块的大小超过某个值，那么你就不能够在分片之间移动它了。 每个查询命中的分片数目 最后一点，如果能够保证大部分的查询请求都能够命中尽可能少的分片那就最好了。对于一个查询请求来说，其延迟直接取决于最慢的那个命中服务器的延迟；所以你命中的分片越少，那么理论上来说查询将会越快。这一点并不是硬性的规定，不过如果能够做到充分考虑那么应该是很有利的。因为数据块在分片上的分布仅仅是近似的遵循片键的顺序，而并不是严格的强制指定。 好的片键( shard key )设置方案 上面说了这么多，那么怎么才能设计一个好的片键呢？ Hashed id 作为第一个方案，你可以使用数据文档_id的哈希作为片键。 1db.events.createIndex(&#123;_id: &apos;hashed&apos;&#125;) 这个方案能够是的读和写都能够平均分布，并且它能够保证每个文档都有不同的片键所以数据块能够很精细。 似乎还是不够完美，因为这样的话对多个文档的查询必将命中所有的分片。虽说如此，这也是一种比较好的方案了。 多租户混合索引(Multi-tenant compound index) 如果想击败哈希索引模式，那么你需要将关联的文档在索引中尽可能聚集在一起的方法。在Bugsnag，我们通过project聚合文档，因为在我们的业务场景中，我们的app大部分的查询请求都在project范围内。所以对于你的app来说你得指定适合你的聚合方式。 但是我们不能简单地使用projectID作为片键，因为那会导致巨大块的产生，所以我们引入了_id来将大project打散到多个块中。这些打散的块仍旧是索引连续的，所以仍然会分布在用一个分片上。 1db.events.createIndex(&#123;projectId: 1, _id: 1&#125;) 这个方案很适合我们，因为对于一个project来说，读和写几乎是独立于project存在时间的，并且旧的project通常都会被删除掉。如果情况改变，我们可能会看到在新的project会有微小的负载上升情况。 为了避免这种问题，我们未来可能会在当MongoDB支持哈希值的混合索引之后，将索引设置为{projectId: ‘hashed’, _id: 1}。相关文档(SERVER-10220) 总结 找一个好的片键是很难的，不过这真的只有两种方案。如果在应用中找不出一个好的聚合键，那么对_id做哈希吧。如果你能够找到，那么将它与_id聚合以避免巨大块的产生。请记住无论你使用何种聚合键，它都需要能够将读和写平均分布以充分利用集群中的每个节点。]]></content>
+      <tags>
+        <tag>mongodb</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[快速掌握Mongodb的CRUD操作]]></title>
+    <url>%2F20150128%2Fmongodb-crud%2F</url>
+    <content type="text"><![CDATA[本文旨在梳理mongodb的crud操作，达到快速掌握的目的。 一、C(Create) - insert插入数据比较简单 先创建一个局部变量article，然后插入数据1234mongoshell&gt; article = &#123;title:&quot;t1&quot;,content:&quot;c1&quot;&#125;&#123; &quot;title&quot; : &quot;t1&quot;, &quot;content&quot; : &quot;c1&quot; &#125;mongoshell&gt; db.article.insert(article)WriteResult(&#123; &quot;nInserted&quot; : 1 &#125;) 或者直接插入BSON对象12mongoshell&gt; db.article.insert(&#123;title:&quot;t1&quot;,content:&quot;c1&quot;&#125;)WriteResult(&#123; &quot;nInserted&quot; : 1 &#125;) 用for循环创建多条数据12mongoshell&gt; for(i=1;i&lt;100;i++)db.article.insert(&#123;article_id:i,title:&quot;tttt&quot;&#125;)WriteResult(&#123; &quot;nInserted&quot; : 1 &#125;) 二、R(Retrieve) - find / findOne 查询所有数据123456mongoshell&gt; db.article.find()&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef04&quot;), &quot;article_id&quot; : 1, &quot;title&quot; : &quot;tttt&quot; &#125;&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef05&quot;), &quot;article_id&quot; : 2, &quot;title&quot; : &quot;tttt&quot; &#125;&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef06&quot;), &quot;article_id&quot; : 3, &quot;title&quot; : &quot;tttt&quot; &#125;...Type &quot;it&quot; for more 键入it继续显示123456mongoshell&gt; it&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef18&quot;), &quot;article_id&quot; : 21, &quot;title&quot; : &quot;tttt&quot; &#125;&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef19&quot;), &quot;article_id&quot; : 22, &quot;title&quot; : &quot;tttt&quot; &#125;&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef1a&quot;), &quot;article_id&quot; : 23, &quot;title&quot; : &quot;tttt&quot; &#125;...Type &quot;it&quot; for more 显示一条数据12mongoshell&gt; db.article.findOne()&#123; &quot;_id&quot; : ObjectId(&quot;54c8c259b14b5ac2d180425d&quot;), &quot;title&quot; : &quot;tttt&quot; &#125; 按照条件查询多条12mongoshell&gt; db.article.find(&#123;article_id:5&#125;)&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef08&quot;), &quot;article_id&quot; : 5, &quot;title&quot; : &quot;tttt&quot; &#125; 按照条件查询一条123456mongoshell&gt; db.article.findOne(&#123;article_id:5&#125;)&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef08&quot;), &quot;article_id&quot; : 5, &quot;title&quot; : &quot;tttt&quot;&#125; 过滤条件 skip limit sort等1234mongoshell&gt; db.article.find().skip(3).limit(4).sort(&#123;article_id:1&#125;)&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef06&quot;), &quot;article_id&quot; : 3, &quot;title&quot; : &quot;tttt&quot; &#125;&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef07&quot;), &quot;article_id&quot; : 4, &quot;title&quot; : &quot;tttt&quot; &#125;&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef08&quot;), &quot;article_id&quot; : 5, &quot;title&quot; : &quot;tttt&quot; &#125; 三、U(Update) - update 3.1 update的四个参数：格式：1db.collection.update(查询条件，更新数据，记录不存在是否添加，是否多文档操作) 更新一条记录1mongoshell&gt; db.article.update(&#123;title:&apos;t&apos;&#125;,&#123;title:&apos;tt&apos;&#125;) 3.2 指定第三个参数为true，在没有符合条件的结果时，会自动增加一条记录123456789mongodbshell&gt; db.article.update(&#123;title:&quot;aaa&quot;&#125;,&#123;title:&quot;ccc&quot;&#125;,true)WriteResult(&#123; &quot;nMatched&quot; : 0, &quot;nUpserted&quot; : 1, &quot;nModified&quot; : 0, &quot;_id&quot; : ObjectId(&quot;54c8c259b14b5ac2d180425d&quot;)&#125;)mongoshell&gt; db.article.find(&#123;title:&quot;ccc&quot;&#125;)&#123; &quot;_id&quot; : ObjectId(&quot;54c8c259b14b5ac2d180425d&quot;), &quot;title&quot; : &quot;ccc&quot; &#125; 3.3 更新指定字段数据需要使用$set操作符，否则将会替换整条记录 例如：123456mongoshell&gt; db.article.update(&#123;title:&apos;tttt&apos;&#125;,&#123;title:&apos;mmmmmm&apos;&#125;)WriteResult(&#123; &quot;nMatched&quot; : 1, &quot;nUpserted&quot; : 0, &quot;nModified&quot; : 1 &#125;)mongoshell&gt; db.article.find().limit(5)&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef04&quot;), &quot;title&quot; : &quot;mmmmmm&quot; &#125;&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef05&quot;), &quot;article_id&quot; : 2, &quot;title&quot; : &quot;tttt&quot; &#125;&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef06&quot;), &quot;article_id&quot; : 3, &quot;title&quot; : &quot;tttt&quot; &#125; 应该添加$set操作符123456mongoshell&gt; db.article.update(&#123;title:&apos;tttt&apos;&#125;,&#123;$set:&#123;title:&apos;mmmmmm&apos;&#125;&#125;)WriteResult(&#123; &quot;nMatched&quot; : 1, &quot;nUpserted&quot; : 0, &quot;nModified&quot; : 1 &#125;)mongoshell&gt; db.article.find().limit(5)&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef04&quot;), &quot;article_id&quot; : 1, &quot;title&quot; : &quot;mmmmmm&quot; &#125;&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef05&quot;), &quot;article_id&quot; : 2, &quot;title&quot; : &quot;tttt&quot; &#125;&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef06&quot;), &quot;article_id&quot; : 3, &quot;title&quot; : &quot;tttt&quot; &#125; 3.4 update默认只更新符合条件的第一条数据，除非指定第四个参数为true 例如：更新title为’tttt’的记录，默认只更新符合条件的第一条123456mongoshell&gt; db.article.update(&#123;title:&apos;tttt&apos;&#125;,&#123;$set:&#123;title:&apos;oooo&apos;&#125;&#125;)WriteResult(&#123; &quot;nMatched&quot; : 1, &quot;nUpserted&quot; : 0, &quot;nModified&quot; : 1 &#125;)mongoshell&gt; db.article.find().limit(5)&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef04&quot;), &quot;article_id&quot; : 1, &quot;title&quot; : &quot;oooo&quot; &#125;&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef05&quot;), &quot;article_id&quot; : 2, &quot;title&quot; : &quot;tttt&quot; &#125;&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef06&quot;), &quot;article_id&quot; : 3, &quot;title&quot; : &quot;tttt&quot; &#125; 开启多文档更新，更新所有符合条件的记录123456mongoshell&gt; db.article.update(&#123;title:&apos;tttt&apos;&#125;,&#123;$set:&#123;title:&apos;oooo&apos;&#125;&#125;,false,true)WriteResult(&#123; &quot;nMatched&quot; : 1, &quot;nUpserted&quot; : 0, &quot;nModified&quot; : 1 &#125;)mongoshell&gt; db.article.find().limit(5)&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef04&quot;), &quot;article_id&quot; : 1, &quot;title&quot; : &quot;oooo&quot; &#125;&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef05&quot;), &quot;article_id&quot; : 2, &quot;title&quot; : &quot;oooo&quot; &#125;&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef06&quot;), &quot;article_id&quot; : 3, &quot;title&quot; : &quot;oooo&quot; &#125; 3.4 多文档操作需要使用\$set操作符 (例子同上) 四、D(Delete) - remove 4.1 必须传递参数，指定删除条件，否则报错（设计目的是为了防止误操作删除数据）12mongoshell&gt; db.article.remove()2015-01-28T11:54:42.189+0000 remove needs a query at src/mongo/shell/collection.js:299 4.2 跟update不同，默认会删除所有符合条件的记录12mongoshell&gt; db.article.remove(&#123;title:&apos;tttt&apos;&#125;)WriteResult(&#123; &quot;nRemoved&quot; : 98 &#125;) 五、其他常用命令 5.1 显示数据库 show dbs12345mongoshell&gt; show dbsadmin (empty)blog 0.078GBlocal 0.078GBtest (empty) 5.2 显示数据集 show collections / show tables12345678mongoshell&gt; show collectionsarticleusersystem.indexesmongoshell&gt; show tablesarticleusersystem.indexes 5.4 删除数据集12345mongoshell&gt; db.article.drop()truemongoshell&gt; show collectionsusersystem.indexes 5.3 删除数据库12345678910111213mongoshell&gt; show dbsadmin (empty)blog 0.078GBlocal 0.078GBtest (empty)mongoshell&gt; use blogswitched to db blogmongoshell&gt; db.dropDatabase()&#123; &quot;dropped&quot; : &quot;blog&quot;, &quot;ok&quot; : 1 &#125;mongoshell&gt; show dbsadmin (empty)local 0.078GBtest (empty)]]></content>
+      <tags>
+        <tag>mongodb</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Mongodb在Cygwin下的搭建]]></title>
+    <url>%2F20150128%2Fmongodb-cygwin%2F</url>
+    <content type="text"><![CDATA[本文旨在如何快速搭建一个简单的mongodb环境 一、搭建cynwin环境略过 二、下载mongodb1下载地址：http://www.mongodb.org/downloads 三、搭建mongodb 3.1 安装mongodb直接运行mongodb-win32-x86_64-2008plus-2.6.7-signed.msi，按照提示安装mongodb 3.2 配置环境变量在环境变量PATH中添加 D:\Program Files\MongoDB 2.6 Standard\bin (改为自己的安装路径)这时候就可以在cygwin中使用mongodb提供的命令了。 3.3 创建数据库目录1shell&gt; mkdir mongodb_dev 3.4 创建数据存储目录、配置目录、日志目录1234shell&gt; cd mongodb_devshell&gt; mkdir datashell&gt; mkdir confshell&gt; mkdir log 3.5 创建配置文件123shell&gt; cd confshell&gt; touch mongod.confshell&gt; vim mongod.conf 填写一下内容：12345678#监听端口port = 12345#数据存储目录dbpath = data#日志目录logpath = log/mongod.log#Linux环境下开启守护进程#fork = true 3.6 开启mongodb服务1shell&gt; mongod -f conf/mongod.conf 这样一个简单的mongodb环境就搭建起来了 3.7 客户端连接mongodb服务使用mongo命令行客户端123456789101112shell&gt; mongo 127.0.0.1:12345MongoDB shell version: 2.6.7connecting to: 127.0.0.1:12345/test&gt; show dbsadmin (empty)local 0.078GB&gt; use mydbswitched to db mydb&gt; db.collection1.insert(&#123;&quot;name&quot;:&quot;xiaowang&quot;,&quot;email&quot;:&quot;xiaowang@gmail.com&quot;&#125;)WriteResult(&#123; &quot;nInserted&quot; : 1 &#125;)&gt; db.collection1.find()&#123; &quot;_id&quot; : ObjectId(&quot;54c7cad435f1aa5d551a15f1&quot;), &quot;name&quot; : &quot;xiaowang&quot;, &quot;email&quot; : &quot;xiaowang@gmail.com&quot; &#125; 也可以下载Mongo的GUI客户端mongoVUE（Mac下使用MongoHub）等软件来连接。]]></content>
+      <tags>
+        <tag>mongodb</tag>
+        <tag>cygwin</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Linux命令apropos解析]]></title>
+    <url>%2F20150128%2Flinux-apropos%2F</url>
+    <content type="text"><![CDATA[平时在Linux下寻求帮助，一般是使用man来查看命令帮助文档，但前提是必须得知道命令怎么写；例如:1[root@svr ~]# man utime 但是如果想完成某项功能，具体的命令又忘记了，这个时候怎么办呢？ 我们可以使用 man -k 关键字，来查找相关的命令； 例如:12345[root@svr ~]# man -k ifconfigifcfg (8) - simplistic script which replaces ifconfig IP managmentifconfig (8) - configure a network interfaceifconfig_selinux (8) - Security Enhanced Linux Policy for the ifconfig processespifconfig (8) - display information about a network interface 另外Linux命令有一个同样功能的命令：apropos，它跟man -k其实是一个命令；用法：opropos 关键字 例如:12345[root@svr ~]# apropos ifconfigifcfg (8) - simplistic script which replaces ifconfig IP managmentifconfig (8) - configure a network interfaceifconfig_selinux (8) - Security Enhanced Linux Policy for the ifconfig processespifconfig (8) - display information about a network interface]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>apropos</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Swift学习知识点]]></title>
+    <url>%2F20140619%2Fswift%2F</url>
+    <content type="text"><![CDATA[一、控制流1.1 if语句中，条件必须是一个布尔表达式，这意味着 if score {…} 这样的代码会编译报错，不会隐式的与0做比较，与C、java等语言不同；1.2 运行switch中匹配的语句，程序会退出switch语句，并不会继续执行下去，所以不需要在每个语句结尾写break；必须包含default语句，否则会报错；1.3 swift中特有的范围操作符..和…区别：..不包含上界，…包含上界，例如：0..3 表示 0,1,2 不包含3，0…3 表示 0,1,2,3包含3 二、函数和闭包2.1 函数定义方法：用func声明一个函数，使用名字和参数调用函数，使用-&gt;来指定函数返回值，无返回值可以省略；2.2 函数参数是可变的，用一个数组来获取它们；例如：1234567func sumOf(numbers: Int …) -&gt; Int &#123; var sum = 0 for number in numbers &#123; //将numbers视为一个数组来操作 sum += number &#125; return sum&#125; 2.3 函数可以嵌套，被嵌套的函数可以访问外侧函数中的常量和变量；函数可以作为另一个函数的返回值； 三、对象和类3.1 使用init来创建一个构造器，使用deinit创建一个析构函数； 四、常量和变量4.1 如果使用与Swift保留字相同的名称作为常量或变量名时，使用反引号（·）将关键字包围的方式作为名字使用，不过尽量避免与保留关键字相同；4.2 输出函数有println，另外还有print，二者区别是：println会换行，print不会换行； 五、注释5.1 swift中，注释可以嵌套，这与其他语言不同，其他语言大多数注释是不可以嵌套的； 六、数据类型6.1、整型，尽量不要使用UInt，除非你真的需要存储一个和当前平台原生字长相同的无符号整型，除了这种情况，最好使用Int，即使你要存储的值是非负数。统一使用Int可以提高代码的可复用性，避免不同类型数字之间的转换，并且匹配数字的类型推测；6.2 如果你没有给浮点字面量标明类型，Swift会推测为Double类型；推测浮点数类型时，Swift总是会选择Double，而不是Float；如果表达式中同时出现整数和浮点数，会被推测为Double类型；例如：1let pi = 3.1415926 //pi会被推测为Double类型 6.3 数值字面量可以包括额外的格式来增强可读性，并不影响字面量，例如：123let paddedDouble = 000123.456 // 123.456let oneMillion = 1_000_000 //1000000let justOverOneMillion = 1_000_000.000_000_1 //1000000.0000001 6.4 不同类型不能直接做运算，需要显式类型转换，例如，UInt16类型不能和UInt8类型直接相加，因为他们类型不同：123let twoThousand:UInt16 = 2_000let one:UInt8 = 1let twoThousandAndOne = twoThousand + UInt16(one) 6.5 整数和浮点数的转换必须显式指定类型；6.6 字面量不同于数字类常量和变量，没有特定的类型，可以直接运算，例如：1let sum = 3 + 0.14158 6.7 在需要使用Bool类型的地方使用了非布尔值，Swift的类型安全机制会报错；例如：1234let i = 1if i &#123;//这个例子会报错，不会通过编译&#125; 6.8 元组类型的正确描述：1let http404Error = (404,”Not Found”) //描述为：一个类型为(Int,String)的元组 6.9 元组在临时组织值的时候很有用，但是并不适合创建复杂的数据结构，如果数据结构不是临时使用，请使用类或者结构体，而不是元组；6.10 nil不能用于非可选的常量和变量例如：1234let a = nil //编译报错var b = nil //编译报错let a? = nil //正确let b? = nil //正确 6.11 如果一个变量之后可能变成nil的画，请不要使用隐式解包可选类型，如果需要在变量的生命周期中判断是否为nil的话，请使用普通可选类型； 未完待续…]]></content>
+      <tags>
+        <tag>swift</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[sersync和rsync部署实时同步环境]]></title>
+    <url>%2F20130110%2Fsersync%2F</url>
+    <content type="text"><![CDATA[by jianzi 2013/1/9一、与使用rsync单向同步的区别是：（2013.10.01纠正：rsync也可以双向同步）普通单向同步是在源服务器运行rsync守护进程 # rsync -daemon ，在目标服务器执行命令“rsync -artuz -R —delete ….”使用sersync和rsync实时同步，则在源服务器上安装sersync，运行sersync守护进程,在目标服务器运行rsync —daemon守护进程； 二、部署流水账：目标服务器1： 192.168.0.100目标服务器2： 192.168.0.101源服务器： 192.168.0.22 1、在所有目标服务器上部署rsync守护进程即：在192.168.0.100和192.168.0.101上创建 /etc/rsyncd.conf内容：1234567891011121314uid=rootgid=rootmax connections=36000use chroot=nolog file=/var/log/rsyncd.logpid file=/var/run/rsyncd.pidlock file=/var/run/rsyncd.lock[dev_www]path=/home/www #目标服务器上的保存目录comment = devignore errors = yesread only = nohosts allow = 192.168.0.22 #源服务器IP地址，这里允许源服务器推送文件hosts deny = * 运行rsync守护进程1# rsync —daemon 添加到启动文件当中去1# echo “rsync —daemon” &gt;&gt; /etc/rc.local 2、在源服务器上安装运行sersync下载sersync可执行分发包：http://code.google.com/p/sersync/ 解压：1# tar zxvf sersync2.5.4_64bit_binary_stable_final.tar.gz 配置：12#cd GNU-Linux-x86#vim confxml.xml 修改相关配置段：123456789101112131415&lt;!— 过滤不需要同步的文件规则 —&gt;&lt;filter start=”false”&gt;&lt;exclude expression=”(.).svn”&gt;&lt;/exclude&gt;&lt;exclude expression=”(.).gz”&gt;&lt;/exclude&gt;&lt;exclude expression=”(.).fla”&gt;&lt;/exclude&gt;&lt;exclude expression=”^info/“&gt;&lt;/exclude&gt;&lt;exclude expression=”^static/*”&gt;&lt;/exclude&gt;&lt;/filter&gt;&lt;!— 打开调试模式 —&gt;&lt;debug start=”true”/&gt;&lt;!— 源数据目录 和 目标服务器 —&gt;&lt;localpath watch=”/root/rsync_data/dev_www”&gt;&lt;remote ip=”192.168.0.100” name=”dev_www”/&gt;&lt;remote ip=”192.168.0.101” name=”dev_www”/&gt;&lt;/localpath&gt; 第一次先整体同步1# ./sersync2 -r 运行守护进程实时同步1# ./sersync2 -d 添加到启动文件中去1# echo “/root/GNU-Linux-x86/sersync2 -d” &gt;&gt; /etc/rc.local]]></content>
+      <tags>
+        <tag>rsync</tag>
+        <tag>sersync</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[AS3位运算]]></title>
+    <url>%2F20110829%2Fas3-bit%2F</url>
+    <content type="text"><![CDATA[左位移几就相当于乘以2的几次方（ Left bit shifting to multiply by any power of two ）1234//将一个值向左侧移动一位与这个值乘以 2 等效 。浮点数通过舍去小数点后面的所有位来转换为整数。大约快了300%x = x * 2;x = x * 64; //相当于：12x = x &lt;&lt; 1;x = x &lt;&lt; 6; 右位移几就相当于除以2的几次方（Right bit shifting to divide by any power of two）1234//将一个值右移一位等效于将它除以 2 并舍去余数。浮点数通过舍去小数点后面的所有位来转换为整数。大约快了350%x = x / 2;x = x / 64; //相当于：12x = x &gt;&gt; 1;x = x &gt;&gt; 6; Number 到 integer(整数)转换 在AS3中使用int(x)快了10% 。尽管如此位操作版本在AS2中工作的更好1x = int(1.232) //相当于：1x = 1.232 &gt;&gt; 0; 提取颜色组成成分 不完全是个技巧，是正常的方法 (Not really a trick, but the regular way of extracting values using bit masking and shifting.) 1234567891011//24bitvar color:uint = 0x336699;var r:uint = color &gt;&gt; 16;var g:uint = color &gt;&gt; 8 &amp; 0xFF;var b:uint = color &amp; 0xFF;//32bitvar color:uint = 0xff336699;var a:uint = color &gt;&gt;&gt; 24;var r:uint = color &gt;&gt;&gt; 16 &amp; 0xFF;var g:uint = color &gt;&gt;&gt; 8 &amp; 0xFF;var b:uint = color &amp; 0xFF; 合并颜色组成成分 替换值到正确位置并组合他们 (‘Shift up’ the values into the correct position and combine them.)1234567891011//24bitvar r:uint = 0x33;var g:uint = 0x66;var b:uint = 0x99;var color:uint = r &lt;&lt; 16 | g &lt;&lt; 8 | b;//32bitvar a:uint = 0xff;var r:uint = 0x33;var g:uint = 0x66;var b:uint = 0x99;var color:uint = a &lt;&lt; 24 | r &lt;&lt; 16 | g &lt;&lt; 8 | b; 使用异或运算交换整数而不需要用临时变量 很可爱的技巧, 在本页顶端的链接里有详细的解释 ，这里快了 20%123var t:int = a;a = b;b = t; //相当于:123a ^= b;b ^= a;a ^= b; 自增/自减(Increment/decrement) 这个比以前的慢不少，但却是个模糊你代码的好方法；-）12i = -~i; // i++i = ~-i; // i— 取反（Sign flipping using NOT or XOR） 另人奇怪的是这个居然快了300%！1i = -i; //相当于：1i = ~i + 1; //或者1i = (i ^ -1) + 1; 使用bitwise AND快速取模 （Fast modulo operation using bitwise AND） 如果除数是2的次方，取模操作可以这样做：1模数= 分子 &amp; (除数 - 1); 这里大约快了600%1x = 131 % 4; //相当于：1x = 131 &amp; (4 - 1); 检查是否为偶数（Check if an integer is even/uneven using bitwise AND） 这里快了 600%1isEven = (i % 2) == 0; //相当于：1isEven = (i &amp; 1) == 0; 绝对值 忘记 Math.abs()吧 (Forget Math.abs() for time critical code.)12345version 1 比 Math.abs() 快了2500% ，version 2 居然比 version 1 又快了20% ！//version 1i = x &lt; 0 ? -x : x;//version 2i = (x ^ (x &gt;&gt; 31)) - (x &gt;&gt; 31);]]></content>
+      <tags>
+        <tag>as3</tag>
+        <tag>位运算</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[监控系统的平均负载]]></title>
+    <url>%2F20110803%2Fuptime%2F</url>
+    <content type="text"><![CDATA[1.为什么要监控系统的平均负载？有时我们会感觉到系统响应很慢，但是又找不到具体原因，这时要查平均负载，检查是否有大量的进程在排队等待 2.平均负载是什么?特定时间间隔内运行队列中的平均进程数，好象还不够明白：就是进程队列的长度，有多少个进程在排队等待运行 3.什么是”进程队列”?一个进程满足以下条件就会位于进程队列中A&gt;它没有在等待I/O操作的结果B&gt;它没有主动进入等待状态(即没有调用wait)C&gt;它没有被停止 4.如何查看平均负载?最简单的命令是 uptimebash# uptime00:44:22 up 1:17, 3 users, load average: 8.13, 5.90, 4,94 5.显示的内容是什么意思?load average: 8.13,5.90,4,94显示的是过去的1,5,15分钟内进程队列中的平均进程数量 6.如何衡量当前系统是否负载过高?如果每个cpu(可以按CPU核心的数量计算)上当前活动进程数不大于3，则系统性能良好，不大于4，表示可以接受如大于5，则系统性能问题严重上面例中的8.13,如果有2个cpu核心,则8.13/2=4.065, 此系统性能可以接受建议设置严格的报警值为: CPU核心的数量比如：CPU核心数量为2，则设置报警值为2(这样设置是合理的，因为毕竟不是每个应用都支持多CPU及多核心) 7.其他查看平均负载的命令tload #能够绘制出负载变化的图形uptime #同时显示开机以来的时间w #同时显示出已登录的用户top #这个对资源占用太高，不建议使用cat /proc/loadavg #通过/proc系统信息得到平均负载 8.如果你要持续的观察平均负载，建议用 watch uptime 或 watch cat /proc/loadavg 关于watch:每隔一定时间执行指定的程序，并全屏显示结果。时间默认是2秒]]></content>
+      <tags>
+        <tag>uptime</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[使用ImageLazyLoad技术，对图片延迟加载]]></title>
+    <url>%2F20101104%2Fimage-lazy-load%2F</url>
+    <content type="text"><![CDATA[ImageLazyLoad技术，就是在下拉滚动条的时候加载图片，这种比较适合一个网页上有很多图片的情况，例如我的网站:www.uucc5.com满页都是图片，那么如果用户访问的时候，会在加载完整个页面等待很长时间，而用第一眼看到的只是第一屏的内容，所以第二屏、第三屏等的内容加载时间其实是在浪费时间！如果用户只看了第一屏，而不翻屏就关掉了浏览器，那么第二屏第三屏下载的资源也是一中流量的浪费！并且加载用户体验也不好！那么这就有了这个小技巧，使用javascript来实现图片缓冲，只加载用户要看的屏幕的资源，这个小技巧的好处是提高访问速度，提高用户体验，对seo没有什么帮助！，不废话，说做法： 一、使用JQuery插件 ，插件名: jquery.lazyload（7kb大小），压缩后（3kb大小）： 1.导入JS插件12&lt;script src=&quot;http://bchuan.com/jquery.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;&lt;script src=&quot;http://bchuan.com/jquery.lazyload.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt; 2.在你的页面中加入如下的javascript：1$(&quot;img&quot;).lazyload(); 这将会使所有的图片都延迟加载。 当然插件还有几个配置项可供设置：1.改变threshold1$(&quot;img&quot;).lazyload(&#123; threshold : 200 &#125;); 把阀值设置成200 意思就是当图片没有看到之前先load 200像素。 2.当然了你也可以通过设置占位符图片和自定事件来触发加载图片事件复制代码代码如下:1234$(&quot;img&quot;).lazyload(&#123; placeholder : &quot;img/grey.gif&quot;, event : &quot;click&quot;&#125;); 3.可以通过定义effect 参数来定义一些图片显示效果复制代码代码如下:1234$(&quot;img&quot;).lazyload(&#123; placeholder : &quot;img/grey.gif&quot;, effect : &quot;fadeIn&quot;&#125;); LazyLoad(延迟加载)技术不仅仅用在对网页中图片的延迟加载，对数据同样可以，Google Reader和Bing图片搜索就把LazyLoad技术运用的淋漓尽致； 缺陷： 1.与Ajax技术的冲突；2.图片的延迟加载，遇到高度特别高的图片，会出现停止加载的问题；3.写代码不规范的同学要注意了，不管由于什么原因，如果您的页面中，img标签的height属性未定义，那么我建议您最好不要使用ImageLazyLoad 二、使用淘宝的延迟加载技术:(2kb大小)http://a.tbcdn.cn/kissy/1.0.0/build/imglazyload/imglazyload-min.js调用方法也是很简单的：12&lt;script src=&quot;http://a.tbcdn.cn/kissy/1.0.0/build/imglazyload/imglazyload-min.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;&lt;script type=&quot;text/javascript&quot;&gt;&lt;!--//&lt;![CDATA[KISSY.ImageLazyload();//--&gt;]]&gt;&lt;/script&gt; 注：该脚本依赖 yahoo-dom-event, 页面中需要加载 yui 2.x,你也可以直接引用下面的地址:1&lt;script src=&quot;http://kissy.googlecode.com/svn/trunk/third-party/yui2/yahoo-dom-event/yahoo-dom-event.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt; 配置参数如下：123456&lt;script type=&quot;text/javascript&quot;&gt;KISSY.ImageLazyload(&#123; mod: &quot;manual&quot;, // 延迟模式。默认为 auto diff: 200 // 当前屏幕下多远处的图片开始延迟加载。默认两屏外的图片才延迟加载&#125;);&lt;/script&gt; manual 模式时，需要手动将页面中需要延迟加载的图片的 src 属性名更改为 data-lazyload-src. 比如 SRP 页面，宝贝列表的后20个图片延迟加载。 输出时，html 代码为：1&lt;img data-lazy-src=&quot;http://jianzi0307.blog.163.com/blog/path/to/img&quot; alt=&quot;something&quot; /&gt; 如果您是Jquery，Prototype等这些JS框架的粉丝，他们都有定制的LazyLoad Plugin提供：http://www.appelsiini.net/projects/lazyload LazyLoad(延迟加载)技术不仅仅用在对网页中图片的延迟加载，对数据同样可以。]]></content>
+      <tags>
+        <tag>前端优化</tag>
+        <tag>懒加载</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[滚动地图层的方法]]></title>
+    <url>%2F20100708%2Fas3-game-map-scroll%2F</url>
+    <content type="text"><![CDATA[玩rpg游戏的时候，会看到角色始终在屏幕中间移动，感觉是地图在动，人物位置不动，这是如何来实现的呢？看了下面这个简单例子你便知道其中的道理，原理是利用DisplayObject的ScrollRect： 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071package&#123; import flash.display.Loader; import flash.display.Sprite; import flash.events.Event; import flash.events.MouseEvent; import flash.geom.Rectangle; import flash.net.URLRequest; /** * 滚动地图的例子： * 将window.x和window.y放在EnterFrame中，实时修改为角色走动的坐标即可实现地图平滑滚动 * 这里简单用鼠标点击坐标作为角色的位置 * jianzi 2010.7.8 */ public class Main extends Sprite &#123; //地图尺寸 private static const mapWidth:int = 2762; private static const mapHeight:int = 1558; //地图入口坐标 private static const enterX:int = 1000; private static const enterY:int = 1200; //滚动区域 private var window:Rectangle; //地图层 private var scene:Sprite public function Main() &#123; //地图层 scene = new Sprite(); scene.graphics.beginFill(Math.random() * 0xffffff); scene.graphics.drawRect(0,0,mapWidth,mapHeight); scene.graphics.endFill(); //加载地图 var loader:Loader = new Loader(); loader.contentLoaderInfo.addEventListener(Event.COMPLETE,onComplete); loader.load(new URLRequest(&quot;map.jpg&quot;)); scene.addChild(loader); addChild(scene); //滚动区域，设置为stage大小，定位地图在入口点(enterX,enterY) window = new Rectangle(); window.x = enterX - stage.stageWidth/2; window.y = enterY - stage.stageHeight/2; window.width = stage.stageWidth; window.height = stage.stageHeight; this.scrollRect = window; this.addEventListener(MouseEvent.CLICK,onClick); &#125; private function onComplete(e:Event):void &#123; //...................... &#125; private function onClick(e:MouseEvent):void &#123; var posX:Number = int(mouseX) - stage.stageWidth/2; var posY:Number = int(mouseY) - stage.stageWidth/2; if (posX &amp;lt; 0) posX = 0; else if ((posX+stage.stageWidth) &amp;gt; mapWidth) posX = mapWidth - stage.stageWidth; if (posY &amp;lt; 0) posY = 0; else if ((posY+stage.stageHeight) &amp;gt; mapHeight) posY = mapHeight - stage.stageHeight; window.x = posX; window.y = posY; trace(window.x,window.y); this.scrollRect = window; &#125; &#125;&#125;]]></content>
+      <tags>
+        <tag>game</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Memcached研发测试]]></title>
+    <url>%2F20100517%2Fmemcached%2F</url>
+    <content type="text"><![CDATA[为准备公司网站的重构，前端时间研究Memcached分布式集群 和 Hiphop-php(Facebook的一个开源项目)的搭建 ，花了不少时间和精力，下边进行一下整理。。。 一、Memcached客户端库算法研究取模算法与一致性算法 Memcached虽然被称为”分布式”缓存服务器，但是服务器段并没有分布式功能，实现分布式主要是通过客户端库来实现。无论使用哪种语言实现的客户端库都会包含至少一种分布算法来实现Memcached分布式。 因此笼统来说客户端库是通过一个分布算法和维护的一个服务器列表来实现Memcached分布式的，关于分布算法目前有两种选择：取模算法(modula hashing)和一致性算法(consistent hashing)。 取模算法(modula hashing)是当前多数客户端库默认算法 [Hash($key) % $svrNum ]，就是根据服务器节点数的余数来进行分散，就是通过hash函数求得的Key的整数哈希值再除以服务器节点数并取余数来选择服务器。这种算法取余计算简单，分散效果好，但是缺点是如果某一台机器宕机，那么应该落在该机器的请求就无法得到正确的处理，这时需要将当掉的服务器从算法从去除，此时候会有(N-1)/N的服务器的缓存数据需要重新进行计算；如果新增一台机器，会有N/(N+1)的服务器的缓存数据需要进行重新计算。对于系统而言，这通常是不可接受的颠簸（因为这意味着大量缓存的失效或者数据需要转移）。 一致性算法(consistent hashing)来源于p2p网络的路由算法，算法描述：hash值一般为unsigned int型，因此对于hash函数的结果应该均匀分布在[0,2^32-1]间，把一个圆环用2^32 个点来进行均匀切割，首先按照hash()函数算出服务器（节点）的哈希值， 并将其分布到0～2^32的圆上。用同样的hash()函数求出需要存储数据的键的哈希值，并映射到圆上。然后从数据映射到的位置开始顺时针查找，将数据保存到找到的第一个服务器（节点）上，新增一个节点的时候，只有在圆环上新增节点逆时针方向的第一个节点的数据会受到影响。删除一个节点的时候，只有在圆环上原来删除节点顺时针方向的第一个节点的数据会受到影响，因此通过Consistent Hashing很好地解决了负载均衡中由于新增节点、删除节点引起的hash值颠簸问题。 PHP的Memcached客户端库 目前有两个：PECL::memcache 和PECL::memcached，下边是两个库的比较： 两个库的稳定版本都是使用取模算法作为默认的分布算法，根据上面两个算法的解释可以看出，一致性算法是做memcached分布集群的最佳算法，因此我们需要将客户端库的默认分布算法改为一致性算法： PECL::memcache库启用consistent一致性算法：修改php.ini添加：123456[Memcache]memcache.allow_failover= 1memcache.max_failover_attempts = 20memcache.chunk_size= 32768memcache.hash_strategy = consistentmemcache.hash_function= crc32 或在PHP中使用ini_set方法：12ini_set(&apos;memcache.hash_strategy&apos;,&apos; consistent&apos;);ini_set(&apos;memcache.hash_function &apos;,&apos; crc32&apos;); PECL::memcache模块使用手册http://www.php.net/manual/en/book.memcache.phpPECL::memcached(libmemcached)库启用consistent一致性算法：123$mc = newMemcached(); $mc-&gt;setOption(Memcached::OPT_DISTRIBUTION,Memcached::DISTRIBUTION_CONSISTENT);$mc-&gt;setOption(Memcached::OPT_LIBKETAMA_COMPATIBLE, true); PECL::memcached模块使用手册http://www.php.net/manual/en/book.memcached.php 二、两个客户端库的性能测试从上面的表格我们看出pecl::memcached库是基于libmemcached工具库的，我使用facebook的xprof库对二者进行了一下测试，基于libmemcached的pecl::memcached库性能要比pecl::memcache库高出很多，数据这里就不给了。综上两点使用pecl::memcached库，并使用一致性算法并同时设置LIBKETAMA_COMPATIBLE选项为true，这是我们做memcached分布集群的最佳选择，即提高了性能，又减少了由增删节点而引起的大量数据迁移的风险。 使用facebook的xprof模块测试PHP程序性能：从Facebook开源项目中下载xprof12http://github.com/facebookhttp://pecl.php.net/package/xhprof 安装过程：12345# tar zxvf xhprof-0.9.2.tar.gz# cd xhprof-0.9.2/extension# /usr/local/webserver/php/bin/phpize# ./configure--with-php-config=/usr/local/webserver/php/bin/php-config# make &amp;&amp; make install Xhprof.so模块生成目录1/usr/local/webserver/php/lib/php/extensions/no-debug-non-zts-20060613/ 手动在php.ini里面添加xprof段：123[xhprof]extension=xhprof.soxhprof.output_dir=/data0/htdocs/test.letv.com/logs/xhprof/ 用法：12345678910111213141516&lt;?php//启用初始化xhprof_enable(XHPROF_FLAGS_CPU + XHPROF_FLAGS_MEMORY);//...测试代码放在这里//生成性能分析数据文件$xhprof_data= xhprof_disable();//调用xhprof提供的web接口，通过Web方式查看性能数据include_once&quot;xhprof_lib/utils/xhprof_lib.php&quot;;include_once&quot;xhprof_lib/utils/xhprof_runs.php&quot;;$xhprof_runs= new XHProfRuns_Default();$run_id= $xhprof_runs-&gt;save_run($xhprof_data, &quot;xhprof_testUDP&quot;);echo&quot;---------------\n&quot;. &quot;Assuming you have set up the httpbased UI for \n&quot;. &quot;XHProf at some address, you can viewrun at \n&quot;. &quot;http://10.57.30.70/xhprof_html/index.php?run=$run_id&amp;source=xhprof_testUDP\n&quot;. &quot;---------------\n&quot;; xhprof参考文档：xhprof手册：http://mirror.facebook.net/facebook/xhprof/doc.html#installation]]></content>
+      <tags>
+        <tag>memcached</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Win7静态绑定网关MAC防止arp攻击]]></title>
+    <url>%2F20100513%2Fwin7-arp%2F</url>
+    <content type="text"><![CDATA[Win7使用XP的方式静态绑定mac是行不通的：1arp -s 192.168.1.1 00-27-19-50-72-3c 会提示你无权限等等…即使使用管理员方式运行cmd也无济于事 下面给出办法：首先查出你的网卡物理接口ID12345&gt; netsh i i show inIdx Met MTU 状态 名称—- ————— ————— —————— —————————————- 1 50 4294967295 connected Loopback Pseudo-Interface 1 11 20 1500 connected 本地连接 从输出可以看出我这个是 11 然后通过这个命令实现网关mac的静态绑定1&gt; netsh -c “i i” add neighbors 11 “192.168.1.1” “00-27-19-50-72-3c” 其中：192.168.1.1是我的网关IP，00-27-19-50-72-3c 是网关的真实MAC地址 注：查出网关真实mac的方法有多种你可以先用管理员身份运行cmd,使用arp -d，然后迅速执行arp -a ，一般情况下这个时候显示的是真实mac或者下载一个arp防火墙先拦截攻击，然后查出真实mac，再进行网关mac静态绑定，然后arp防火墙就可以关掉不用了~]]></content>
+      <tags>
+        <tag>arp</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[iftop用法]]></title>
+    <url>%2F20100401%2Flinux-iftop%2F</url>
+    <content type="text"><![CDATA[TX：发送流量RX：接收流量TOTAL：总流量Cumm：运行iftop到目前时间的总流量peak：流量峰值rates：分别表示过去 2s 10s 40s 的平均流量 查看eth0网卡的流量状况。1iftop -i eth0 -n iftop 相关命令 监控eth1的网卡的流量1iftop -i eth1 以位元组(bytes)为单位显示流量(预设是位元bits):1iftop -B 直接显示IP, 不进行DNS反解:1iftop -n 直接显示连接埠编号, 不显示服务名称:1iftop -N 显示某个网段进出封包流量1iftop -F 192.168.1.0/24 or 192.168.1.0/255.255.255.0 其他参数可下 iftop -h 看说明.进入iftop画面时, 可按 p 切换是否显示连接埠, n 切换显示IP或主机的domain name, N切换显 示连接埠代号或名称, p暂停显示, b切换是否显示长条, B切换计算几秒内的平均流量, 其他按键 可以按h观看说明。 其他监控网卡流量，网络带宽状况的优秀软件：bmon、nload、ifstat、vnstat、iptraf]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>iftop</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[通过SSH隧道绕过防火墙访问MYSQL]]></title>
+    <url>%2F20100209%2Fssh-tunneling%2F</url>
+    <content type="text"><![CDATA[今天突然想从本地访问远程服务器的MSYQL，但是数据库一般设置不会对公网开放3306端口的，一般都被防火墙挡了！那么我是不是就不能访问了呢？？？不是，如果已经有了ssh权限，我们可以通过ssh隧道绕过防火墙访问服务器的任何端口，SSH隧道即SSH端口转发。拓扑图如下： 方法：拿SQLyog访问MYSQL为例MYSQL host address填写localhost即可，这里填写数据库连接参数 SSH选项卡填写SSH登陆参数 工作中提供一些服务器给一个合作伙伴，他们有ssh权限，但是每次都要求需要远程访问数据库，要求防火墙打开3306，今天我突然才想到，为什么他们不通过SSH端口转发来连接呢？？？ 注：一点小小说明，MYSQL host address填写问题可能会困扰大家，这个是相对于SSH主机的如果数据库在SSH主机上，则填写localhost，如果数据库在和SSH主机同一内网，例如数据库内网IP为192.168.1.8则这里填写数据库内网IP192.168.1.8。]]></content>
+      <tags>
+        <tag>ssh</tag>
+        <tag>tunneling</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[iptables端口限制,简易防火墙]]></title>
+    <url>%2F20100121%2Flinux-iptables%2F</url>
+    <content type="text"><![CDATA[脚本过滤掉无用的端口,减少安全隐患,可做简易的防火墙。 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152################################################ Firewall Script &gt;&gt; Mail Server &lt;&lt;# 2010.1.21 jianzi################################################!/bin/sh/sbin/iptables -F#default rules/sbin/iptables -P INPUT ACCEPT/sbin/iptables -P OUTPUT ACCEPT/sbin/iptables -P FORWARD ACCEPT#--------&gt; SSH &lt;--------###&gt;&gt;&gt; Destination Port/sbin/iptables -A INPUT -m tcp -p tcp -i eth0 --dport 22 -j ACCEPT/sbin/iptables -A OUTPUT -m tcp -p tcp -o eth0 --dport 22 -j ACCEPT###&gt;&gt;&gt; Source Port/sbin/iptables -A INPUT -m tcp -p tcp -i eth0 --sport 22 -j ACCEPT/sbin/iptables -A OUTPUT -m tcp -p tcp -o eth0 --sport 22 -j ACCEPT#--------&gt; HTTP &lt;--------###&gt;&gt;&gt; TCP/sbin/iptables -A INPUT -m tcp -p tcp --dport 80 -j ACCEPT/sbin/iptables -A OUTPUT -m tcp -p tcp --dport 80 -j ACCEPT/sbin/iptables -A INPUT -m tcp -p tcp --sport 80 -j ACCEPT/sbin/iptables -A OUTPUT -m tcp -p tcp --sport 80 -j ACCEPT###&gt;&gt;&gt; UDP/sbin/iptables -A INPUT -m udp -p udp --dport 80 -j ACCEPT/sbin/iptables -A OUTPUT -m udp -p udp --dport 80 -j ACCEPT/sbin/iptables -A INPUT -m udp -p udp --sport 80 -j ACCEPT/sbin/iptables -A OUTPUT -m udp -p udp --sport 80 -j ACCEPT#-----------&gt; Mail Server &lt;----------/sbin/iptables -A INPUT -m tcp -p tcp --dport 25 -j ACCEPT/sbin/iptables -A OUTPUT -m tcp -p tcp --dport 25 -j ACCEPT/sbin/iptables -A INPUT -m tcp -p tcp --sport 25 -j ACCEPT/sbin/iptables -A OUTPUT -m tcp -p tcp --sport 25 -j ACCEPT/sbin/iptables -A INPUT -m udp -p udp --dport 25 -j ACCEPT/sbin/iptables -A OUTPUT -m udp -p udp --dport 25 -j ACCEPT/sbin/iptables -A INPUT -m udp -p udp --sport 25 -j ACCEPT/sbin/iptables -A OUTPUT -m udp -p udp --sport 25 -j ACCEPT/sbin/iptables -A INPUT -m tcp -p tcp --dport 110 -j ACCEPT/sbin/iptables -A OUTPUT -m tcp -p tcp --dport 110 -j ACCEPT/sbin/iptables -A INPUT -m tcp -p tcp --sport 110 -j ACCEPT/sbin/iptables -A OUTPUT -m tcp -p tcp --sport 110 -j ACCEPT/sbin/iptables -A INPUT -m udp -p udp --dport 110 -j ACCEPT/sbin/iptables -A OUTPUT -m udp -p udp --dport 110 -j ACCEPT/sbin/iptables -A INPUT -m udp -p udp --sport 110 -j ACCEPT/sbin/iptables -A OUTPUT -m udp -p udp --sport 110 -j ACCEPT#--------&gt; ETC port all drop &lt;--------/sbin/iptables -A INPUT -m tcp -p tcp -i eth0 --dport 1:30000 -j DROP/sbin/iptables -A OUTPUT -m tcp -p tcp -o eth0 --dport 1:30000 -j DROP/sbin/iptables -A FORWARD -m tcp -p tcp --dport 1:30000 -j DROP/sbin/iptables -A INPUT -m tcp -p tcp -i eth0 --sport 1:30000 -j DROP/sbin/iptables -A OUTPUT -m tcp -p tcp -o eth0 --sport 1:30000 -j DROP/sbin/iptables -A FORWARD -m tcp -p tcp --sport 1:30000 -j DROP 配合修改SSH端口，hosts、hosts.allow、hosts.deny 可以将服务器做到相对比较安全一些！！！ ：D]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>iptables</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[执行iptables脚本错误提示]]></title>
+    <url>%2F20100121%2Flinux-iptables-error%2F</url>
+    <content type="text"><![CDATA[12345678910111213141516171819202122232425[root@localhost ~]# sh iptables_mail.sh iptables: No chain/target/match by that nameiptables: Bad policy nameiptables: Bad policy nameiptables: Bad policy name: command not foundine 10: &apos;ptables v1.3.5: Invalid target name `ACCEPTTry `iptables -h&apos; or &apos;iptables --help&apos; for more information.&apos;ptables v1.3.5: Invalid target name `ACCEPTTry `iptables -h&apos; or &apos;iptables --help&apos; for more information.: command not foundine 15: &apos;ptables v1.3.5: Invalid target name `ACCEPTTry `iptables -h&apos; or &apos;iptables --help&apos; for more information.&apos;ptables v1.3.5: Invalid target name `ACCEPTTry `iptables -h&apos; or &apos;iptables --help&apos; for more information.: command not foundine 19: &apos;ptables v1.3.5: Invalid target name `ACCEPTTry `iptables -h&apos; or &apos;iptables --help&apos; for more information.&apos;ptables v1.3.5: Invalid target name `ACCEPTTry `iptables -h&apos; or &apos;iptables --help&apos; for more information.&apos;ptables v1.3.5: Invalid target name `ACCEPTTry `iptables -h&apos; or &apos;iptables --help&apos; for more information.&apos;ptables v1.3.5: Invalid target name `ACCEPTTry `iptables -h&apos; or &apos;iptables --help&apos; for more information.... 这种情况出现的原因是 iptables_mail.sh 文件格式是Windows格式，是因为文件末尾^M导致。需要将文件格式转化为Unix格式即可。可以使用Gvim等编辑器帮助转换。]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>iptables</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[LINUX 下mysql的大小写区分问题]]></title>
+    <url>%2F20090827%2Fmysql-lower-case-table-names%2F</url>
+    <content type="text"><![CDATA[三个情况： A. 库名和表名的大小写B. 字段名的大小写C. 字段值的大小写 1、MySQL在Linux下数据库名、表名、列名、别名大小写规则是这样的： 1、数据库名与表名是严格区分大小写的；2、表的别名是严格区分大小写的；3、字段和字段的别名在所有的情况下均是忽略大小写的；4、变量名也是严格区分大小写的； Windows下都不区分大小写。 2、用root账号修改my.cnf：在[mysqld]段添加：1lower_case_table_names=0 #区分表名大小写 重启MYSQL服务，设置生效 lower_case_table_names参数解释：1lower_case_table_names = 0 其中 0：区分大小写，1：不区分大小写 3、如果想在查询时区分字段值的大小写，则：字段值需要设置BINARY属性，设置的方法有多种：A、创建时设置：123CREATE TABLE T( A VARCHAR(10) BINARY); B、使用alter修改：1ALTER TABLE tablename MODIFY COLUMN cloname VARCHAR(45) BINARY; C、mysql table editor中直接勾选BINARY项。]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Linux & FreeBsd 修改hostname]]></title>
+    <url>%2F20090826%2Flinux-freebsk-hostname%2F</url>
+    <content type="text"><![CDATA[hostname命令修改主机名1#hostname NewHostName 重启之后会失效,需要修改下配置文件： linux修改 /etc/sysconfig/network123NETWORKING=yesNETWORKING_IPV6=noHOSTNAME=NewHostName freebsd修改 /etc/rc.conf123456— sysinstall generated deltas — # Mon Jun 23 16:50:35 2008…….defaultrouter=”10.0.0.1”hostname=”NewHostName”……]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>freebsd</tag>
+        <tag>hostname</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[spf记录]]></title>
+    <url>%2F20090625%2Fmail-server-spf%2F</url>
+    <content type="text"><![CDATA[如何设置 SPF 的 DNS 记录 Introduction SPF的完整意思为 “Sender Policy Framework”。翻译过来就是发送方策略框架，是一项跟 DNS 相关的技术，它的内容写在 DNS 的 txt 类型记录里面，关于更详细的信息请参考 RFC4408: http://www.ietf.org/rfc/rfc4408.txtSPF 的原理是使用电子邮件的头部信息中的 ‘Return Path’ 或 ‘Mail From’ 这两个邮件头里的域名来结合真正提供这个邮件的服务商 DNS 里面的记录去验证发送邮件服务器是否是冒充行为。SPF 的官方网站是： http://www.openspf.org/ How it works 当信件发送到一个 MTA 后，这个 MTA 会检查邮件的邮件头，然后进行 DNS 查询，如果认为这个域的 IP 地址不是所定义的那就证明他是一个假冒的，这时候就会把邮件退回去。 How to check SPF record 如何查询某个域名是否开启SPF，可以使用以下命令：1# dig -t txt 域名 只需要去查询 TXT 类型的 DNS 记录即可。 SPF variables 1234567v=spf1 / 表示 spf1 的版本- Fail, 表示没有其他任何匹配发生~ 代表软失败，通常用于测试中? 代表忽略IP4 代表IPv4进行验证IP6 代表IPv6进行验证all 代表结束 大家可以通过这个向导来设置自己的SPF记录http://old.openspf.org/wizard.html 举例说明：163 的 SPF 记录：1163.com. 18000 IN TXT &quot;v=spf1 ip4:220.181.12.0/22 ip4:202.108.5.64/26 ip4:202.108.5.128/25 -all&quot; 如果不符合以上发信地址，但是发件人却是 &#39;xxx@163.com‘，那么这样的邮件一定是假冒的。邮件应该一律退回。 sohu.com 的 SPF 记录：1sohu.com. 600 IN TXT &quot;v=spf1 ip4:61.135.130.0/23 ip4:61.135.132.0/23 ip4:61.135.134.0/23 ip4:61.135.145.0/23 ip4:61.135.150.0/23 ip4:220.181.26.0/24 ip4:222.28.152.128/25 ip4:218.206.87.0/25 ip4:221.236.12.128 ip4:203.184.141.0/24 ip4:61.152.234.0/24 ~all&quot;]]></content>
+      <tags>
+        <tag>邮件服务器</tag>
+        <tag>spf</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[cookie长度超出限制]]></title>
+    <url>%2F20090518%2Fcookie-bad-request%2F</url>
+    <content type="text"><![CDATA[现象：400 错误123BAD RequestYour browser sent a request that this server could not understand.Size of a request header field exceeds server limit. 原因： Apache中资源使用限制的设置问题。 技术背景： Apache中“资源使用限制”就是要限制用户对网站特定资源（如目录、服务器硬件等）的访问。相关指令包括：LimitRequestBody、LimitRequestFields、LimitRequestFieldSize、LimitRequestLine、RLimitCPU、RLimitMEM、RLimitNPROC和ThreadStackSize。LimitRequest系列指令用来限制Apache在读取客户端请求的过程中使用的资源数量。通过限制这些值，可以减轻某些拒绝服务（DOS）攻击；RLimit系列指令限制被Apache子进程所派生的进程使用的资源数量，通常这些指令用来控制CGI脚本和SSI exec命令所使用的资源；ThreadStackSize指令在某些平台上用来控制堆栈大小。LimitRequestLineLimitRequestLine指令用来限制接收客户端发送的HTTP请求行的字节数，允许服务器管理员增加或减少客户端HTTP请求行允许大小的限制。因为请求行包括HTTP方法、URI、协议版本，所以LimitRequestLine指令会限制请求URI的长度。服务器会需要这个值足够大以装载它所有的资源名，包括可能在GET请求中所传递的查询部分的所有信息。LimitRequestFieldSizeLimitRequestFieldSize指令用来限制客户端发送的请求头的字节数，允许服务器管理员增加，或减少HTTP请求头域大小的限制。一般来说，服务器需要此值足够大，以适应普通客户端的任何请求的头域大小。一个普通头域的大小对于不同的客户端来说是有很大差别的，一般与用户配置他们的浏览器以支持更多的内容协议密切相关。LimitRequestLine和LimitRequestFieldSize指令给了服务器管理员更大的可控性，以控制客户端不正常的请求行为。这有助于避免某些形式的拒绝服务攻击。默认值为“8190”。 解决:在Apache的httpd.conf配置文件中12LimitRequestLine 40940LimitRequestFieldSize 40940 问题解决。 或者清除下本机中本域的Cookie也行。]]></content>
+      <tags>
+        <tag>cookie</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Nginx静态文件响应POST请求，提示405错误问题]]></title>
+    <url>%2F20090330%2Fnginx-post-405%2F</url>
+    <content type="text"><![CDATA[Apache、IIS、Nginx等绝大多数web服务器，都不允许静态文件响应POST请求，否则会返回“HTTP/1.1 405 Method not allowed”错误。 例1：用Linux下的curl命令发送POST请求给Apache服务器上的HTML静态页12345678910[root@new-host ~]# curl -d 1=1 http://www.sohu.com/index.html&lt;!DOCTYPE HTML PUBLIC “-//IETF//DTD HTML 2.0//EN”&gt;&lt;HTML&gt;&lt;HEAD&gt;&lt;TITLE&gt;405 Method Not Allowed&lt;/TITLE&gt;&lt;/HEAD&gt;&lt;BODY&gt;&lt;H1&gt;Method Not Allowed&lt;/H1&gt;The requested method POST is not allowed for the URL /index.html.&lt;P&gt;&lt;HR&gt;&lt;ADDRESS&gt;Apache/1.3.37 Server at www.sohu.com Port 80&lt;/ADDRESS&gt;&lt;/BODY&gt;&lt;/HTML&gt; 例2：用Linux下的curl命令发送POST请求给Nginx服务器上的HTML静态页12345678[root@new-host ~]# curl -d 1=1 http://blog.s135.com/tech/index.htm&lt;html&gt;&lt;head&gt;&lt;title&gt;405 Not Allowed&lt;/title&gt;&lt;/head&gt;&lt;body bgcolor=”white”&gt;&lt;center&gt;&lt;h1&gt;405 Not Allowed&lt;/h1&gt;&lt;/center&gt;&lt;hr&gt;&lt;center&gt;nginx/0.5.35&lt;/center&gt;&lt;/body&gt;&lt;/html&gt; 但在有些应用中，需要使静态文件能够响应POST请求。对于Nginx，可以修改nginc.conf配置文件，改变405错误为200 ok，并配置location来解决，方法如下：12345678910111213141516171819202122server&#123; listen 80; server_name domain.s135.com; index index.html index.htm index.php; root /opt/htdocs; if (-d $request_filename) &#123; rewrite ^/(.*)([^/])$ http://$host/$1$2/ permanent; &#125; error_page 405 =200 @405; location @405 &#123; root /opt/htdocs; &#125; location ~ .*.php?$ &#123; include conf/fcgi.conf; fastcgi_pass 127.0.0.1:10080; fastcgi_index index.php; &#125;&#125; 修改源代码，重新编译安装nginx 编辑nginx源代码1[root@new-host ~]# vim src/http/modules/ngx_http_static_module.c 修改： 找到下面一段注释掉123/*if (r-&gt;method &amp; NGX_HTTP_POST) &#123;return NGX_HTTP_NOT_ALLOWED;&#125;*/ 然后按照原来的编译参数，重新编译安装nginx，即可]]></content>
+      <tags>
+        <tag>nginx</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[MySQL同步故障：” Slave_SQL_Running:No” 两种解决办法]]></title>
+    <url>%2F20090221%2Fmysql-slave-sql-runing-no%2F</url>
+    <content type="text"><![CDATA[故障现象： 进入slave服务器，运行：12345678910mysql&gt; show slave status\G.......Relay_Log_File: localhost-relay-bin.000535Relay_Log_Pos: 21795072Relay_Master_Log_File: localhost-bin.000094Slave_IO_Running: YesSlave_SQL_Running: NoReplicate_Do_DB: Replicate_Ignore_DB:...... 解决办法一、 Slave_SQL_Running: No1.程序可能在slave上进行了写操作2.也可能是slave机器重起后，事务回滚造成的. 一般是事务回滚造成的：解决办法：123mysql&gt; slave stop;mysql&gt; set GLOBAL SQL_SLAVE_SKIP_COUNTER=1;mysql&gt; slave start; 解决办法二、 首先停掉Slave服务：slave stop到主服务器上查看主机状态：记录File和Position对应的值 进入master1234567mysql&gt; show master status;+----------------------+----------+--------------+------------------+| File | Position | Binlog_Do_DB | Binlog_Ignore_DB |+----------------------+----------+--------------+------------------+| localhost-bin.000094 | 33622483 | | | +----------------------+----------+--------------+------------------+1 row in set (0.00 sec) 然后到slave服务器上执行手动同步：123456789101112131415161718192021mysql&gt; change master to master_host=&apos;master_ip&apos;,master_user=&apos;user&apos;, master_password=&apos;pwd&apos;, master_port=3306, master_log_file=localhost-bin.000094&apos;, master_log_pos=33622483;1 row in set (0.00 sec)mysql&gt; slave start;1 row in set (0.00 sec)mysql&gt; show slave status\G*************************** 1. row ***************************........Master_Log_File: localhost-bin.000094Read_Master_Log_Pos: 33768775Relay_Log_File: localhost-relay-bin.000537Relay_Log_Pos: 1094034Relay_Master_Log_File: localhost-bin.000094Slave_IO_Running: YesSlave_SQL_Running: YesReplicate_Do_DB: 手动同步需要停止master的写操作！]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[为php添加mcrypt扩展(FreeBSD)]]></title>
+    <url>%2F20090211%2Ffreebsd-php-mcrypt%2F</url>
+    <content type="text"><![CDATA[一个合作商的接口要用到3DES加解密，自然要用到php的mcrypt模块，下面是freebsd 环境下给php添加mcrypt扩展： 安装 libmcrypt 12cd /usr/ports/security/libmcrypt/make install clean 安装 ltdl这一步要有，否则编译php的时候会出现错误提示： /usr/bin/ld: cannot find -lltdl 12345# cd /usr/ports/distfiles/ # tar zxvf libmcrypt-2.5.8.tar.gz # cd libmcrypt-2.5.8/libltdl/ # ./configure —enable-ltdl-install # make ; make install 重新编译php 进入你的php源码目录： 1# cd /usr/local/src/soft/php-5.2.5 除了过去的编译参数外再加上 –with-mcrypt 选项：12# ./configure /usr/local/php5/bin/php-config --configure-options --with-mcrypt # make 先停掉服务然后再运行make install 安装php ，否则将会出现假死，负载飙升12# /usr/local/apache2/bin/apachectl stop # make install (用时10-20秒) 开启服务1# /usr/local/apache2/bin/apachectl start 运行一下1234567891011/usr/local/php5/bin/php -m[PHP Modules]…libxmlmbstringmcrypt &lt;— 已经加载了 mcrypt 模块memcachemssqlmysqlopenssl…]]></content>
+      <tags>
+        <tag>php</tag>
+        <tag>freebsd</tag>
+        <tag>mcrypt</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[php 的 3des加解密类，兼容C#/java]]></title>
+    <url>%2F20090210%2Fphp-3des-for-csharp-java%2F</url>
+    <content type="text"><![CDATA[1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859&lt;?phpclass Crypt3Des &#123; var $key; function Crypt3Des($key)&#123; $this-&gt;key = $key; &#125; function encrypt($input)&#123; $size = mcrypt_get_block_size(MCRYPT_3DES,’ecb’); $input = $this-&gt;pkcs5_pad($input, $size); $key = str_pad($this-&gt;key,24,’0’); $td = mcrypt_module_open(MCRYPT_3DES, ‘’, ‘ecb’, ‘’); $iv = @mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_RAND); @mcrypt_generic_init($td, $key, $iv); $data = mcrypt_generic($td, $input); mcrypt_generic_deinit($td); mcrypt_module_close($td); // $data = base64_encode($this-&gt;PaddingPKCS7($data)); $data = base64_encode($data); return $data; &#125; function decrypt($encrypted)&#123; $encrypted = base64_decode($encrypted); $key = str_pad($this-&gt;key,24,’0’); $td = mcrypt_module_open(MCRYPT_3DES,’’,’ecb’,’’); $iv = @mcrypt_create_iv(mcrypt_enc_get_iv_size($td),MCRYPT_RAND); $ks = mcrypt_enc_get_key_size($td); @mcrypt_generic_init($td, $key, $iv); $decrypted = mdecrypt_generic($td, $encrypted); mcrypt_generic_deinit($td); mcrypt_module_close($td); $y=$this-&gt;pkcs5_unpad($decrypted); return $y; &#125; function pkcs5_pad ($text, $blocksize) &#123; $pad = $blocksize - (strlen($text) % $blocksize); return $text . str_repeat(chr($pad), $pad); &#125; function pkcs5_unpad($text)&#123; $pad = ord($text&#123;strlen($text)-1&#125;); if ($pad &gt; strlen($text)) &#123; return false; &#125; if (strspn($text, chr($pad), strlen($text) - $pad) != $pad)&#123; return false; &#125; return substr($text, 0, -1 * $pad); &#125; function PaddingPKCS7($data) &#123; $block_size = mcrypt_get_block_size(MCRYPT_3DES, MCRYPT_MODE_CBC); $padding_char = $block_size - (strlen($data) % $block_size); $data .= str_repeat(chr($padding_char),$padding_char); return $data; &#125;&#125; C# 加密测试数据———————————————————————3des加解密的密钥: 1affb26847f3e57101509657原始串: username=Hy_whw&amp;userpwd=Hy606360&amp;realname=%e7%8e%8b%e8%b9%a6%e8%b9%a6&amp;email=54397494%40qq.com&amp;qq=54397494原始串3des加密后的串: /yCLuqbPDP3OZsZsCRFKjBpdrYwD/gX6PDPQ+VJXZr6lwncCU30f68z108gKehGIUu8/UYRmpljWATJT5GCIAdh91zut6kKgJoTXIhWxLUrKv6fBeKwGYMScyezn7ej1l4paLBITHbBkl7+Rb99MfA==———————————————————————]]></content>
+      <tags>
+        <tag>php</tag>
+        <tag>3des</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[高性能网站前端优化，读后总结]]></title>
+    <url>%2F20090103%2Fhigh-performance-web-sites%2F</url>
+    <content type="text"><![CDATA[昨天晚上看了大牛stave souders的&lt;&lt;High.Performance.Web.Sites&gt;&gt;，结合其他一些文章，对其搭建高效网站前端优化的14条原则作一下总结：BTW: 使用ySlow工具可以更容易分析和进行网站前端优化 搭建高性能网站，前端优化的14条规则： Make fewer HTTP requests Use a CDN Add an Expires header Gzip components Put stylesheets at the top Put scripts at the bottom Avoid CSS expressions Make JS and CSS external Reduce DNS lookups Minify JS Avoid redirects Remove duplicate scripts Configure ETags Make AJAX cacheablehttp://stevesouders.com/hpws/rules.php Make fewer HTTP requests — 尽可能少的http请求也就是说页面中尽量少的引用外部静态资源，js、css以及图片 Use a CDN — 使用CDN CDN大家应该不陌生，内容分发网络，U966的图片服务器开始负载相当的大，使用cdn之后，基本上所有的请求都被squid挡了，主服务器只有极少数的请求。即，将页面中的静态资源分布到离用户最近的网络节点上。 3.Add an Expires header — 为静态资源文件增加过期时间 设置Expires Header，说白了是将js,css, 图片, Flash等静态元素缓存在用户浏览器的缓存中，让用户通过本地缓存来更快的访问网站。用户第二次使用的时候，就不会下载全部内容，只是进行状态检查； 4.Gzip components — Gzip压缩静态资源内容 Gzip格式是一种很普遍的压缩技术，几乎所有的浏览器都有解压Gzip格式的能力，而且它可以压缩的比例非常大，一般压缩率为85%，就是说服务器端100K的页面可以压缩到25K左右的Gzip格式的数据发给客户端，客户端收到Gzip格式的数据后自动解压缩后显示页面。提高页面下载速度，减少网络传输时间，减少带宽消耗的好办法 5.Put CSS at the top — 将css放在网页顶部 能够更快渲染页面，其实这个原则我们一般都遵守的,不多说 6.Put JS at the bottom — 把js脚本尽量放到页面底部一般情况下JS的下载是阻塞模式的，放在页面顶部会阻塞其他资源的下载 7.Avoid CSS expressions — 避免CSS表达式因为CSS表达式需要很多资源，有时甚至会造成页面假死 8.Make JS and CSS external — 将CSS和JS使用外部的独立文件 9.Reduce DNS lookups — 减少DNS查找(暂时没弄很明白，看文章后面摘录的一段) 10.Minify JS — 尽可能压缩你的js代码，使之更mini使用YUI Compressor或者JSMin将JS文件进行分析，最小化，我们写的JS往往包含空格、TAB等对JS执行没用影响的字符，但是这却实实在在的增加了JS的体积，使用工具能够去除这些无用的字符，减少文件体积。但是同样带来的问题就是，JS不能有错误，另外压缩后的JS代码很难阅读，所以如何在开发时和发布时协调好就是很大的问题，为了这点我们使用不同的文件引用，在开发时(DEBUG)使用未压缩版，在发布时(RELEASE)使用压缩版。 Avoid redirects — 避免无意义的跳转 12.Remove duplicate scripts — 去除重复的脚本不光是文件，甚至是同功能的函数 Configure ETags — 设置Etags,配置实体标签 摘录（关于减少DNS查找）：详细解释下YSlow的第9点，减少DNS查找。通常情况下按照我们的理解，静态资源文件都是放在本站点目录下的。由于以前大家的网络速度都不快，IE浏览器为了防止大量的http请求阻塞了网络连接，所以同一域名下的http请求，只允许2个并发线程，所以这就导致我们看到有的页面的图片是逐步逐步显示出来的。通过Safari的网络时间线工具就能看出来。显而易见，为了突破这个限制，我们可以增加几个域名，从而增加并发下载，加快速度。最好的方式是自己指定每个文件的域名，按照i1、i1、i2、i2、i3、i3、i1、i1的排列方式，但是同时还要考虑引用的文件大小，进行合理的排列，这对于团队开发就过于复杂了。我们使用了i1.dpfile.com、i2.dpfile.com和i3.dpfile.com三个域名，然后在每个调用静态资源文件地方都是用函数调用：DianPing.Common.StaticFile(“/s/js/g.mt.min.js”)，函数会根据文件进行hash，分配一个域名，这样就能最大化的散列静态文件的域名，虽然有缺点，却是比较平衡的方式。 就在我写文章的同时，Figo仔细分析了YSlow的评分标准，找到我们丢失的一分原因，也是因为第9点。第9点满分是100分，YSlow认为一个页面上最合理的是2个以内域名，每增加一个扣除5分，我们的页面有4个域名（www\i1\i2\i3），扣除了10分。这个占总比例的1/12，所以四舍五入，被扣除了1分。（不过我认为这1分还是值得的，页面加速很明显，而且DNS查找是可以缓存哒～～～） 从Safari的网络时间线工具上看到JS（橙色）的加载会阻塞其他资源的下载，所以我打算再独立一个域名j1.dpfile.com，专门加载JS文件。]]></content>
+      <tags>
+        <tag>前端优化</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Freebsd下安装snmp]]></title>
+    <url>%2F20081230%2Ffreebsd-snmp%2F</url>
+    <content type="text"><![CDATA[要用到cacti通过net-snmp监控各个服务器的运行情况，这样要为每一台服务器安装snmp，虽然安装比较简单，还是偷偷懒写个脚本吧，CentOS下安装要换用yum来安装了。 !/bin/shSNMPD_CONF_DIR=/usr/local/share/snmp if [ -f ‘/usr/local/sbin/snmpd’ ]thenecho ‘snmpd already installed!’elsecd /usr/ports/net-mgmt/net-snmpecho “Installing…”make install &gt; /dev/nullcd ~/manage_toolsecho “Setting…”sleep 3cat &lt; snmpd.confsyslocation beijingsyscontact jiangjian &#106;&#105;&#x61;&#x6e;&#x7a;&#105;&#x30;&#51;&#48;&#x37;&#x40;&#x67;&#109;&#97;&#105;&#108;&#46;&#99;&#x6f;&#109;sysservices 77rocommunity jiangjianload 12 12 12EOFmv snmpd.conf $SNMPD_CONF_DIR cat &lt; snmpd.start !/bin/sh/usr/local/sbin/snmpdEOF cat &lt; snmpd.stop !/bin/shkillall snmpdEOF chmod a+x snmpd.start snmpd.stop run snmpdecho “Run snmpd…”sleep 3/bin/sh snmpd.startecho ok!fi 另：用cacti监控Mysql的方法：a&gt; 下载Cacti监控Mysql所需要的脚本和模版,按下面步骤来 wget http://www.faemalia.net/mysqlUtils/teMySQLcacti-20060810.tar.gzcd /data/src/teMySQLcacti./convertXmlTo5minutePollingInterval.shThese graphs assume a1-minute Poller cron frequency! If you use the default 5-minuteinterval, run convertXmlTo5minutePollingInterval.sh, which will make astep=300, heartbeat=600 version of the XML file for you to import. cp mysql_stats.php /data/cacti/scripts/cp dumpMemcachedStats.php /data/cacti/scripts/ 这个脚本貌似是监控memcached的，刚好用到！在cacti管理界面导入cacti_host_template_temysql_host-step300-heartbeat600.xml与cacti_host_template_memcached_host-step300-heartbeat600.xml模板文件。 在被监控机的msql数据库服务器需要加入监控机的操作权限：mysql&gt; grant process,super on . to ‘cacti’@’cacti server ip’ identified by ‘password’; 貌似只需要process权限即可。 by the way:安全手则说不许将process或super权限付给非管理用户，该mysqladmin processlist可以列举出当前执行的查询文本；super权限可用于切断客户端连接、改变服务器运行参数状态、控制拷贝复制数据库的服务器；]]></content>
+      <tags>
+        <tag>freebsd</tag>
+        <tag>snmp</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[FreeBSD 点滴]]></title>
+    <url>%2F20081206%2Ffreebsd-tips%2F</url>
+    <content type="text"><![CDATA[一，修改系统时区 UTC -&gt; CST ，修改日期时间 1、#tzsetup (图形化) 是一个不错的timezone设定工具,进去之后选择5.Asia -&gt; ShangHai 2、另一个方法是： cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtimeadjkerntz -adateSun Dec 7 02:14:12 CST 2008ps：(adjkerntz = adjust kernal timezone) 修改日期时间，必须有root权限 date YYMMDDHHMM比如要修改时间为2007年4月15日7点52 date 0704150752只改时间的话 date HHMM使用NTP服务器更新本地时间 ntpdate time.nist.gov常用的NTP服务器time.nist.govtime.windows.comchime.utoronto.cantp.pipex.net 二，察看系统负载，连接数，网卡流量 察看系统负载 #systat #uptime2.连接数 netstat -n | awk ‘/^tcp/ {++S[$NF]} END {for(a in S) print a, S[a]}’显示：FIN_WAIT_1 569FIN_WAIT_2 2695LAST_ACK 54CLOSING 1SYN_RCVD 97TIME_WAIT 616ESTABLISHED 3717 3.察看网卡流量 #systat -if 显示： /0 /1 /2 /3 /4 /5 /6 /7 /8 /9 /10 Load Average ||||| Interface Traffic Peak Total lo0 in 0.000 KB/s 0.000 KB/s 140.613 MB out 0.000 KB/s 0.000 KB/s 140.613 MB bce1 in 323.006 KB/s 323.006 KB/s 2.979 GB out 369.025 KB/s 369.025 KB/s 772.895 MB bce0 in 50.116 KB/s 50.116 KB/s 206.448 MB out 186.891 KB/s 186.891 KB/s 1.887 GB Linux下用 #traffic三，系统状态(systat)systat 能实时查看各种信息systat -pigs 默认值CPUsystat -iostat 硬盘IOsystat -swap 交换分区systat -mbufs 网络缓冲区systat -vmstat 虚拟内存systat -netstat 网络systat -icmp ICMP协议systat -ip IP协议systat -tcp TCP协议systat -ifstat 网卡 显示PCI总线设备信息pciconf -lv显示内核加载的模块kldstat -v显示指定模块kldstat -m ipfilter 即插即用设备pnpinfo 显示设备占用的IRQ和内存地址devinfo -u cpusysctl -a|grep cpusysctl -a|grep sched 查看使用的调度器，我编译的是ULE 虚拟内存vmstat 硬盘gstatsystat -iostatiostat 网卡ifconfigsystat -ifstat 网络netstatsockstattcpdumptrafshowsystat -mbufssystat -icmpsystat -ipsystat -tcp 四,FreeBsd对单进程占用内存量的限制 FreeBSD 系统会默认限制单进程占用内存大小,默认是不能超过512M,有时候我们跑得进程会超过这个数值,进程申请的最大内存受到限制，这个时候会导致内存溢出,进程退出． 用命令ulimit可以查看系统参数： [root@Squid2 ~]# ulimit -acore file size (blocks, -c) unlimiteddata seg size (kbytes, -d) 524288file size (blocks, -f) unlimitedmax locked memory (kbytes, -l) unlimitedmax memory size (kbytes, -m) unlimitedopen files (-n) 11095pipe size (512 bytes, -p) 1stack size (kbytes, -s) 65536cpu time (seconds, -t) unlimitedmax user processes (-u) 5547virtual memory (kbytes, -v) unlimited 我们可以看出，单进程的内存占用数被限制在了512M 修改办法： 修改/boot/loader.conf添加：kern.maxdsiz=”2G” 重新启动服务器，ulimit -a 再看 [root@Squid2 ~]# ulimit -acore file size (blocks, -c) unlimiteddata seg size (kbytes, -d) 2097152file size (blocks, -f) unlimitedmax locked memory (kbytes, -l) unlimitedmax memory size (kbytes, -m) unlimitedopen files (-n) 11095pipe size (512 bytes, -p) 1stack size (kbytes, -s) 65536cpu time (seconds, -t) unlimitedmax user processes (-u) 5547virtual memory (kbytes, -v) unlimited 单线程内存申请最大值已经被强制改到2G了。 五，彻底关闭sendmail服务 Freebsd 默认会开启sendmail服务，而且不容易关掉 必须修改配置文件，并关闭一些相关进程才可： 修改/etc/rc.conf 加入下面几条： sendmail_enable=”NO”sendmail_submit_enable=”NO”sendmail_outbound_enable=”NO”sendmail_msp_queue_enable=”NO”]]></content>
+      <tags>
+        <tag>freebsd</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Freebsd 没有安装ports系统]]></title>
+    <url>%2F20081201%2Ffreebsd-ports%2F</url>
+    <content type="text"><![CDATA[一、安装ports系统有三种方法来安装 Ports 系统： 通过安装盘，安装系统的时候选择安装ports系统这是最简单的方法，但是也有缺点。因为 Ports 系统总是随时更新的。因此你从安装光盘上安装的 Ports 系统肯定不是最新的了。 使用 portsnap 安装/同步 ports 系统 这是推荐的方法。 使用portsnap不需要事先安装 ports tree，并且能够在任何时候恢复到已知的最新状态（即使手工对ports tree进行了修改）。 使用 portsnap 分成两个步骤：下载压缩的 portsnap 快照，和更新现有系统。下载或更新 portsnap 快照的方法是portsnap fetch；首次安装，或希望将 ports tree 恢复到快照的样子，应使用 portsnapextract；之后更新系统中的 ports tree，则可以通过 portsnap update 来完成。对于服务器而言，推荐在crontab 中增加在每天3点执行 portsnap cron，以减少使用时所需要的下载时间。 首次下载 portsnap快照时，需要下载一个大约50MB的快照基础文件。在中国大陆，由于网络状况的原因，这可能需要较长时间。可以考虑用 portsnap fetch-s portsnap.cn.freebsd.org 做首次下载；之后的下载，还是推荐使用正常的 portsnap fetch。 可以使用下面步骤完成上述情况 a&gt;.首先设置一个比较快的portsnap服务器，如果系统默认的地址你的访问速度也很快，可以不修改 vi /etc/portsnap.conf设置SERVERNAME=portsnap.cn.freebsd.org ,你可以设置相对你速度快点的服务器的地址 b&gt;.执行下面命令 portsnap fetch extract 这里直接下载ports并且解压这样就完成了下载ports系统以及解压到/usr下面了 c&gt;.设置最快的ports镜像 用ports安装软件的时候，如果没有设置相对于你来说最快的ports服务器地址，那就会默认的 ftp://ftp.freebsd.org/pub/FreeBSD/ports/distfiles/，这个地址对于很多地方来说是很慢的。 修改 /etc/make.conf 加入以下代码 MASTER_SITE_OVERRIDE=ftp://ftp.freebsdchina.org/pub/FreeBSD/ports/distfiles/${DIST_SUBDIR}ftp://ftp.tw.freebsd.org/pub/FreeBSD/ports/distfiles/${DIST_SUBDIR}如果你有最快的地址，可以加到上面去，下载就会块了 使用 csup/cvsup 安装/同步 Ports 系统 这种方法已经不再推荐使用。 不管事先你有没有安装 Ports 系统，你都可以使用 csup/cvsup （推荐使用csup，这是基本系统中自己带的）来安装/同步最新的 Ports 系统。把/usr/share/examples/cvsup/ports-supfile 拷贝到一个地方（比如/home/user/tmp/ports-supfile），然后作适当的修改（比如修改要连接的服务器）。最后使用如下命令来安装/同步： csup -L 2 /home/user/tmp/ports-supfile Ports 树的目录结构 假设你的 ports 树安装在默认位置 /usr/ports。 文件： /usr/ports/CHANGES # ports 开发者、维护者等的记录文档。/usr/ports/COPYRIGHT # ports 树的版权。/usr/ports/GIDs # 一些 port 可能用到的组名称。/usr/ports/INDEX-xxx # 每个 port 的摘要/usr/ports/KNOBS # 编译 port 时需要的一些环境变量与解释。/usr/ports/LEGAL # 某些 port 的协议限制。/usr/ports/MOVED # 被移动/删除了的 port 列表。/usr/ports/Makefile # ports 树总的 BSD Makefile。/usr/ports/README/usr/ports/UIDs # 一些 port 可能用到的用户名称。/usr/ports/UPDATING # ports 树的更新记录以及建议。 目录： /usr/ports/Mk # 编译 port 需要的 Makefile 集合。/usr/ports/Templates # 一些模板。/usr/ports/Tools # 一些工具。 除开以上文件和目录，其他所有的目录都是 ports。一个 port 的目录结构： /usr/ports/分类/名称 比如 firefox 被分类在 www。因此 firefox 在 ports 树中的位置就是： /usr/ports/www/firefox 二、使用 Ports 系统1 查询 比如，你想知道 ports 中是否有 pidgin 这个软件，那么可以这样： $cd /usr/ports$make search key=pidgin 同样也可以使用 $cd /usr/ports$make search name=pidgin /usr/ports/README 中还有更多的例子可以参考。2 安装 非常简单。比如你要安装 firefox，那么作为超级用户 root： cd /usr/ports/www/firefoxmake install clean3 卸载 要卸载 firefox 的话： cd /usr/ports/www/firefoxmake deinstall clean4 升级 要升级 firefox： cd /usr/ports/www/firefoxmake deinstall reinstall clean]]></content>
+      <tags>
+        <tag>freebsd</tag>
+        <tag>ports</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[一个查看网络状态的脚本]]></title>
+    <url>%2F20081123%2Fshell-check-netstat%2F</url>
+    <content type="text"><![CDATA[1234!/bin/shecho &apos;———————————————&apos;netstat -n | awk &apos;/^tcp/ &#123;++S[$NF]&#125; END &#123;for(a in S) print a, S[a]&#125;&apos;echo &apos;———————————————&apos; [root@www100 ~/manage_tools]# ./check_netstat.shFIN_WAIT_1 74FIN_WAIT_2 35LAST_ACK 8CLOSING 15CLOSED 1SYN_RCVD 10TIME_WAIT 2384 ESTABLISHED 120]]></content>
+      <tags>
+        <tag>shell</tag>
+        <tag>awk</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[nslookup用法记录]]></title>
+    <url>%2F20080827%2Fnslookup-usage%2F</url>
+    <content type="text"><![CDATA[查看域名解析情况:cmd&gt; nslookup 察看A纪录: set type=awww.test.comServer: cache.ctnt.com.cnAddress: 219.150.32.132 Non-authoritative answer:Name: www.test.comAddress: 64.214.163.132 察看MX纪录： set type=mxmail.hlcgame.comServer: cache.ctnt.com.cnAddress: 219.150.32.132 Non-authoritative answer:mail.hlcgame.com MX preference = 10, mail exchanger = 218.98.98.182 hlcgame.com nameserver = ns.cnkuai.comhlcgame.com nameserver = ns.cnkuai.cnns.cnkuai.cn internet address = 60.28.246.97ns.cnkuai.com internet address = 221.238.195.117 察看域名目前的DNS服务器： set type=nstest.comServer: cache.ctnt.com.cnAddress: 219.150.32.132 Non-authoritative answer:test.com nameserver = ns66.worldnic.comtest.com nameserver = ns65.worldnic.com ns65.worldnic.com internet address = 205.178.190.33ns66.worldnic.com internet address = 205.178.144.33]]></content>
+      <tags>
+        <tag>nslookup</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[mysql unauthenticated user问题]]></title>
+    <url>%2F20080711%2Fmysql-unauthenticated-user%2F</url>
+    <content type="text"><![CDATA[半夜醒了，睡不着就上网看看，一看不要紧，群里都炸了锅了，官网无法访问，断了都快一小时了，我考~~ 更不幸手机不知道啥时候停机了，靠，得亏哥们半夜醒了，不然明天去了公司还不惨了~~查了查原因，问题出在数据库上，出现了大量的unauthenticated user线程，导致数据库不响应了： 1234| 364 | unauthenticated user | xxx.xxx.xxx.xxx:63249 | NULL | Connect | | login | NULL || 365 | unauthenticated user | xxx.xxx.xxx.xxx:56768 | NULL | Connect | | login | NULL || 366 | unauthenticated user | xxx.xxx.xxx.xxx:54127 | NULL | Connect | | login | NULL || 367 | unauthenticated user | xxx.xxx.xxx.xxx:51060 | NULL | Connect | | login | NULL | 手册上有解释：unauthenticated user refers to a thread that has become associated with a client connection but for which authentication of the client user has not yet been done。大概意思是：有一个线程在处理客户端的连接，但是该客户端还没通过用户验证。导致原因可能是Mysql在做DNS反向解析，解决办法：1 可以在hosts文件中添加 hosts记录2 在配置文件mysql.cnf添加skip-name-resolve ,重启mysql ，不启用DNS反向解析。 用上面的方法搞定。 不过还得查查原因，为什么会出现客户端未通过认证的情况。]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[搞定rsync和NFS]]></title>
+    <url>%2F20080711%2Frsync-nfs%2F</url>
+    <content type="text"><![CDATA[NFS：前几天搞了linux的NFS，今天搭建freebsd的NFS，对比之下，freebsd下简单的多得多了!服务器端(192.168.30.1)： vi /etc/rc.conf1234rpcbind_enable=&quot;YES&quot;nfs_server_enable=”YES”nfs_server_flags=&quot;-u -t -n 4&quot;mountd_flags=&quot;-r&quot; vi /etc/exports123/home -alldirs -maproot=root 192.168.30.7 192.168.30.8/usr/sbin/nfsd -u -t -n 4/usr/sbin/mountd -r 客户端(192.168.30.7,192.168.30.8)： vi /etc/rc.conf123nfs_client_enable=&quot;YES&quot;showmount -e 192.168.30.1mount 192.168.30.1:/home/myproject /home/myproject 自动挂载12vi /etc/fstab192.168.30.1:/home/myproject /home/myproject nfs rw 0 0 重新启动nfsd，mountd，我都是直接kill掉，然后启动，不知有没有简单方法 rsync 同步:服务器端(192.168.30.1)：1安装12#cd /usr/ports/net/rsync#make install clean 2配置vi /usr/local/etc/rsyncd.conf内容：12345678910111213pid file = /var/run/rsyncd.piduse chroot = yesmax connections = 4log file = /var/log/rsyncd.log [test]path = /home/test/auth users = rootuid = rootgid = wheelhosts allow = 192.168.30.7,192.168.30.8secrets file = /usr/local/etc/rsyncd.pub.secretsread only = no vi /usr/local/etc/rsyncd.pub.secrets内容：12root:123456 #这里设置用户和密码chmod 600 /usr/local/etc/rsyncd.pub.secrets #必须设置权限为600 /usr/local/bin/rsync —daemon 客户端(192.168.30.7,192.168.30.8)： 安装：12cd /usr/ports/net/rsyncmake install clean 配置：vi /usr/local/etc/rsync.pub.key内容:12123456 #这里只需填写密码，不要写用户chmod 600 /usr/local/etc/rsync.pub.key 开始同步1/usr/local/bin/rsync -azrtopguL root@192.168.30.1::test /home/bakup —password-file=/usr/local/etc/rsync.pub.key 添加到crontab，做计划任务，每半小时执行一次，1/30 * /usr/local/bin/rsync -azrtopguL root@192.168.30.1::test /home/bakup —password-file=/usr/local/etc/rsync.pub.key ————————-分割线————– centos 下 rsync 客户端A、安装：12345tar -zxvf rsync-3.0.3.tar.gzcd rsync-3.0.3./configuremakemake install B、添加密码文件vi /etc/rsyncd.scrt #没有就新建内容如下：1123456 (文件与服务器端认证文件不一样) 服务器端认证文件内容是：1root:123456 C、改文件权限为6001chmod 600 /etc/rsyncd.scrt 备份命令格式：1rsync -avz —password-file=密码文件路径 username@需要备份的主机IP::备份里的模块名称 例如：12rsync -avz —password-file=/etc/rsyncd.scrt wwyhy@192.168.1.201::testlink/home/wangwei/testlink/upload_area]]></content>
+      <tags>
+        <tag>nfs</tag>
+        <tag>rsync</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[vim自动识别文件编码]]></title>
+    <url>%2F20080705%2Fvim-fileencoding%2F</url>
+    <content type="text"><![CDATA[Linux，bsd下修改 .vimrc ，win下修改_vimrc加入： set fileencoding=gb18030set fileencodings=utf-8,gb18030,utf-16,big5 保存。 用vim打开文件的时候，它会尝试各种编码，当解析失败的时候，就会更换另一种编码，直到成功解析。一般情况下不会出什么问题。出错的时候可以手动设置。]]></content>
+      <tags>
+        <tag>vim</tag>
+        <tag>vimrc</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[nginx服务器安装点滴]]></title>
+    <url>%2F20080628%2Fnginx-install%2F</url>
+    <content type="text"><![CDATA[在高连接并发的情况下，Nginx是Apache服务器不错的替代品。 Nginx在美国是做虚拟主机生意的老板们经常选择的软件平台之一. 能够支持高达 50,000 个并发连接数的响应。比较强。 Freebsd7.0 下安装 php(fast-cgi) + mysql + zend 下载源码：12345678cd /usr/ports/databases/mysql50-server/make fetchcd /usr/ports/www/nginx-devel/make fetchcd /usr/ports/lang/php5make fetchcd /usr/ports/www/lighttpdmake fetch 编译安装：MySQL12345cd /usr/ports/distfiles/tar -jxf mysql-5.0.51a.tar.gzcd mysql-5.0.51a./configure —prefix=/usr/local/vhost/mysql —with-charset=utf8 —with-extra-charsets=all —with-big-tables —with-pthreadmake &amp;&amp;make install Nginx1234567cd /usr/ports/devel/pcremake install cleancd /usr/ports/distfiles/tar -jxf nginx-0.6.30.tar.gzcd nginx-0.6.30./configure —prefix=/usr/local/vhost/nginx —with-http_ssl_module—with-http_gzip_static_module —with-http_stub_status_module—with-http_sub_modulemake &amp;&amp;make install Lighttpd(安装lighttpd是为了得到启动fastcgi进程)/usr/ports/distfiles/123tar -jxf lighttpd-1.4.19.tar.bz2cd lighttpd-1.4.19./configure —prefix=/usr/local/vhost/lighttpd Php12345678910111213141516171819202122232425cd /usr/ports/textproc/libxml2make install cleancd /usr/ports/ftp/curlmake install cleancd /usr/ports/graphics/jpegmake install cleancd /usr/ports/graphics/pngmake install cleancd /usr/ports/devel/gettextmake install cleancd /usr/ports/distfiles/tar -jxf php-5.2.6.tar.bz2cd php-5.2.6./configure --prefix=/usr/local/vhost/php—with-mysql=/usr/local/vhost/mysql --enable-fastcgi \--enable-sockets—enable-ftp --enable-zip --enable-mbstring --enable-mbregex—enable-calendar \--with-curl=/usr/local/clude --with-curlwrappers—disable-debug --enable-inline-optimization \--with-zlib --with-gd—with-kerberos --with-gettext --enable-force-cgi-redirect—with-jpeg-dir=/usr/local/include \--with-png-dir=/usr/local/include—with-bz2 --enable-pcntl --with-iconvmake &amp;&amp; make installcp php.ini-dist /usr/local/vhost/php/lib/php.ini 配置MySQL123456cd /usr/local/vhost/mysqlpw adduser mysql -d /dev/null -s /sbin/nologinbin/mysql_install_dbcp share/mysql/mysql.server ./chmod +x mysql.serverchown -R mysql ./ 启动1/usr/local/vhost/mysql/mysql.server start 配置nginx代码:1234cd /usr/local/vhost/nginx/pw adduser webuser -d /dev/null -s /sbin/nologincp /usr/local/vhost/lighttpd/bin/spawn-fcgi ./sbin/rm -rf /usr/local/vhost/lighttpd vi sbin/php.sh代码:123#!/bin/sh/usr/local/vhost/nginx/sbin/spawn-fcgi -a 127.0.0.1 -p 9000 -C 8 -u webuser \ -f /usr/local/vhost/php/bin/php-cgi 代码:1chmod +x sbin/php.sh 启动php for fast-cgi代码:sbin/php.sh vi conf/enable_php代码:12345678910111213141516171819202122232425262728location ~ .php$ &#123; root html; fastcgi_pass 127.0.0.1:9000; fastcgi_index index.php; fastcgi_param SCRIPT_FILENAME /usr/local/vhost/nginx/html$fastcgi_script_name; fastcgi_param QUERY_STRING $query_string; fastcgi_param REQUEST_METHOD $request_method; fastcgi_param CONTENT_TYPE $content_type; fastcgi_param CONTENT_LENGTH $content_length; fastcgi_param SCRIPT_NAME $fastcgi_script_name; fastcgi_param REQUEST_URI $request_uri; fastcgi_param DOCUMENT_URI $document_uri; fastcgi_param DOCUMENT_ROOT $document_root; fastcgi_param SERVER_PROTOCOL $server_protocol; fastcgi_param GATEWAY_INTERFACE CGI/1.1; fastcgi_param SERVER_SOFTWARE nginx/$nginx_version; fastcgi_param REMOTE_ADDR $remote_addr; fastcgi_param REMOTE_PORT $remote_port; fastcgi_param SERVER_ADDR $server_addr; fastcgi_param SERVER_PORT $server_port; fastcgi_param SERVER_NAME $server_name; # PHP only, required if PHP was built with —enable-force-cgi-redirect fastcgi_param REDIRECT_STATUS 200;&#125; vi conf/nginx.conf代码:123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566user webuser webuser;worker_processes 1;events &#123; worker_connections 4096; use kqueue;&#125;http &#123; include mime.types; default_type application/octet-stream; #log_format main ’$remote_addr - $remote_user [$time_local] $request ‘ # ’”$status” $body_bytes_sent “$http_referer” ‘ # ’”$http_user_agent” “$http_x_forwarded_for”‘; #access_log logs/access.log main; client_header_timeout 3m; client_body_timeout 3m; send_timeout 3m; client_max_body_size 5m; client_header_buffer_size 1k; large_client_header_buffers 4 4k; gzip on; gzip_min_length 1100; gzip_buffers 4 8k; gzip_types text/plain; output_buffers 1 32k; postpone_output 1460; sendfile on; tcp_nopush on; tcp_nodelay on; send_lowat 12000; keepalive_timeout 75 20; server &#123; listen 80; server_name localhost; location / &#123; root html; index index.php index.html index.htm; &#125; if (-d $request_filename)&#123; rewrite ^/(.*)([^/])$ http://$host/$1$2/ permanent; &#125; location /nginx_status &#123; stub_status on; access_log off; &#125; include enable_php; error_page 500 502 503 504 /50x.html; location = /50x.html &#123; root html; &#125; &#125;&#125; 测试配置文件代码:123sbin/nginx -t2008/05/08 11:50:19 [info] 3336#0: the configuration file /usr/local/vhost/nginx/conf/nginx.conf syntax is ok2008/05/08 11:50:19 [info] 3336#0: the configuration file /usr/local/vhost/nginx/conf/nginx.conf was tested successfully vi html/phpinfo.php代码:123&lt;?phpphpinfo();?&gt; 启动测试代码:1/usr/local/vhost/nginx/sbin/nginx 在浏览器里输入1http://192.168.29.128/phpinfo.php 安装配置phpMyadmin123456cd /usr/ports/databases/phpmyadmin/make fetchcd /usr/ports/distfilestar -jxf phpMyAdmin-2.11.6-all-languages.tar.bz2mv phpMyAdmin-2.11.6-all-languages /usr/local/vhost/nginx/html/dbadmin 此时MySQL的root没有密码，如果一切正常可以用http://192.168.29.128/dbadmin/index.php来管理MySQL了 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 根据上面的文章已经自己的情况就可以搭建自己的nginx服务器了。下面是我的一点补充：虚拟主机配置：1234567891011121314151617181920212223242526272829303132333435server &#123; listen 80; server_name s1.abc.com; root /home/www/vhosts/s1_abc_com; error_page 404 http://s1.abc.com; access_log logs/s1.abc.com.access.log; error_log logs/s1.abc.com.error.log; location / &#123; root /home/www/vhosts/s1_abc_com/; index index.html index.htm index.php; &#125; # serve static files directly location ~* ^.+.(jpg|jpeg|gif|css|png|js|ico)$ &#123; access_log off; expires 30d; &#125; location ~ .php$ &#123; fastcgi_pass 127.0.0.1:9000; fastcgi_index index.php; fastcgi_param SCRIPT_FILENAME /home/www/vhosts/s1_abc_com$fastcgi_script_name; fastcgi_param QUERY_STRING $query_string; fastcgi_param REQUEST_METHOD $request_method; fastcgi_param CONTENT_TYPE $content_type; fastcgi_param CONTENT_LENGTH $content_length; fastcgi_intercept_errors on; &#125; location ~ /.ht &#123; deny all; &#125; &#125; 安装Zend的时候一点注意的地方 1234ln -s /usr/lib/libm.so /usr/lib/libm.so.4ln -s /usr/lib/libutil.so /usr/lib/libutil.so.5ln -s /usr/lib/libcrypt.so /usr/lib/libcrypt.so.3ln -s /usr/lib/libc.so /usr/lib/libc.so.6 如果./install的时候出错，试试./install-tty 来安装 几个管理脚本： 察看进程: 123#!/bin/shps auxww |grep phpps auxww |grep nginx 启动Mysql12#!/bin/sh/usr/local/vhost/mysql/mysql.server start 停止Mysql12#!/bin/sh/usr/local/vhost/mysql/mysql.server stop Reload nginx配置，不必重起nginx12#!/bin/shkill -HUP cat /usr/local/vhost/nginx/logs/nginx.pid 启动webserver123#!/bin/sh/usr/local/vhost/nginx/sbin/spawn-fcgi -a 127.0.0.1 -p 9000 -C 8 -u webuser -f /usr/local/vhost/php/bin/php-cgi/usr/local/vhost/nginx/sbin/nginx -c /usr/local/vhost/nginx/conf/nginx.conf 关闭webserver123#!/bin/shkillall nginxkillall php-cgi]]></content>
+      <tags>
+        <tag>freebsd</tag>
+        <tag>nginx</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[NFS设置]]></title>
+    <url>%2F20080615%2Ffreebsd-nfs%2F</url>
+    <content type="text"><![CDATA[1 Server端 (192.168.0.17)123service portmap startservice nfs startvim /etc/exports 添加类似：1/opt/test 192.168.0.18(rw,no_root_squash,nohide,sync) 保存退出1service nfs reload 2 Client 端 (192.168.0.18)12mkdir /opt/mistmount 192.168.0.17:/opt/test /opt/mist 参考文档：1&gt; NFS : http://ccweb1.kek.jp/people/yashiro/guide/linux/manage/setup/nfs.html#Ls2&gt; 网络文件系统（NFS）：http://www.gbunix.com/resource/doc/linux/redhat/rhl-cg-zh_CN-9/ch-nfs.html]]></content>
+      <tags>
+        <tag>nfs</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[更改freebsd使用习惯]]></title>
+    <url>%2F20080606%2Ffreebsd-use-habit%2F</url>
+    <content type="text"><![CDATA[用惯了Centos,不大习惯freebsd7默认安装的vim在自己的用户目录新建.vimrc，添加内容 set nocp 即可 freebsd 更改shell为bash 123cd /usr/ports/shells/bashmake install cleanchpass -s /usr/local/bin/bash root vi .profile添加 12345alias ls=’ls -G’alias ll=’ls -l’alias rm=’rm -i’alias mv=’mv-i’alias cp=’cp -i’ 1source .profile]]></content>
+      <tags>
+        <tag>freebsd</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Freebsd IP配置总结]]></title>
+    <url>%2F20080528%2Ffreebsd-ip-configure%2F</url>
+    <content type="text"><![CDATA[手工指定的方式 12ipconfig fxp0 192.168.8.33/24 # 添加网卡iproute add default 192.168.8.1 # 添加路由（也可理解为网关） 立即生效，但是重启后失效。如何重启后仍然保持呢？ 12345ee /etc/rc.confifconfig_fxp0=”inet 192.168.8.8 netmask 255.255.255.0 “ # fxp0 网卡地址和子网掩码defaultrouter=”192.168.8.10” # 网关地址hostname=”study.nowire.com.cn” # 机器名ifconfig_wi0=”inet 192.168.8.55 netmask 255.255.255.0” # wi0 网卡地址，对应无线网卡 修改 /etc/rc.conf 配置之后可以通过如下方式生效：第一种方法：# sh /etc/rc第二种方法：# /etc/netstart第三种方法：重启机器 DHCP 方式在 /etc/rc.conf 中添加：1ifconfig_fxp0=”DHCP” 需要根据具体情况指定网卡名称。 修改 /etc/rc.conf 配置之后可以通过如下方式生效：第一种方法：# sh /etc/rc第二种方法：# /etc/netstart第三种方法：重启机器 关于 DNS 地址的配置 123ee /etc/resolv.confnameserver 202.96.209.133nameserver 202.96.209.5 控制网卡的开关 12ifconfig fxp0 upifconfig fxp0 down 路由方面的配置查看路由 1netstat -rn 添加路由(相当于配置gateway) 1route add default 192.168.8.1 # 192.168.8.1为网关地址 如果要修改当前路由配置，需要先删除，再新增一条，当然如果不是同名的，如不是default的可以直接添加 12route delete default 192.168.8.1route add default 192.168.8.10]]></content>
+      <tags>
+        <tag>freebsd</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[交接报告]]></title>
+    <url>%2F20080301%2Fjinan-bye%2F</url>
+    <content type="text"><![CDATA[在欢乐城三年了，过不几天要结束在这里的工作了，也将暂时结束与这个城市的所谓情缘了，对济南真的很有感情，很轻松，有家的味道。狠狠心，走吧~！毕竟计划过几年还要在济南买套房子，不努力怎么行呢。 走归走，也得把交接做好，好聚好散嘛，总得对公司负责。这几天都在写这个东西，偷偷的，毕竟还没有上交辞职信，需要整理的东西好多，整理的过程把三年来一些心酸一些快乐的事情都回顾了，很充实！三年没白过。 无论上海还是北京，对我来说都是陌生的城市，它们对我会很友好吗？ 不管了，男人嘛，考虑那么多干啥，去了再说，又死不了！去了那里真的要把自己当成打工仔了，一切从头开始！fightting!!!~]]></content>
+      <tags>
+        <tag>情缘</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[arp欺骗防范]]></title>
+    <url>%2F20080228%2Farp%2F</url>
+    <content type="text"><![CDATA[最近深受arp病毒的折磨，一周光顾了两次，先是同事的一台机器中毒导致整个公司网络受影响，访问任何网页，都会被强制嵌入恶意代码。今天又光顾了服务器组中客户的一台windows机器~ 抓狂了~ linux下 先查出网关的ip地址，无论你用什么方法： 123# cat /etc/sysconfig/network-scripts/ifcfg-eth0 或# route -n 或# netstat -nr 都能查出网关IP地址 然后ping 网关ip，ping完网关ip之后，arp缓存中就会有网关的mac数据 1# ping 网关IP 用arp命令 查看网关mac 1#arp -a (freebsd风格) 例如： 1234[root@TestServer root]# arp -a? (10.0.0.254) at 00:0D:48:21:08:83 [ether] PERM on eth0bj_22netdb (192.0.0.16) at 00:A0:D1:E0:A3:E5 [ether] on eth1bj_12webb (192.0.0.18) at 00:A0:D1:E0:88:25 [ether] on eth1 或 1#arp -e (linux 风格) 例如： 12345[root@TestServer root]# arp -eAddress HWtype HWaddress Flags Mask Iface10.0.0.254 ether 00:0D:48:21:08:83 C eth0bj_22netdb ether 00:A0:D1:E0:A3:E5 C eth1bj_12webb ether 00:A0:D1:E0:88:25 C eth1 linux风格的arp -e 输出结果比较整齐，推荐使用。 注：如果arp -a 或者arp -e看到网关mac与真实mac不同，那么这个mac就是欺骗机的mac，找出来这台机器，拔网线，拔电源，先踹几脚，然后从窗户上扔出去，废了它丫的~! :D 然后 编辑 /etc/ethers 文件 添加 10.0.0.254 00:0D:48:21:08:83或者 用arp -s IP MAC地址：向ARP缓存中输入一个静态项目 再执行 arp -f 即可 1arp -f 将 arp -f 加到/etc/rc.d/rc.local中 windows下基本相同，arp -s IP MAC地址来添加一个静态项目，MAC地址写法不同与linux 这样做： 1arp -s 10.0.0.254 00-0D-48-21-08-83 可以写一个批处理文件，添加到拖到启动中去，随机启动~]]></content>
+      <tags>
+        <tag>arp欺骗</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[mysqldump小技巧]]></title>
+    <url>%2F20080202%2Fmysql-dump%2F</url>
+    <content type="text"><![CDATA[mysqldump是mysql用来备份数据的工具，我们一般情况下是备份整库或者整表 12# mysqldump databasename &gt; databasename.sql# mysqldump databasename tablename &gt; databasename_tablename.sql 但有时候我们需要备份部分数据要怎么做呢，比如要备份 dbName.user表中id小于40000的记录： mysqldump有个参数 -w 用来执行类似 where 之类的条件语句： 1# mysqldump -w &quot;id &lt; &apos;40000&apos;&quot; dbName user &lt; dbName.user.sql 现在备份的数据就是 我们要的id小于40000的所有记录！ mysqldump还有很多其他的参数，如果要深入研究就详细看一下mysql的使用手册数据备份一部分]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+        <tag>mysqldump</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[php5.x 安装 zendOptimizer3.x问题流水账]]></title>
+    <url>%2F20080121%2Fphp-5.x-zendoptimizer%2F</url>
+    <content type="text"><![CDATA[安装好zendOptimizer之后，使用’php -v’显示安装正常：但是用函数phpinfo确看不到zendOptimizer的信息： 纳闷！纳闷！纳闷~ 翻开Zend Optimizer User Guide 看了一下，Troublesshooting里提示去查看一下apache错误日志(See message in the Web server log file),查看apache的error_log，里面不少类似这样的错误： Failed loading /usr/local/Zend/lib/ZendExtensionManager.so: /usr/local/Zend/lib/ZendExtensionManager.so: undefined symbol: zend_extensions Google了一下，问题应该是出在php编译上。 找到原来的编译目录，重新载入参数，然后加上—disable-versioning 重新configure编译参数： 123./configure —with-apxs2=/usr/local/apache/bin/apxs —with-zlib —with-gd —with-ttf —with-png —with-expat-dir=/usr —with-gmp —with-xml —with-mysql=/usr/local/mysql —disable-debug —disable-posix —disable-rpath —enable-safe-mode —enable-magic-quotes —disable-dmalloc —enable-bcmath —enable-dio —enable-gd-native-ttf —enable-sysvsem —enable-sysvshm —enable-wddx —enable-versioning —enable-pic —enable-inline-optimization —enable-memory-limit —enable-mbstring —enable-mbregex —enable-mbstr-enc-trans —with-config-file-path=/usr/local/lib —enable-ftp —disable-debug —enable-track-vars=yes —with-jpeg-dir —with-freetype-dir —enable-gd-native-ttf —enable-dl —with-kerberos —disable-versioning然后 make，make install`重起apache ，zendOptimizer不必重新安装 ，用’php -v ‘ 和 phpinfo()查看均正常]]></content>
+      <tags>
+        <tag>php5</tag>
+        <tag>zendoptimizer</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[每天都是恩赐]]></title>
+    <url>%2F20080109%2Fthanks-giving%2F</url>
+    <content type="text"><![CDATA[文：张小娴 曾经有一个女孩子跟我说，妈妈死后，她才知道做家务是多么辛苦。妈妈活着的日子里，她连衣服都不用洗 当你发现人生无常的时候．你是否为自己拥有的一切而感谢上天? 我们有所爱的人，有爱我们的人；有父母的爱,兄弟姐妹、朋友和情人的爱，这是多么难能可贵。 有健康的身体，可以做自己喜欢做的事，吃自己喜欢的东西，这是多么幸福! 我们有睡觉的地方，有一个可以歇息的怀抱。每天早晨醒来，可以呼吸一口新鲜的空气；可以看到蔚蓝的天空、朝露、晚霞和月光。这—切，原来不是应得的。 我们有一颗乐观的心灵，有自己喜欢的性格和外表，有自己的梦想，可以听自己喜欢的歌．这一切，都是恩赐。 当我们拥有时，我们总是埋怨自己没有些什么。当我们失去时，我们却忘记自己曾经拥有些什么。 我们害怕岁月，却不知道活着是多么可喜。我们认为生存已经没意思，许多人却在生死之间挣扎。 什么时候，我们才会为自己拥有的一切满怀感激?]]></content>
+      <tags>
+        <tag>感恩</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[修改Linux内核参数，减少TCP连接中的TIME-WAIT sockets]]></title>
+    <url>%2F20071219%2Flinux-time-wait-socket%2F</url>
+    <content type="text"><![CDATA[新增的一组Apache服务器上线以来，我用netstat -an命令发现服务器中有大量状态为TIME-WAIT的TCP连接，于是用/sbin/sysctl -a查看了一下Linux的各项内核参数，并翻阅有关资料，决定修改其中的两项参数，以达到减少TCP连接中TIME-WAIT sockets的目的。 1vi /etc/sysctl.conf 编辑/etc/sysctl.conf文件，增加三行： 123net.ipv4.tcp_syncookies = 1net.ipv4.tcp_tw_reuse = 1net.ipv4.tcp_tw_recycle = 1 说明：net.ipv4.tcp_syncookies = 1 表示开启SYN Cookies。当出现SYN等待队列溢出时，启用cookies来处理，可防范少量SYN攻击，默认为0，表示关闭；net.ipv4.tcp_tw_reuse = 1 表示开启重用。允许将TIME-WAIT sockets重新用于新的TCP连接，默认为0，表示关闭；net.ipv4.tcp_tw_recycle = 1 表示开启TCP连接中TIME-WAIT sockets的快速回收，默认为0，表示关闭。 再执行以下命令，让修改结果立即生效：1/sbin/sysctl -p 用以下语句看了一下服务器的TCP状态：1netstat -n | awk ‘/^tcp/ &#123;++S[$NF]&#125; END &#123;for(a in S) print a, S[a]&#125;’ 返回结果如下：12345ESTABLISHED 1423FIN_WAIT1 1FIN_WAIT2 262SYN_SENT 1TIME_WAIT 962 效果：处于TIME_WAIT状态的sockets从原来的10000多减少到1000左右。处于SYN_RECV等待处理状态的sockets为0，原来的为50～300。]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>apache</tag>
+        <tag>sysctl</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[MYSQL主从数据库同步备份配置]]></title>
+    <url>%2F20071120%2Fmysql-master-slave%2F</url>
+    <content type="text"><![CDATA[一、准备用两台服务器做测试： Master Server: 192.0.0.1/Linux/MYSQL 4.1.12Slave Server: 192.0.0.2/Linux/MYSQL 4.1.18 做主从服务器的原则是，MYSQL版本要相同，如果不能满足，最起码从服务器的MYSQL的版本必须高于主服务器的MYSQL版本 二、配置master服务器登录Master服务器，编辑my.cnf1# vim /etc/my.cnf 在[mysqld]段添加以下内容：12345[mysqld]log-bin=mysql-binserver-id=1binlog-do-db=extmailbinlog-ignore-db=mysql,test 解释： log-bin项是让Master服务器记录二进制日志这个是必须的；server-id=master_id 其中master_id必须为1到232–1之间的一个正整数值;binlog-do-db=database 是要记录日志的数据库；binlog-ignore-db 是不要记录日志的数据库名，多个数据库中间用逗号(,)隔开； 2.从master服务器添加要从slave服务器访问master服务器的有权限的帐号，看下面命令就知道了：12mysql&gt; grant replication slave on *.* -&gt; to &apos;abc&apos;@&apos;192.0.0.2&apos; identified by &apos;123&apos;; 格式：12mysql&gt; GRANT REPLICATION SLAVE ON *.*-&gt; TO &apos;帐号&apos;@&apos;从服务器IP或主机名&apos; IDENTIFIED BY &apos;密码&apos;; 重起Mysql备份master数据库数据1# mysqldump --master-data extmail &gt; extmail_backup_20071120.sql 要加—master-data 选项，这里备份master服务器的数据，后面要导入slave服务器。 察看Master状态1234567mysql&gt; show master status;+------------------+----------+--------------+------------------+| File | Position | Binlog_Do_DB | Binlog_Ignore_DB |+------------------+----------+--------------+------------------+| mysql-bin.000002 | 79 | extmail | mysql,test |+------------------+----------+--------------+------------------+1 row in set (0.00 sec) 三、配置slave服务器编辑my.cnf1# vim /etc/my.cnf 在[mysqld]段添加以下内容：123456server-id=2master-host=192.0.0.1master-port=3306master-user=abcmaster-password=123master-connect-retry=60 解释: slave服务器的server-id不能与master相同，多台slave之间server-id也不能相同。master-host 是 master服务器的主机名或者IP地址master-user和master-password是前面我们在master上建用户名和密码master-connect-retry 是如果从服务器发现主服务器断掉，重新连接的时间差 把从主数据库服务器备份出来的数据库导入到从服务器中,也就是我们前面的extmail_backup_20071120.sql12# mysqladmin create extmail# mysql extmail &lt; extmail_backup_20071120.sql 重起mysql服务器停止slave服务，设置主服务器的各种参数12345678mysql&gt; slave stop;mysql&gt; change master to-&gt; MASTER_HOST=&apos;192.0.0.1&apos;,-&gt; MASTER_USER=&apos;abc&apos;,-&gt; MASTER_PASSWORD=&apos;123&apos;,-&gt; MASTER_LOG_FILE=&apos;mysql-bin.000002&apos;,-&gt; MASTER_LOG_POS=79;mysql&gt; slave start; 查看主从服务器的状态1mysql&gt; show processlist;]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[安装邮件服务器点滴,suexec问题]]></title>
+    <url>%2F20071114%2Flinux-extmail%2F</url>
+    <content type="text"><![CDATA[安装邮件服务器点滴: suexec问题安装extmail邮件系统的时候，如果使用/var/www目录，不会出现问题。因为系统默认的apache的suexec的docroot目录是/var/www；那么，当我们需要修改extmail目录的时候，就要重新编译apache 修改—with-suexec-docroot＝/your/path 如果使用自己安装或者lamp套件的时候，例如使用lampp，它suexec的docroot目录是/opt/lampp/htdocs使用 /opt/lampp/bin/suexec -V 来查看 所以如果修改extmail的目录，还是挺麻烦的：尽量使用自己编译的apache，编译的时候就要事先指定suexec的docroot目录到你要放置的目录。而且还要注意suexec的执行用户,配置虚拟主机SuexecUserGroup的时候，用户和组的UIP和GID要高于suexec默认的—with-suexec-uidmin —with-suexec-gidmin的UID和GID，不然suexec将被限制使用。 下面摘自张微波的 suexec FAQ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 关于suexec的FAQapache编译支持suexec功能 123./configure --enable-suexec—with-suexec-logfile=/www/logs/suexec.log \--with-suexec-uidmin=500—with-suexec-gidmin=100 \--with-suexec-caller=daemon—with-suexec-docroot＝/www 关于suexec的FAQ1.出现以下错误 command not in docroot编译的时候加入—with-suexec-docroot 以后虚拟主机运行suexec的目录必须包含指定的目录里,通过suexec -V 可以察看docroot目录是哪儿 2.出现以下错误 user mismatch (daemon instead of www)编译的时候加入—with-suexec-caller=daemon 默认是www，但一般apache的运行用户是nobody或者daemon，这里我们是httpd2.2.2，用户是daemon，所以指定这个参数，否则suexec不能被运行。 3.出现以下错误 cannot run as forbidden uid (1001/index.cgi)在虚拟主机配置SuexecUserGroup时，指定的用户和组，必须高于—with-suexec-uidmin —with-suexec-gidmin 指定的用户uid和gid，否则被限制使用。]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>邮件服务器</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[没有团圆的中秋节]]></title>
+    <url>%2F20070924%2Fmid-autumn-festival%2F</url>
+    <content type="text"><![CDATA[又是八月十五中秋节了,人家都盼着中秋节回家和亲人团聚,聚在一起聊天,吃月饼.我却怕了它了,今年中秋又在抄袭以往，要独自一个人过了，已经快5,6年没有在家过中秋了.刚给老爸打了电话,他老人家今年也不回去过了,十一都不一定休息,一年难得能和老爸碰在一块，只能盼望春节了，二肥也有半年没见面了，这小子也是个忙人，怪想这小子！姐姐今年是回不去喽，有自己的家喽，嘿嘿，幸福的女人！ 明天抽时间给我那宝贝外甥女买个娃娃，等回家的时候稍过去！ 不知道现在小猪老婆在做什么？ 结了婚也没能和她经常在一起，真有点对不住她！]]></content>
+      <tags>
+        <tag>中秋</tag>
+        <tag>团圆</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[那些年记下的琐碎知识点]]></title>
+    <url>%2F20070919%2Flinux-memo%2F</url>
+    <content type="text"><![CDATA[清除Linux历史记录 1234cd ~rm -f .bash_historyhistory -c# history -w ( 立即更新bash_history ) vim 设置php语法高亮 1:set sysntax=php mysql 问题 1&gt;无法起动 12345ll /usr/local/mysqldrwx——— 4 root root 4096 1月 17 22:56 varchown -R mysql.myql varll /usr/local/mysql //var为数据库所在目录 有时也常用/opt/datadrwx——— 4 mysql mysql 4096 1月 17 23:00 var 分析：var文件夹属主开始为root，其他用户没有对var写入的权限 2&gt;mysql数据库中user是全局权限，db数据库中是数据库级权限 创建一个数据库级用户方法： 1234567891011121314151617181920212223242526272829mysql -u root -ppassword:show databases;+—————+| Database |+—————+| articles || mysql |+—————+2 rows in set (0.01 sec)use mysql;Database changedshow tables;+————————-+| Tables_in_mysql |+————————-+| columns_priv || db || func || host || tables_priv || user |+————————-+6 rows in set (0.01 sec)describe user; 显示表结构 (略) 1insert into user (host,user,password) value (“%”,”aaa”,password(“1qazxsw2”)); 注意空格 user表前三个字段为主机、用户名、密码,其他字段为全局权限，均为“N”; 1234567891011121314151617181920212223describe db;+———————————-+————————+———+——-+————+——+| Field | Type | Null | Key | Default|Extra|+———————————-+————————+———+——-+————+——+| Host | char(60) binary| | PRI | | || Db | char(64) binary| | PRI | | || User | char(16) binary| | PRI | | || Select_priv | enum(‘N’,’Y’) | | | N | || Insert_priv | enum(‘N’,’Y’) | | | N | || Update_priv | enum(‘N’,’Y’) | | | N | || Delete_priv | enum(‘N’,’Y’) | | | N | || Create_priv | enum(‘N’,’Y’) | | | N | || Drop_priv | enum(‘N’,’Y’) | | | N | || Grant_priv | enum(‘N’,’Y’) | | | N | || References_priv | enum(‘N’,’Y’) | | | N | || Index_priv | enum(‘N’,’Y’) | | | N | || Alter_priv | enum(‘N’,’Y’) | | | N | || Create_tmp_table_priv | enum(‘N’,’Y’) | | | N | || Lock_tables_priv | enum(‘N’,’Y’) | | | N | |+———————————-+————————+———+——-+————+——+15 rows in set (0.00 sec)insert into db values(“%”,”articles”,”aaa”,’Y’,’Y’,’Y’,’Y’,’Y’,’Y’,’N’,’Y’,’Y’,’Y’,’Y’,’Y’); 这样就建了一个用户，他具有对数据库articles的除了Grant权限外所有的操作权限。 linux应用 1&gt;mount 乱码 123mount /dev/sda1 /mnt/usb/ -o iocharset=cp936mount /dev/sda1 /mnt/usb/-o pagecode=936 iocharset=cp936mount -t vfat -o iocharset=cp936,codepage=936 /dev/sda1 /mnt/usb/ 2&gt;mrxvt安装参数 123./configure —prefix=/usr/local/mrxvt —enable-everything —disable-debugmakemake install *更改》 FC3里需要加参数以支持中文 123./configure —prefix=/usr/local/mrxvt —enable-xim —enable-cjk —with-encoding=gbkmakemake install 3&gt;让mrxvt支持中文输入和中文显示 显示效果是宋体 1mrxvt -km gb -fm --simsun-medium-r-normal---160---m--gb2312.1980-0 或者 1mrxvt -km gb 4&gt;让vim在rxvt或mrxvt下显示颜色 修改.bashrc文件:加 export TERM=”rxvt”即可 5&gt;lftp下查看当前路径 12345lftp www@202.194.114.1&gt; !ls6&gt;setup-&gt;System services[]iptables[]network[*]sshd 7&gt;编译gimp注意事项 1./configure —prefix=filedir —disable-print 禁止打印选项以后才能编译通过，要想使用gaim打印功能需要安装 libieee1284包 8&gt;硬盘查速 1hdparm -Tt /dev/hda 支持dma方式1hdparm -d1 /dev/hda 不支持dma方式1hdparm -d0 /dev/hda 9&gt;看分辨率 1xrandr 切换分辨率1xrandr -s n n表示序号 10&gt;1iptables -L 11&gt;1uname -a 12&gt;12lftp www@2020.194..:/ mirror dirname 下载一个文件夹lftp www@202.194..:/mirror -R dirname 上传一个文件夹 13&gt;安装字体的目录/usr/share/fonts安装完字体后刷新一下1fc-cache -f 14&gt;1ps -e 15&gt;安全检查：a&gt;定时备份查看日志b&gt;netstat -a,ps -e 监听端口，进程c&gt;定期检查root用户的history列表，last列表，vipw用户列表是否正常d&gt;定期tar 16&gt;X1xinit — :1 启动x 几个窗口管理器123twmmwmkwin 任务条kicker KDE桌面kdesktop 17&gt;1234gvim里自动排版代码:全选Ctrl+A,然后Ctrl+Alt+Tabvim下:先按 v,然后按上下键,选定代码段，然后Ctrl+Alt+Tabvim下全选方法:Esc-&gt;ggVG,选定一行: Vvim下撤消方法: :u 18&gt;1mii-tool -F 10baseT-HD 19&gt;1wget -R 网址 下载整站 设置代理 ：1234vi .wgetrc加入：http-proxy = 代理服务器:端口ftp-proxy = 代理服务器:端口 20&gt;设置vim退格键为删除1stty sane 21&gt;用scp远程拷贝文件时出现: 12345678910111213@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED! @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!Someone could be eavesdropping on you right now (man-in-the-middle attack)!It is also possible that the RSA host key has just been changed.The fingerprint for the RSA key sent by the remote host is6e:1a:60:d0:ee:d0:7c:91:df:94:de:09:35:7b:08:ba.Please contact your system administrator.Add correct host key in /root/.ssh/known_hosts to get rid of this message.Offending key in /root/.ssh/known_hosts:8RSA host key for hostname has changed and you have requested strict checking.Host key verification failed. 画面时怎样解决呢? 1vim ~/.ssh/known_hosts 清除即可 22&gt;清除history记录方法： 12rm -rf ~/.bash_historyHISTSIZE=0 注意：HISTSIZE=0才有效 23&gt;合理利用linux日志文件:a&gt; /var/log/lastlog记录最后进入系统的用户的信息，包括登录的时间、登录是否成功等信息。这样用户登录后只要用lastlog命令查看一下/var/log/lastlog文件中记录的所用帐号的最后登录时间，再与自己的用机记录对比一下就可以发现该帐号是否被黑客盗用。b&gt; /var/log/secure记录系统自开通以来所有用户的登录时间和地点，可以给系统管理员提供更多的参考。c&gt;/var/log/wtmp文件记录当前和历史上登录到系统的用户的登录时间、地点和注销时间等信息。可以用last命令查看，若想清除系统登录信息，只需删除这个文件，系统会生成新的登录信息。d&gt;/var/run/utmpw&amp;who 命令要用到该文件 24&gt;取消root命令历史纪录增加安全性在linux下，系统会自动记录用户输入过的命令，而root用户发出的命令往往具有敏感的信息，为了保证安全性，一般应该不记录或者少记录root的命令历史记录。为了设置系统不记录每个人执行过的命令就在/etc/profile里来个12HISTFILESIZE=0HISTSIZE=0 或者1ln -s /dev/null ~/.bash_history 这样就可以了 25&gt;让linux对ping命令不反映在linux里，如果要想使ping 没反应也就是用来忽略icmp包.可以用1echo 1 &gt; /proc/sys/net/ipv4/icmp_echo_igore_all 若想恢复就用1echo 0 &gt; /proc/sys/net/ipv4/icmp_echo_igore_all 26&gt;Linux下Java环境配置 vi .bashrc添加123export JAVA_HOME = /usr/local/j2sdk1.4.2_02/export PATH = $JAVA_HOME/bin:$PATHexport CLASSPATH = $CLASSPATH:$JAVA_HOME/lib:$JAVA_HOME/jre/lib/rt.jar:. 注意CLASSPATH最后的:.然后注销重新登录 27&gt;native2ascii用法1native2ascii -encoding gb2312 filename1 filename2 28&gt; 常用 查找所有内容包含 ‘abc’ 的文件12345678910find / | xargs grep -l ‘abc’ (只显示文件名)[root@TestServer ~]# find . | xargs grep -l ‘abc’./require/filename1.php./require/filename2.php./include/filename3.php…find / | xargs grep ‘abc’ (显示文件名和包含 ‘abc’ 的那一行)[root@TestServer ~]# find . | xargs grep ‘abc’./require/filename1.php:$mail = “abc@163.com]]></content>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[职场向狼学习十条处世哲学(转)]]></title>
+    <url>%2F20070906%2Fwolf%2F</url>
+    <content type="text"><![CDATA[在狼的身上，我们发现了人类所需要的一切。正如英国动物学家绍?艾利斯所说：“在所有哺乳动物中，最有情感者，莫过于狼；最具韧性者，莫过于狼；最有成就者，还是莫过于狼。” 狼代表了一种精神，代表了一种哲学。 狼，遵守一种道——狼道。卧薪尝胆、众狼一心、自知之明……解读狼之处世哲学，学着如何做一只能够领悟职场政治智慧的野狼…… 一、卧薪尝胆 狼不会为了所谓的尊严在自己弱小时攻击比自己强大的东西。令人羡慕的白领丽人，亦有生活的烦恼，本文采访的几个例子，说明了在激烈的竞争中“实现自我”又“失去尊严”是一道人生题目。 二、众狼一心 狼如果不得不面对比自己强大的东西，必群而攻之。 一个令人愉快的工作氛围是高效率工作的一个很重要的影响因素，快乐而尊重的气氛对提高员工工作积极性起着不可忽视的作用。如果在工作的每一天都要身处毫无生气、气氛压抑的工作环境之中，那么员工怎么可能会积极地投入到工作中呢？ 三、自知之明 狼也很想当兽王，但狼知道自己是狼不是老虎。一个人的职业生涯，贯穿一生，是一个漫长的过程。科学地将其划分为不同的阶段，明确每个阶段的特征和任务，做好规划，对更好地从事自己的职业，实现确立的人生目标。 四、顺水行舟 狼知道如何用最小的代价，换取最大的回报。 处于30岁~40岁的白领，一般都在工作中小有成就，期望做事尽善尽美，满负荷的工作使神经绷得紧紧的。职业角色与家庭角色的矛盾、社会生活与家庭生活的矛盾、对自己过高的期望与这一期望难以实现的矛盾，构成了白领们严重的心理压力。 五、同进同退 狼虽然通常独自活动，但狼却是最团结的动物，你不会发现有哪只狼在同伴受伤时独自逃走。很多人每天上班忙忙碌碌，赴汤蹈火、精疲力尽，一切都是为了公司。一旦遇到共事的伙伴每天迟到早退，上班聊天闲谈，强烈对比之下，便让人想当个正义使者，一举告上主管。然而对普遍上班族来说，在主动向主管报告之前的自我检视是很重要的。 六、表里如一 狼也很想当一个善良的动物，但狼也知道自己的胃只能消化肉，所以狼唯一能做的只有干干净净的吃掉每次猎物，而某些自认为是善良的动物却总在酒店饭庄里做一些不是“太善良”的事。 某位同事老是前后不一，主管不在就打诨摸鱼，主管来了就正襟危坐。情况已经严重到让人觉得不舒服，我该怎么办？难道真的要当“告密者”吗？ 七、知已知彼 狼尊重每个对手，狼在每次攻击前都会去了解对手，而不会轻视它，所以狼一生的攻击很少失误。谈判是沟通，但并不一定是口头的。事实上，眼神、手势或姿势能比言语传达更多的信息。因此，留意并研究对手的身体语言所传达的有用信息，是有价值且有助于你谈判成功的。 八、狼亦钟情 公狼会在母狼怀孕后，一直保护母狼，直到小狼有独立能力，而不像某些自诩为“叭一有感情”的动物，在妻子怀孕后，在外花天酒地，所以狼很不满人把那些不钟情的人称之为狼心狗肺，因为这不公平。 世上有些道理本是相通的。比如，夫妻双方应该彼此忠诚，公司和员工也应该彼此忠诚。只有这样，家庭才能和睦，公司才能发达。我们在任何时候都不能失去忠诚，因为这是我们的做人之本。 九、授狼以渔 狼会在小狼有独立能力的时候坚决离开它，因为狼知道，如果当不成狼，就只能当羊了。我们不难发现，求职者要学会对人微笑，经常微笑。微笑不仅能够展示自己的自信，也向用人单位传递了一个积极的态度，善于微笑的求职者获取职业的机会总是比较多的。 十、自由可贵 狼不会为了嗟来之食而不顾尊严的向主人摇头晃尾。因为狼知道，决不可有傲气，但不可无傲骨，所以狼有时也会独自哼哼自由歌。 自从辞了职，没有上司的约束，也没有同事间的互相猜疑和排挤，她说：“我要的生活，随意，别人不能约束你，自己约束自己。”。]]></content>
+      <tags>
+        <tag>职场</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[烂泥]]></title>
+    <url>%2F20070902%2Fpainful-but-happy%2F</url>
+    <content type="text"><![CDATA[搬家把我和恩国兄累成一堆烂泥了！ 今天真佩服自己了，送涛和他女友折腾了我两天，接着又通了一天宵，今天竟然还能把那么多东西抗到5楼！ 发现自己体质还是不错滴！确实是累了，搬完家往床上一躺就睡着了，像头死猪，竟然两个电话都没听到！醒来时天已经黑了，这一觉好舒服！其实累的虚脱了然后再回复体力，感觉也蛮好！新的办公环境，新的住处，新的生活方式，一定要努把力了！ 涛兄，你们也要努力，混不出来个人样，看我怎么扁你！憋了半天才写这么点，都怪我小学没好好学作文！ 这标题也真是：烂泥？？？哎， 真烂！ 收工回家睡觉！]]></content>
+      <tags>
+        <tag>痛并快乐着</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[发点牢骚]]></title>
+    <url>%2F20070822%2Fwhine%2F</url>
+    <content type="text"><![CDATA[朋友在他公司呆不住了，说闲得很，太轻松了我说，我靠！你身在福中不福阿，你现在就是我的奋斗目标阿！他说，人如果闲了就说明这个人要退化了，人总是要往上看往上走的对阿，他说的对，我决定不在留他，该去哪去哪吧，好好混！我随后就到！:) 在这个公司已经将近两年了，基本上是从公司组建一直到现在，经历了几次的人员调动，以前的好朋友都一个一个去了他们认为该去的地方。现在毕竟也算是公司元老了，从开始别人看不起的一个刚毕业的浑小子，到现在应该也算是公司不可缺少的“柱子”吧（朋友都这么说，但是我不敢说），经历了很多很多，几次想过要走总有些不舍，毕竟付出了很多很多！ 还算好，每次都告诫自己再坚持一下，再坚持一下，就这么挺过来了，扛过来了，一个人！ 把朋友从南方带到了济南，总以为能帮助他找个好点的地方我们可以大干一场，可是命运它有自己的一套，总不会跟着你的计划走，如今走到现在前方看不清去路了，是留是走，我犹豫了！ 几个星期前开始混了，只做一些维护的事情，其他都懒得管了，天天QQ、MSN、论坛！！！！最近几天又捣鼓起来什么QQ秀了，真幼稚，真是闲得要死！ 呵呵！IT业的步伐太快了，容不得你休息，谁让我进入这个行业呢？ 这该死的日子要结束了！ Fightting!!!]]></content>
+      <tags>
+        <tag>职业规划</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[ffmpeg & mencoder视频转换环境安装手记]]></title>
+    <url>%2F20070726%2Flinux-ffmpeg-mencoder%2F</url>
+    <content type="text"><![CDATA[网上查了不少的ffmpeg编译文章，发现其实困难的不是ffmpeg的编译和安装，困难的是把各种解码器凑齐，这个不容易！-.-!!! 准备: 编译ffmpeg之前，系统需要以下支持： lame (支持MP3) 支持Ogg Vorbis xvid x264，现在最流行的两种高质量的压缩格式 AC3和dts编码的支持 mpg4 aac格式支持 （手机用户） 支持3gp格式（手机用户） 安装lame （http://lame.sourceforge.net/index.php） 12345# tar zxvf lame-3.97-i686-1jto.tgz(生成两个目录install/,usr/)# cp usr/bin/lame /usr/bin/ # cp -r usr/include/lame/ /usr/include/# cp -r usr/lib/* /usr/lib/ 如果下载是源码的话:12345# tar zxvf lame-3.97.tar.gz# cd lame-3.97# ./configure —prefix=/usr —enable-shared# make# make install ogg vorbis:这个一般的redhat自带,不需要下载.可以去看看/usr/lib/bvorbis.a在不在 1# ls /usr/lib/libvorbis.* 如果不在,安装以下rpm包（安装盘中自带）libvorbis, libvorbis-devel,libogg, libogg-devel 到http://www.xvid.org/下载XVidhttp://downloads.xvid.org/downloads/xvidcore-1.1.0.tar.gz 123# ./configure —prefix=/usr# make# make install 在这里下载x264ftp://ftp.videolan.org/pub/videolan/x264/snapshots或者svn co svn://svn.videolan.org/x264/trunk x264 123# ./configure —prefix=/usr —enable-shared# make# make install [注] 如果你的机器是多cpu的服务器,x264在make的时候会提示类似下面的错误：12345……common/cpu.c: In functionx264_cpu_num_processors’: common/cpu.c:220: warning: passing arg 2 of sched_getaffinity&apos; makes integer from pointer without a castcommon/cpu.c:220: error: too few arguments to functionsched_getaffinity’make: * [common/cpu.o] Error 1 解决办法：例如您的服务器cpu个数是2个 修改common/cpu.c找到下面的代码段：123456789elif defined(SYS_LINUX)unsigned int bit;int np;cpu_set_t p_aff;memset( &amp;p_aff, 0, sizeof(p_aff) );sched_getaffinity( 0, &amp;p_aff );for( np = 0, bit = 0; bit &lt; sizeof(p_aff); bit++ )np += (((uint8_t *)&amp;p_aff)[bit / 8] &gt;&gt; (bit % 8)) &amp; 1;return np; 修改为：1234elif defined(SYS_LINUX)int np;np =2;return np; np表示你的cpu个数。 系统似乎已经支持ac3编码，编译的时候只要加–enable-a52 –enable-gpl参数就行LibDTS 下载：http://download.chinaunix.net/down.php?id=11568&amp;ResourceID=5785&amp;site=1 123# ./configure —prefix=/usr# make# make install MPEG-4 AAC格式支持需要安装faad2和faac这两个包！我没找到官方的下载地址，（www.audiocoding.com 这个域名貌似不能用了！）从discuz的服务器上下载吧，(修正后的) 12wget http://download.discuz.net/env/video/faac-1.25-Comsenz.tar.bz2wget http://download.discuz.net/env/video/faad2-2.5-Comsenz.tar.bz2` 安装faad2123456tar xjvf faad2-2.5-Comsenz.tar.bz2cd faad2-Comsenzautoreconf -vif./configure —prefix=/usr —with-mp4v2 —enable-sharedmakemake install 安装faac1234567cd /usr/local/video/tar xjvf faac-1.25-Comsenz.tar.bz2cd faac-Comsenzautoreconf -vif./configure —prefix=/usr —with-mp4v2 —enable-sharedmakemake install 这两个包编译时间有点小长…耐心等待… ^^ 支持3gp格式，这也是现在好多手机支持的格式amrwb_float ：wget http://www.3gpp.org/ftp/Specs/archive/26_series/26.204/26204-510.zip amr_float ：wget http://www.3gpp.org/ftp/Specs/archive/26_series/26.104/26104-510.zip 分别解压拷贝到ffmpeg/libavcodec/amrwb_float和ffmpeg/libavcodec/amrwb_floatffmpeg编译时加编译参数：–enable-amr_nb –enable-amr_wb 编译安装ffmpeg12345# ./configure --prefix=/usr --enable-gpl --enable-shared --enable-mp3lame --enable-amr_nb --enable-amr_wb \--enable-amr_if2 --enable-libogg --enable-vorbis --enable-xvid --enable-a52 --enable-a52bin --enable-faadbin \--enable-dts --enable-pp --enable-faad --enable-faac --enable-x264 --enable-pthreads --disable-ffserver --disable-ffplay# make# make install （ffmpeg 安装完） 注：最新版本的ffmpeg已经比以前支持更多的格式了.只需安装lame,xvid,x264就可以了！ mencoder 安装安装mplayer即可，从mplayer官方网站（http://www.mplayerhq.hu/）,下载最新的mplayer和解码包 mplayer :wget http://www1.mplayerhq.hu/MPlayer/releases/MPlayer-1.0rc1.tar.bz2 codecs:wget http://www1.mplayerhq.hu/MPlayer/releases/codecs/essential-20061022.tar.bz2 编译安装123456tar jxvf essential-20061022.tar.bz2mv essential-20061022 /usr/lib/codecstar jxvf MPlayer-1.0rc1.tar.bz2cd MPlayer-1.0rc1./configure —prefix=/usr/local —enable-gui —enable-largefiles —enable-gif —enable-png —enable-jpeg —language=zh_CN—with-codecsdir=/usr/lib/codecs/make ; make install （mencoder 安装完） ================================================================ Ffmpeg使用语法1ffmpeg [[options][`-i’ input_file]]… &#123;[options] output_file&#125;… 如果没有输入文件，那么视音频捕捉（只在Linux下有效，因为Linux下把音视频设备当作文件句柄来处理）就会起作用。作为通用的规则，选项一般用于下一个特定的文件。如果你给 –b64选项，改选会设置下一个视频速率。对于原始输入文件，格式选项可能是需要的。缺省情况下，ffmpeg试图尽可能的无损转换，采用与输入同样的音频视频参数来输出。 视频文件截图 截取一张352x240尺寸大小的，格式为jpg的图片1ffmpeg -i test.asf -y -f image2 -t 0.001 -s 352x240 a.jpg 把视频的前３０帧转换成一个Animated Gif1ffmpeg -i test.asf -vframes 30 -y -f gif a.gif 截取指定时间的缩微图12ffmpeg -i test.avi -y -f image2 -ss 8 -t 0.001 -s 350x240 test.jpg-ss后跟的时间单位为秒 转换文件为3GP格式12345ffmpeg -y -i test.mpeg -bitexact -vcodec h263 -b 128 -r 15 -s 176x144-acodec aac -ac 2 -ar 22500 -ab 24 -f 3gp test.3gp或ffmpeg -y -i test.mpeg -ac 1 -acodec amr_nb -ar 8000 -s 176x144 -b 128 -r 15 test.3gp视频格式转换 如何使用 ffmpeg 编码得到高质量的视频1234ffmpeg.exe -i “D:VideoFearlessFearless.avi” -target film-dvd -s 720x352-padtop 64 -padbottom 64 -maxrate 7350000 -b 3700000 -sc_threshold 1000000000-trellis -cgop -g 12 -bf 2 -qblur 0.3 -qcomp 0.7 -me full -dc 10 -mbd 2-aspect 16:9 -pass 2 -passlogfile “D:Videoffmpegencode” -an -f mpeg2video “D:Fearless.m2v” 转换指定格式文件到FLV格式12ffmpeg.exe -i test.mp3 -ab 56 -ar 22050 -b 500 -r 15 -s 320x240 f:test.flvffmpeg.exe -i test.wmv -ab 56 -ar 22050 -b 500 -r 15 -s 320x240 f:test.flv 转码解密的VOB1ffmpeg -i snatch_1.vob -f avi -vcodec mpeg4 -b 800 -g 300 -bf 2 -acodec mp3 -ab 128 snatch.avi 上面的命令行将vob的文件转化成avi文件，mpeg4的视频和mp3的音频。注意命令中使用了B帧，所以mpeg4流是divx5兼容的。GOP大小是300意味着29.97帧频下每10秒就有INTRA帧。该映射在音频语言的DVD转码时候尤其有用。 同时编码到几种格式并且在输入流和输出流之间建立映射1ffmpeg -i /tmp/a.wav -ab 64 /tmp/a.mp2 -ab 128 /tmp/b.mp2 -map 0:0 -map 0:0 上面的命令行转换一个64Kbits 的a.wav到128kbits的a.mp2 ‘-map file:index’在输出流的顺序上定义了哪一路输入流是用于每一个输出流的。 转换文件为3GP格式12ffmpeg -i test.avi -y -b 20 -s sqcif -r 10 -acodec amr_wb -ab 23.85 -ac 1 -ar 16000 test.3gp注：如果要转换为3GP格式，则ffmpeg在编译时必须加上--enable-amr_nb --enable-amr_wb 屏幕录制 使用ffmpeg录像屏幕1ffmpeg -vcodec mpeg4 -b 1000 -r 10 -g 300 -vd x11:0,0 -s 1024x768 ~/test.avi 其中，-vd x11:0,0 指录制所使用的偏移为 x=0 和 y=0，-s 1024×768 指录制视频的大小为 1024×768。录制的视频文件为 test.avi，将保存到用户主目录中 如果你只想录制一个应用程序窗口或者桌面上的一个固定区域，那么可以指定偏移位置和区域大小。使用xwininfo -frame命令可以完成查找上述参数。重新调整视频尺寸大小12ffmpeg -vcodec mpeg4 -b 1000 -r 10 -g 300 -i ~/test.avi -s 800×600 ~/test-800-600.avi注：ffmpeg的屏幕录制功能只能在Linux环境下有效。]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>mencoder</tag>
+        <tag>ffmepg</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[lighttpd + mysql + php(fast-cgi)安装与配置手记]]></title>
+    <url>%2F20070706%2Flighttpd-mysql-php-install%2F</url>
+    <content type="text"><![CDATA[准备: lighttpd-1.4.15.tar.gzphp-4.4.2.tar.gzmysql-5.0.20a.tar.gz 开始:1 编译安装lighttpd 12345tar zxvf lighttpd-1.4.15.tar.gzcd lighttpd-1.4.15ls./configure —prefix=/usr/local/lighttpdmake &amp;&amp; make install 创建网站根目录 1mkdir /usr/local/lighttpd/htdocs 创建配置文件放置目录 1mkdir /usr/local/lighttpd/etc 创建日志目录 1mkdir /usr/local/lighttpd/logs 将配置文件拷贝到/usr/local/lighttpd/etc 1cp doc/lighttpd.conf /usr/local/lighttpd/etc 启动lighttpd 1/usr/local/lighttpd/bin/lighttpd -f /usr/local/lighttpd/etc/lighttpd.conf 2 安装 MYSQL 12345678tar zxvf mysql-5.0.20a.tar.gzcd mysql-5.0.20a./configure —prefix=/usr/local/mysqlmake;make installgroupadd mysqluseradd -g mysql mysqlcp support-files/my-medium.cnf /etc/my.cnfcd /usr/local/mysql/ 初始化 1bin/mysql_install_db —user=mysql 运行 1bin/mysqld_safe —user=mysql &amp; 设置自动启动（略） 3 安装 php (fast-cgi) 12tar zxvf php-4.4.2.tar.gzcd php-4.4.2 编译，加--enable-fastcgi和--enable-force-cgi-redirect选项 12345678./configure --prefix=/usr/local/php-fastcgi --enable-fastcgi --enable-force-cgi-redirect --with-zlib \--with-gd --with-ttf --with-png --with-expat-dir=/usr --with-gmp --with-xml --with-mysql=/usr/local/mysql \--with-charset=utf-8 --disable-debug --disable-posix --disable-rpath --enable-safe-mode --enable-magic-quotes \--disable-dmalloc --enable-bcmath --enable-dio --enable-gd-native-ttf --enable-sysvsem --enable-sysvshm \--enable-wddx --enable-versioning --enable-pic --enable-inline-optimization --enable-memory-limit --enable-mbstring \--enable-mbregex --enable-mbstr-enc-trans --with-config-file-path=/usr/local/lib --enable-ftp --disable-debug \--enable-track-vars=yes --with-jpeg-dir --with-freetype-dir --enable-gd-native-ttf --enable-dlmake;make install 4 配置lighttpd 1#vim /usr/local/lighttpd/etc/lighttpd.conf 修改一下内容 加载cgi，fastcgi模块12345678910111213141516171819server.modules = ( “mod_rewrite”,# “mod_redirect”,# “mod_alias”, “mod_access”,# “mod_cml”,# “mod_trigger_b4_dl”,# “mod_auth”,# “mod_status”,# “mod_setenv”, “mod_fastcgi”,# “mod_proxy”,# “mod_simple_vhost”,# “mod_evhost”,# “mod_userdir”, “mod_cgi”,# “mod_compress”,# “mod_ssi”,# “mod_usertrack”, 网站根目录123## a static document-root, for virtual-hosting take look at the## server.virtual-* optionsserver.document-root = “/usr/local/lighttpd/htdocs” 日志目录123456## where to send error-messages toserver.errorlog = “/usr/local/lighttpd/logs/lighttpd.error.log”…..…..#### accesslog moduleaccesslog.filename = “/usr/local/lighttpd/logs/access.log” 默认首页格式123# files to check for if …/ is requestedindex-file.names = ( “index.php”, “index.html”, “index.htm”, “default.htm” ) FastCgi模块123456789101112#### fastcgi module## read fastcgi.txt for more info## for PHP don’t forget to set cgi.fix_pathinfo = 1 in the php.inifastcgi.server= (“.php” =&gt;(( “socket” =&gt; “/tmp/php.socket”,“bin-path” =&gt; “/usr/local/php-fastcgi/bin/php”,“min-procs” =&gt; 1,“max-procs” =&gt; 32,“max-load-per-proc” =&gt; 4,“idle-timeout” =&gt; 20))) CGI模块123456#### CGI modulecgi.assign = ( “.sh” =&gt; “/bin/bash”, #shell script “.pl” =&gt; “/usr/bin/perl”, #Perl “.cgi” =&gt; “”) 5 修改php.ini 设置 cgi.fix_pathinfo = 1 6 配置完毕，重起lighttpd 查其PID1ps auxww |grep lighttpd kill掉1kill -9 PID 启动1/usr/local/lighttpd/bin/lighttpd -f /usr/local/lighttpd/etc/lighttpd.conf 7.简单管理脚本为了方便管理lighttpd,写几个简单的脚本checkLighttpd.sh（检查lighttpd进程）:12#!/bin/bashps auxww |grep lighttpd|grep -v grep killLighttpd.sh(杀死lighttpd进程) :123#!/bin/bashLIGHTTPD_PID=ps auxww |grep lighttpd |grep -v grep | awk &apos;&#123;print $2&#125;&apos;kill -9 $LIGHTTPD_PID startLighttpd.sh (启动lighttpd):123#!/bin/bash/usr/local/lighttpd/sbin/lighttpd -f /usr/local/lighttpd/etc/lighttpd.confchmod +x startLighttpd.sh killLighttpd.sh checkLighttpd.sh 8 测试：用c,shell,perl,php分别写几个小程序作测试(略)]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>php</tag>
+        <tag>lighttpd</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[memcached缓存服务器的安装]]></title>
+    <url>%2F20070705%2Fmemcached-install%2F</url>
+    <content type="text"><![CDATA[一、memcached 的编译安装准备:Memcached下载地址：http://www.danga.com/memcached/libevent下载地址: http://monkey.org/~provos/libevent/ 安装步骤: 下载libevent &amp; memcached 源码包 12libevent-1.3.tar.gzmemcached-1.2.2.tar.gz 解压缩libevent-1.3.tar.gz，编译安装 1234# tar zxvf libevent-1.3.tar.gz# cd libevent-1.3 # ./configure —prefix=/usr/local/libevent# make ; make install 解压缩 memcached-1.2.2.tar.gz, 编译安装 1234# tar zxvf memcached-1.2.2.tar.gz # cd memcached-1.2.2 # ./configure —prefix=/usr/local/memchached —with-libevent=/usr/local/libevent # make;make install 作软连接，否则运行memcached的时候将找不到libevent模块 1# ln -s /usr/local/libevent/lib/libevent-1.3.so.1 /usr/lib 5.启动memcached 1# /usr/local/memcached/bin/memcached -d -m 256 -p 11211 -u root OK ！！！ 搞定！ ^^ 二、php的memcached模块 123456# tar vxzf memcache-1.5.tgz# cd memcache-1.5# /usr/local/php/bin/phpize# ./configure --enable-memcache --with-php-config=/usr/local/php/bin/php-config --with-zlib-dir# make# make install 安装完后会有类似这样的提示： 1Installing shared extensions: /usr/local/php/lib/php/extensions/no-debug-non-zts-20050922/ 把这个记住，然后修改php.ini，把1extension_dir = &quot;./&quot; 修改为1extension_dir = &quot;/usr/local/php/lib/php/extensions/no-debug-non-zts-20050922/&quot; 并添加一行1extension=memcache.so 3、测试脚本自己写一个PHP程序测试一下吧 12345678910&lt;?php$memcache = new Memcache;$memcache-&gt;connect(&apos;localhost&apos;, 11211) or die (&quot;Could not connect&quot;);//连接Memcached服务器$memcache-&gt;set(&apos;key&apos;, &apos;test&apos;);//设置一个变量到内存中，名称是key值是test$get_value = $memcache-&gt;get(&apos;key&apos;);//从内存中取出key的值echo $get_value;?&gt;]]></content>
+      <tags>
+        <tag>memcached</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[PHP & memcached(转)]]></title>
+    <url>%2F20070628%2Fphp-memchache%2F</url>
+    <content type="text"><![CDATA[肖理达 (KrazyNio AT hotmail.com), 2006.04.06 一、memcached 简介在很多场合，我们都会听到 memcached 这个名字，但很多同学只是听过，并没有用过或实际了解过，只知道它是一个很不错的东东。这里简单介绍一下，memcached 是高效、快速的分布式内存对象缓存系统，主要用于加速 WEB 动态应用程序。 二、memcached 安装首先是下载 memcached 了，目前最新版本是 1.1.12，直接从官方网站即可下载到 memcached-1.1.12.tar.gz。除此之外，memcached 用到了 libevent，我下载的是 libevent-1.1a.tar.gz。 接下来是分别将 libevent-1.1a.tar.gz 和 memcached-1.1.12.tar.gz 解开包、编译、安装： 1234567891011# tar -xzf libevent-1.1a.tar.gz# cd libevent-1.1a# ./configure —prefix=/usr# make# make install# cd ..# tar -xzf memcached-1.1.12.tar.gz# cd memcached-1.1.12# ./configure —prefix=/usr# make# make install 安装完成之后，memcached 应该在 /usr/bin/memcached。 三、运行memcached守护程序运行memcached 守护程序很简单，只需一个命令行即可，不需要修改任何配置文件（也没有配置文件给你修改 :) ）： 1/usr/bin/memcached -d -m 128 -l 192.168.1.1 -p 11211 -u httpd 参数解释：-d 以守护程序（daemon）方式运行 memcached；-m 设置 memcached 可以使用的内存大小，单位为 M；-l 设置监听的 IP 地址，如果是本机的话，通常可以不设置此参数；-p 设置监听的端口，默认为 11211，所以也可以不设置此参数；-u 指定用户，如果当前为 root 的话，需要使用此参数指定用户。 当然，还有其它参数可以用，man memcached 一下就可以看到了。 四、memcached 的工作原理首先 memcached 是以守护程序方式运行于一个或多个服务器中，随时接受客户端的连接操作，客户端可以由各种语言编写，目前已知的客户端API 包括 Perl/PHP/Python/Ruby/Java/C#/C 等等。PHP等客户端在与memcached服务建立连接之后，接下来的事情就是存取对象了，每个被存取的对象都有一个唯一的标识符key，存取操作均通过这个key进行，保存到memcached 中的对象实际上是放置内存中的，并不是保存在cache文件中的，这也是为什么 memcached能够如此高效快速的原因。注意，这些对象并不是持久的，服务停止之后，里边的数据就会丢失。 五、PHP 如何作为 memcached 客户端有两种方法可以使PHP作为memcached客户端，调用memcached的服务进行对象存取操作。第一种，PHP 有一个叫做 memcache 的扩展，Linux 下编译时需要带上 –enable-memcache[=DIR] 选项，Window 下则在 php.ini 中去掉 php_memcache.dll 前边的注释符，使其可用。除此之外，还有一种方法，可以避开扩展、重新编译所带来的麻烦，那就是直接使用 php-memcached-client。本文选用第二种方式，虽然效率会比扩展库稍差一些，但问题不大。 六、PHP memcached 应用示例首先下载 memcached-client.php，在下载了memcached-client.php之后，就可以通过这个文件中的类“memcached”对memcached服务进行操作了。其实代码调用非常简单，主要会用到的方法有add()、get()、replace()和delete()，方法说明如下：add ($key, $val, $exp = 0)往memcached中写入对象，$key是对象的唯一标识符，$val是写入的对象数据，$exp 为过期时间，单位为秒，默认为不限时间；get ($key)从memcached中获取对象数据，通过对象的唯一标识符$key获取；replace ($key, $value, $exp=0)使用$value替换memcached中标识符为$key的对象内容，参数与add()方法一样，只有$key对象存在的情况下才会起作用；delete ($key, $time = 0)删除memcached中标识符为$key的对象，$time 为可选参数，表示删除之前需要等待多长时间。下面是一段简单的测试代码，代码中对标识符为 ‘mykey’ 的对象数据进行存取操作： 1234567891011121314151617181920212223242526272829303132333435&lt;?phprequire_once(&apos;memcached-client.php&apos;);//选项设置$options = array( //memcached 服务的地址、端口，可用多个数组元素表示多个 memcached 服务 &apos;servers&apos; =&gt; array(&apos;192.168.1.1:11211&apos;), //是否打开 debug &apos;debug&apos; =&gt; true, //超过多少字节的数据时进行压缩 &apos;compress_threshold&apos; =&gt; 10240, //是否使用持久连接 &apos;persistant&apos; =&gt; false);//创建 memcached 对象实例$mc = new memcached($options);//设置此脚本使用的唯一标识符$key = &apos;mykey&apos;;//往 memcached 中写入对象$mc-&gt;add($key, &apos;some random strings&apos;);$val = $mc-&gt;get($key);var_dump($val);//替换已写入的对象数据值$mc-&gt;replace($key, array(&apos;some&apos; =&gt; &apos;haha&apos;, &apos;array&apos; =&gt; &apos;xxx&apos;));$val = $mc-&gt;get($key);var_dump($val);//删除 memcached 中的对象$mc-&gt;delete($key);$val = $mc-&gt;get($key);var_dump($val);?&gt; 是不是很简单，在实际应用中，通常会把数据库查询的结果集保存到 memcached 中，下次访问时直接从 memcached中获取，而不再做数据库查询操作，这样可以在很大程度上减轻数据库的负担。通常会将 SQL 语句 md5() 之后的值作为唯一标识符key。下边是一个利用 memcached 来缓存数据库查询结果集的示例（此代码片段紧接上边的示例代码）：12345678910111213141516&lt;?php$sql = &apos;SELECT * FROM users&apos;;$key = md5($sql);if (!($datas = $mc-&gt;get($key))) &#123; //在 memcached 中未获取到缓存数据，则使用数据库查询获取记录集。 $conn = mysql_connect(&apos;localhost&apos;, &apos;test&apos;, &apos;test&apos;); mysql_select_db(&apos;test&apos;); $result = mysql_query($sql); while ($row = mysql_fetch_object($result)) &#123; $datas[] = $row; &#125; //将数据库中获取到的结果集数据保存到 memcached 中，以供下次访问时使用。 $mc-&gt;add($key, $datas);&#125;var_dump($datas);?&gt; 可以看出，使用memcached之后，可以减少数据库连接、查询操作，数据库负载下来了，脚本的运行速度也提高了。之前我曾经写过一篇名为《PHP实现多服务器共享SESSION数据》文章，文中的 SESSION 是使用数据库保存的，在并发访问量大的时候，服务器的负载会很大，经常会超出MySQL最大连接数，利用memcached，我们可以很好地解决这个问题，工作原理如下：用户访问网页时，查看memcached中是否有当前用户的SESSION数据，使用session_id()作为唯一标识符；如果数据存在，则直接返回，如果不存在，再进行数据库连接，获取SESSION数据，并将此数据保存到 memcached中，供下次使用； 当前的 PHP 运行结束（或使用了 session_write_close()）时，会调用My_Sess::write()方法，将数据写入数据库，这样的话，每次仍然会有数据库操作，对于这个方法，也需要进行优化。使用一个全局变量，记录用户进入页面时的SESSION数据，然后在write()方法内比较此数据与想要写入的SESSION数据是否相同，不同才进行数据库连接、写入数据库，同时将memcached 中对应的对象删除，如果相同的话，则表示SESSION数据未改变，那么就可以不做任何操作，直接返回了；那么用户SESSION过期时间怎么解决呢？记得 memcached的add()方法有个过期时间参数$exp吗？这个参数值设置成小于 SESSION 最大存活时间即可。另外别忘了给那些一直在线的用户延续 SESSION 时长，这个可以在write() 方法中解决，通过判断时间，符合条件则更新数据库数据。 七、相关资源memcached 官方网站:http://www.danga.com/memcached/ PHP memcached client:http://wikipedia.sourceforge.net/doc/memcached-client/_includes_memcached-client_php.html 下载 memcached-client.phphttp://nio.infor96.com/wp-content/uploads/2006/04/memcached-client.zip]]></content>
+      <tags>
+        <tag>php</tag>
+        <tag>memcached</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[身份证编码原则,及其校验方法（转)]]></title>
+    <url>%2F20070628%2Findentity-cardls-rule%2F</url>
+    <content type="text"><![CDATA[现将“18位身份证标准”提供如下：18位身份证标准在国家质量技术监督局于1999年7月1日实施的GB11643-1999《公民身份号码》中做了明确的规定。GB11643-1999《公民身份号码》为GB11643-1989《社会保障号码》的修订版，其中指出将原标准名称“社会保障号码”更名为“公民身份号码”，另外GB11643-1999《公民身份号码》从实施之日起代替GB11643-1989。GB11643-1999《公民身份号码》主要内容如下：一、范围该标准规定了公民身份号码的编码对象、号码的结构和表现形式，使每个编码对象获得一个唯一的、不变的法定号码。二、编码对象公民身份号码的编码对象是具有中华人民共和国国籍的公民。 三、号码的结构和表示形式1、号码的结构公民身份号码是特征组合码，由十七位数字本体码和一位校验码组成。排列顺序从左至右依次为：六位数字地址码，八位数字出生日期码，三位数字顺序码和一位数字校验码。2、地址码表示编码对象常住户口所在县(市、旗、区)的行政区划代码，按GB/T2260的规定执行。3、出生日期码表示编码对象出生的年、月、日，按GB/T7408的规定执行，年、月、日代码之间不用分隔符。4、顺序码表示在同一地址码所标识的区域范围内，对同年、同月、同日出生的人编定的顺序号，顺序码的奇数分配给男性，偶数分配给女性。5、校验码 (1)十七位数字本体码加权求和公式 1234S = Sum(Ai * Wi), i = 0, … , 16 ，先对前17位数字的权求和Ai:表示第i位置上的身份证号码数字值Wi:表示第i位置上的加权因子Wi: 7 9 10 5 8 4 2 1 6 3 7 9 10 5 8 4 2 (2)校验码字符值的计算 12Y: 0 1 2 3 4 5 6 7 8 9 10校验码: 1 0 X 9 8 7 6 5 4 3 2 四、举例如下：北京市朝阳区: 11010519491231002X广东省汕头市: 440524188001010014 15位的身份证号1dddddd yymmdd xx p 18位的身份证号1dddddd yyyymmdd xx p y 其中dddddd为地址码（省地县三级）18位中的和15位中的不完全相同yyyymmdd yymmdd 为出生年月日xx顺号类编码p性别18位中末尾的y为校验码，在网上可以找到算法将前17位的ascii码值经位移、异或运算结果不在0-9的令其为x 公民身份号码是特征组合码，由十七位数字本体码和一位校验码组成。排列顺序从左至右依次为：六位数字地址码，八位数字出生日期码，三位数字顺序码和一位数字校验码。 校验方法：（1）十七位数字本体码加权求和公式 1234S = Sum(Ai * Wi), i = 0, … , 16 ，先对前17位数字的权求和Ai:表示第i位置上的身份证号码数字值Wi:表示第i位置上的加权因子Wi: 7 9 10 5 8 4 2 1 6 3 7 9 10 5 8 4 2 （2）计算模 1Y = mod(S, 11) （3）通过模得到对应的校验码 12Y: 0 1 2 3 4 5 6 7 8 9 10校验码: 1 0 X 9 8 7 6 5 4 3 2 以下了解即可: 台湾身份证号码编码: 台湾身份证号码计算法台湾的身份证号码和我们的不太一样他是一个英文字母打头+9个数字这样的:字母+1或者2(男的是1,女的是2)+7个数字+一个验证数字字母的话是a-z随便选一个这样的话,其中九个数字有一定的数学算法具体是这样的SUM=D1x8+D2x7+D3x6+D4x5+D5x4+D6x3+D7x2+D8x1+D9如果这样SUM可以被10整除或者余数就是等于D9的话,这个身份证号码是正确的举例身份证号码是Z119822150 那么他的D1(第一个数字)就是1,D9(最后一个数字)就是0SUM=18+17+96+85+24+23+1*2+5+0=130正好可以给10整除所以是正确的 大家可以任意选择D1-D8,然后用D9来凑数字,只要能加起来能给10整除就可以了建议大家多了解台湾同胞的想法，多让他们知道我们的政策和观点。只有彼此多增加了解才能更好更快的实现统一！另外如果在上面有人开骂，可以反驳，但不必较真，因为真正的道理不是骂就可以骂出来的，无礼往往只是无知的表现而已，而且一旦和他对骂，也失了体统，丢了大陆的脸 香港身份证算法: 每張香港身份證上都有一個編號，這個編號是有一個秘密的，你知道嗎？從前的身份證編號是沒有後面括號及數字的，但後來由電腦處理，便產生了後面的括號及數字，這是檢查該證件是否真確的第一關，因為這最後的數字與前面的編號有一定的關係。 例：K258373(?)，括號內的數字什麼? 算法:(1)先用數字代表英文字母:A=1，B=2，C=3，……，K=11，……，Z=26等 (2)順序乘以8，7，6，5，4，3，2，然後加起來。即:K乘8 2乘7 5乘6 8乘5 3乘4 7乘3 3乘2 118=88 2 7 =145 6 =30 8 5 =40 3 4 =12 7 3 =21 3 *2 =6總和=21 3)用11去除總和，看“欠多少”才可被整除211除11=19…餘2(即欠9才可整除)因此，身份證括號內的數字是9，即K258373(9)問題:究竟E540997(?)，括號內的數字是什麼？提示:若總和能被11整除，則括號內的數字為(0)。]]></content>
+      <tags>
+        <tag>身份证编码规则</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Mysql数据文件大小超过4G了！]]></title>
+    <url>%2F20070624%2Fmysql-data-big-file%2F</url>
+    <content type="text"><![CDATA[update: 单个文件大小达到4G限制，是因为当时操作系统普遍是32位 现象：前两天发现4区的数据表查不到近几天的数据，查了很多原因log_manager和log_agent都运行正常，程序肯定没问题，对比了其他区的情况，一切正常，怎么会这样呢？奇怪，难道是数据库出问题了？ 解决：进入数据表 输入” ls -lth |grep G “ 察看所有大小过G的文件，发现4区的tableName.MYD竟然达到了4G已经达到了单表大小最大限制。晕，删数据吧！先备份一下数据表1mysqldump dbname tablename &gt; /backup/tablename_backup_xxxx_xx_xx.sql 然后清除了前几个月的旧数据。但是如果再查看那几个MYD文件发现占用的磁盘大小仍然是4G ，不过现在log_manager已经开始向表里面写数据了，删除记录不会改变MYD文件占用的磁盘空间。把这几个表优化一下看看情况吧：12mysql&gt; optimize table char_event_svr_20;… 再察看MYD文件的大小，变成了1.8G 有一个达到4G的表经过优化后竟然占用的磁盘空间只有几百兆。]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[不让mysql记录历史命令]]></title>
+    <url>%2F20070531%2Fmysql-history%2F</url>
+    <content type="text"><![CDATA[我们在执行 SQL命令时，mysql会将历史命令记录到~/.mysql_history文件中，因此我们用上下键就可以翻阅历史命令了。也许某些特殊需要我们可能需要不让它记录这些历史命令，我们可以这样作： 1[root@TestServer root]# ln -s /dev/null $HOME/.mysql_history 这个方法来自官方手册，下面是摘录： On Unix, the mysql client writes arecord of executed statements to a history file. By default, thehistory file is named .mysql_history and is created in your homedirectory. To specify a different file, set the value of theMYSQL_HISTFILE environment variable. If you do not want to maintain a history file, first remove.mysql_history if it exists, and then use either of the followingtechniques: Set the MYSQL_HISTFILE variable to /dev/null. To cause this setting totake effect each time you log in, put the setting in one of yourshell’s startup files. Create .mysql_history as a symbolic link to /dev/null: 1shell&gt; ln -s /dev/null $HOME/.mysql_history You need do this only once.]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[bash 3+的history命令，输出结果添加执行时间]]></title>
+    <url>%2F20070530%2Flinux-bash-history%2F</url>
+    <content type="text"><![CDATA[有时候工作中，我们需要查找我们过去的操作命令的具体时间但是history命令貌似只能显示: 行号+命令，那么我们怎么查看命令的输入时间呢 如果你的bash版本&gt;=3.0 你可以这样做:在 .bashrc 中加入: 1HISTTIMEFORMAT=” %D %T “ history 输出结果类似:12345678451 2007-05-11 00:25:39 HISTTIMEFORMAT=” %D %T “ history452 2007-05-11 00:28:48 history453 2007-05-11 00:28:57 HISTTIMEFORMAT history454 2007-05-11 00:29:02 HISTTIMEFORMAT=” %D %T “ history455 2007-05-11 00:35:54 ftp 202.115.139.25456 2007-05-11 00:36:31 ls457 2007-05-11 00:36:40 last -f wtmp.1458 2007-05-11 00:36:58 last -f wtmp.1 &gt; LoginTime 使用bash 3+的朋友可以一试]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>history</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[redhat下ffmpeg+mencoder安装笔记]]></title>
+    <url>%2F20070524%2Fredhat-ffmpeg-mencoder%2F</url>
+    <content type="text"><![CDATA[最近由于工作涉及到转换视频格式，研究了一下相关软件。如果只需要转到flv，装mencoder和codecs就可以了，如果还需要截图或者其他功能，就要装ffmpeg和相关解码包。ffmpeg支持的格式没有前者多，但是速度比较快，参数也很简单。另外我们还需要转换到rm，找了很久都没找到基于前述两种软件的解决方法。在对转换速度不具特殊需求的情况下，我使用Helix Producer forlinux来解决该问题，这同时也是real的人所建议的。 在Ubuntu下测试的时候，只需要一条命令就装完了。 1sudo apt-get install w32codecs mplayer ffmpeg 下面记录了redhat as4下的安装过程。 安装apache的runtime模块apr和apr-util，这样才能安装svn:http://apr.apache.org/先装apr，再装apr-util的时候要用 --with-apr=apr源码路径安装subversion，这样才能装接下来的软件。 1234wget http://subversion.tigris.org/downloads/subversion-1.3.2.tar.gztar zvxf subversion-1.3.2.tar.gzcd subversion-1.3.2./configure --with-apr=apr的源码路径 --with-apr-util=apr-util的源码路径 安装faad2包:http://www.audiocoding.com/modules/mydownloads/解压后如果configure出错，需要如下修改 12345echo &gt; plugins/Makefile.amecho &gt; plugins/xmms/src/Makefile.amsed -i ‘/E_B/d’ configure.inautoreconf -vif./configure —prefix=/usr —with-mp4v2 —enable-shared 安装faac:下载地址同上，如果bootstrap出错，需要如下修改(因为Unix格式问题)1234sed -i &apos;s/\r//&apos; bootstrapsed -i &apos;s/\r//&apos; configure.in./bootstrap./configure —prefix=/usr —with-mp4v2 —enable-shared 安装mp3lame:http://lame.sourceforge.net/download.php 1./configure —enable-shared —prefix=/usr 安装xvid，ffmpeg貌似带了的，实际是个wrap123wget http://downloads.xvid.org/downloads/xvidcore-1.1.0.tar.gztar zvxf xvidcore-1.1.0.tar.gz./configure —prefix=/usr 安装x264 12svn co svn://svn.videolan.org/x264/trunk x264./configure —prefix=/usr —enable-shared 安装liba52:http://liba52.sourceforge.net/ 安装libdts:http://download.chinaunix.net/download/0006000/5785.shtml 由于项目不需要支持3gp，没有装3gp的解码包; 都装齐了就可以编译ffmpeg:123456svn checkout svn://svn.mplayerhq.hu/ffmpeg/trunk ffmpeg./configure—prefix=/usr --enable-gpl --enable-shared --enable-libmp3lame—enable-libogg \--enable-libvorbis --enable-xvid --enable-liba52—enable-liba52bin --enable-libdts \--enable-pp --enable-libfaad—enable-libfaadbin \--enable-libfaac --enable-x264 --enable-pthreads—disable-ffserver \--disable-ffplay 使用的时候很方便，一般来说： 1ffmpeg -i 源文件 -o 目标文件 [-codec 编码方式] [-b 码率]就可以了，码率默认200k，编码默认为目标扩展名类型。 下面安装mplayer/mencoder: 1svn checkout svn://svn.mplayerhq.hu/mplayer/trunk mplayer 安装mencoder需要的codecs:http://www1.mplayerhq.hu/MPlayer/releases/codecs/(现在最新的是mplayer-codecs-20061022-1.i386.rpm)安装到usr/local/lib/codecs 安装Helix DNA Producerhttps://helix-producer.helixcommunity.org/downloads 转flv的参数:123mencoderzhou.rm -o ps2.flv -of lavf -oac mp3lame -lameopts abr:br=32:mode=3-ovc lavc \ -lavcoptsvcodec=flv:vbitrate=150:mbd=2:mv0:trell:v4mv:cbp:last_pred=3 -srate22050 \ -lavfopts i_certify_that_my_video_stream_does_not_use_b_frames-vf scale=350:-3 -sws 2 由于producer for Linux只认识uncompress的视频文件，所以转rm要先中转: 12mencoder ps2.mpeg -ovc raw -oac pcm -o ps2.aviproducer -i ps2.avi -o ps2.rm]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>redhat</tag>
+        <tag>ffmpeg</tag>
+        <tag>mencoder</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[检查和修复MySQL数据文件]]></title>
+    <url>%2F20070412%2Fmysql-data-repair%2F</url>
+    <content type="text"><![CDATA[因为宕机让IDC数据中心重启以后，发现游戏服务器程序竟然无法启动了！ 查看日志,发现原来mysql某个表竟然无法读取 1234070412 17:51:48 [ERROR] Got error 127 when reading table &apos;./usermaster/player&apos;070412 17:55:50 [ERROR] Got error 127 when reading table &apos;./usermaster/player&apos;070412 17:58:57 [ERROR] Got error 127 when reading table &apos;./usermaster/player&apos;070412 18:02:50 [ERROR] Got error 127 when reading table &apos;./usermaster/player&apos; 数据库正在进行存取的时候，突然宕机引起数据库文件损坏了！ 用myisamchk修复成功！启动服务器，现在运行正常！ 下面说明myisamchk用法：检查数据文件是否损坏: 1myisamchk /usr/local/mysql/var/dbName/tblName 或者1myisamchk /usr/local/mysql/var/dbName/tblName.MYI 例如: 1myisamchk /user/local/mysql/var/usermaster/player 修复数据文件: 123myisamchk —recover —quick /usr/local/mysql/var/dbName/tblName 快速修复myisamchk —recover /usr/local/mysql/var/dbName/tblNamemyisamchk —safe-recover /usr/local/mysql/var/dbName/tblName 速度慢，但是安全有效 例如: 1myisamchk --safe-recover /user/local/mysql/var/usermaster/player]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[lsof快速起步]]></title>
+    <url>%2F20070406%2Flinux-lsof%2F</url>
+    <content type="text"><![CDATA[查看对某个文件的使用情况查看哪些进程对某个文件进行了调用: $ lsof /etc/passwd查看对文件系统的使用/tmp目录被垃圾文件塞满了, 但是, 用ls 又看不到太大文件, 谁干的? $ lsof /tmp查找打开,但是不能连接的文件一个进程打开一个文件, 然后将其设为 unlinked 状态, 则此文件资源仍能被进程使用, 但是其访问路径已经被删除了. 因此, 使用ls不能将其列出. 只有当进程结束时, 才能释放文件占用的资源 查找unlinked 文件, 选项 +L, 作用: 列出打开文件的连接数 $lsof +L 指定连接数的上限$lsof +L1 同时指定文件系统, 则需要使用 -a(AND) 选项 $ lsof -a +L1 /home无法卸载查看谁令mount的分区无法卸载 $ lsof &lt;file_system_name&gt;查看监听socket查看网络服务 $ lsof -i查看某个网络连接$ lsof -i@aaa.bbb.ccc $ lsof -iTCP@aaa.bbb.ccc:ftp-data 指定协议 $ lsof -i4 指定IP版本 $ lsof -i6识别 Netstat 连接例如: netstat -p -t -n 的输出为: Proto Recv-Q Send-Q Local Address Foreign Address State tcp 0 0 218.56.203.246:52634 202.109.72.72:7000 ESTABLISHED则可以:tony@tony:~$ lsof -iTCP@202.109.72.72:7000 COMMAND PID USER FD TYPE DEVICE SIZE NODE NAME xchat 4505 tony 12u IPv4 5775 TCP 218.56.203.246:52634-&gt;202.109.72.72:afs3-fileserver (ESTABLISHED)查找针对某个命令打开的文件使用命令的PID $ lsof -p 使用命令名称 $ lsof -c &lt;first_characters_of_command_name_that_interest_you&gt; $ lsof -c sendmail 查看谁在使用设备文件 $ lsof /dev/hda6查看某个用户的操作$ id -u tony 1000$ lsof -u1000 or $ lsof -utony$ lsof -u^tony 则是取反的意思]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>lsof</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[vi编辑文件退出时提示错误信息]]></title>
+    <url>%2F20070307%2Fvi-error%2F</url>
+    <content type="text"><![CDATA[vi 编辑文件退出时提示信息： 12E138: Can’t write viminfo file [NULL]!Hit ENTER or type command to continue 删除用户目录下.viminfo.tmp文件即可]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>vim</tag>
+        <tag>gvim</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[linux下php调用java类库的配置]]></title>
+    <url>%2F20061212%2Fphp-java-j2sdk%2F</url>
+    <content type="text"><![CDATA[测试环境 redhat9.0,Apache2.0.40,PHP 4.4.2,j2sdk1.4.2_13,j2sdk1.4.2_13,jre1.5,php-java-bridge_3.2.1 假设事先apache,php已经安装配置好. 安装j2sdk1.4.2_13到www.sun.com上下在rpm安装包,安装之 1# rpm -ivh j2sdk-1_4_2_13-linux-i586.rpm vim /root/.bashrc加入 123456set JAVA_HOME=/usr/java/j2sdk1.4.2_13export JAVA_HOMEset PATH=$PATH:$JAVA_HOME/binexport PATHset CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:/opt/myclassexport CLASSPATH 安装jre1.5.0_09到www.sun.com上下在rpm安装包,安装之123# rpm -ivh jre-1_5_0_09-linux-i586.rpm# ls /usr/javaj2sdk1.4.2_13 jre1.5.0_09 安装php-java-bridge,下载地址:http://sourceforge.net/projects/php-java-bridge 下载源码包 解压缩12#tar zxvf php-java-bridge_3.2.1.tar.gz#cd php-java-bridge-3.2.1 编译&amp;连接 1#phpize &amp;&amp; ./configure —with-java=/usr/java/j2sdk1.4.2_13,/usr/java/jre1.5.0_09 &amp;&amp; make 安装 1#make install 扩展包会生成在这个目录/usr/local/lib/php/extensions/no-debug-non-zts-20020429 配置php.ini 加入 1234567[Java]java.class.path =”/usr/local/lib/php/extensions/no-debug-non-zts-20020429;/opt/myclass”java.home =/usr/java/j2sdk1.4.2_13java.library =/usr/java/j2sdk1.4.2_13/libjava.library.path =/usr/local/lib/php/extensions/no-debug-non-zts-20020429extension_dir = /usr/local/lib/php/extensions/no-debug-non-zts-20020429extension=java.so 重启apache 1# apachectl restart]]></content>
+      <tags>
+        <tag>php</tag>
+        <tag>java</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[vmstat命令]]></title>
+    <url>%2F20061201%2Flinux-vmstat%2F</url>
+    <content type="text"><![CDATA[在redhat 9.0中 12345678#vmstat 2 procs memory swap io system cpu r b w swpd free buff cache si so bi bo in cs us sy id 1 0 0 0 1060452 175980 189928 0 0 0 18 13 7 0 0 19 0 0 0 0 1060452 175980 189928 0 0 0 0 106 11 0 0 100 0 0 0 0 1060452 175980 189928 0 0 0 136 120 29 0 1 99 0 0 0 0 1060452 175980 189928 0 0 0 0 104 12 0 0 100^C 在CentOS 4.3中 12345678#vmstat 2procs —————-memory————— —-swap— ——-io—— —system— ——cpu—— r b swpd free buff cache si so bi bo in cs us sy id wa 0 0 0 937152 52904 890116 0 0 0 0 1 1 0 0 100 0 0 0 0 937088 52904 890116 0 0 0 2 1026 73 0 0 100 0 0 0 0 937088 52904 890116 0 0 0 24 1036 69 0 0 100 0 0 0 0 937088 52904 890116 0 0 0 0 1025 63 0 0 100 0^C CPU这一项中，wa表示IO等待时间，在2.5.41内核以前的版本中IO-wait时间包含在id中. 下面是man vmstat的注解: 123456789101112131415161718192021222324252627282930Procs r: The number of processes waiting for run time. b: The number of processes in uninterruptible sleep. Memory swpd: the amount of virtual memory used. free: the amount of idle memory. buff: the amount of memory used as buffers. cache: the amount of memory used as cache. inact: the amount of inactive memory. (-a option) active: the amount of active memory. (-a option) Swap si: Amount of memory swapped in from disk (/s). so: Amount of memory swapped to disk (/s). IO bi: Blocks received from a block device (blocks/s). bo: Blocks sent to a block device (blocks/s). System in: The number of interrupts per second, including the clock. cs: The number of context switches per second. CPU These are percentages of total CPU time. us: Time spent running non-kernel code. (user time, including nice time) sy: Time spent running kernel code. (system time) id: Time spent idle. Prior to Linux 2.5.41, this includes IO-wait time. wa: Time spent waiting for IO. Prior to Linux 2.5.41, shown as zero.]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>vmstat</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[linux内存监控脚本]]></title>
+    <url>%2F20061201%2Fmemo%2F</url>
+    <content type="text"><![CDATA[查看系统状态的一个脚本： #保存在/root目录下memmon.sh12345#!/bin/shdate +’%Y/%m/%d %H:%M:%S’&gt;&gt;/var/log/memMonitorvmstat &gt;&gt;/var/log/memMonitorps aux|sort -r -k 4,4|head -20 &gt;&gt;/var/log/memMonitornetstat -an|grep tcp|grep -v 3001|grep -v :11 &gt;&gt;/var/log/memMonitor 设置为每10分钟执行一次 1crontab -e 加入 1/10 * /root/memmon.sh]]></content>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[使用fvwm几个截图]]></title>
+    <url>%2F20061030%2Flinux-fvwm-wm%2F</url>
+    <content type="text"><![CDATA[最近因为无法忍受Gnome自带的窗口管理器在我那古董机器上的反应速度，更换了FVWM做默认的WM，确实比较爽，FVWM初始的样子着实下人一跳，呵呵～ 但是FVWM的优点就是比较乖，比较听话，你想让它成为什么样子，它就是什么样子，只要你熟悉.fvwm2rc的配置，你完全可以打造一个个性的WM，我觉得fvwm倒像一个WM加工厂！这几个贴图是自己在一些牛人的.fvwm2rc的配置文件基础上改的一个，比较喜欢，去掉了所有乱七八糟的花里胡哨的东西，用起来比较爽！！！ 继续努力研究中……..]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>ubuntu</tag>
+        <tag>fvwm</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[不走红帽收费路非洲亿万富翁推免费Linux版本–Ubuntu]]></title>
+    <url>%2F20061018%2Fubuntu-news%2F</url>
+    <content type="text"><![CDATA[据国外媒体10月6日报道，非洲亿万富翁舒托沃尔斯发起的全免费Linux版本Ubuntu自推出之后引发了业界的关注。日前，该公司高层在接受采访时表示，将会走一条红帽Linux放弃的道路，向世人提供完全免费的Linux软件，公司还计划在两年之后走向盈利。 Ubuntu背后的公司名叫Canonical，位于南非，目前有65名雇员。这家公司是在2004年年初由南非亿万富翁舒托沃尔斯投资组建。这位亿万富翁将安全咨询公司转售给美国VeriSign公司，获得5.75亿美元，随后乘坐俄罗斯飞船前往国际空间站一游。“落地”之后，他萌生了创造一个免费的Linux软件、“造福”非洲穷国的想法。 美国Linux巨头红帽目前提供了两个版本，一个是FedoraCore，免费向外界提供，但是没有经过成熟的测试，不提供支持，另外一个版本是企业版，由红帽公司提供技术支持，企业必须花钱购买。对于Ubuntu来说，免费版和技术支持版是合二为一的，这正是红帽公司2003年放弃的战略。 最近，Canonical公司负责企业发展的高层肯杨在接受媒体采访时表示：“我们认为，Ubuntu应该向所有人免费，不仅仅是测试版，而且也包括最成熟的版本。”据悉，这家南非公司目前甚至可以向全世界各地向用户邮寄免费的UnuntuLinux光盘。肯杨表示，采用这种战略，公司希望在两年之内实现盈利。不过，这位高层并没有详述公司的收入渠道。 目前，Ubuntu已经获得了很多爱好者的支持，但有关其市场地位的资料很难获得。据该公司主要引述的DistroWatch的排名数据，Ubuntu是最受用户欢迎的Linux版本。 美国纽约的高技术分析公司451集团的分析师扎查理表示：“如果我是红帽或者Novell公司的高层，我将会密切关注Ununtu Linux的动向。它拥有红帽公司在1990年代曾经拥有的旺盛的开源社区人气。” 6.06版本确实不错的说，中文支持比5.01好多了已经两次收到他们邮寄来的光盘了，6.06光盘的设计让人口服心服，首先以Live CD从光盘启动Ubuntu然后在桌面双击安装按钮，安装超级简单，比起其他任何发行版，我觉得，这是它的一个成功之处，另外他们在那么短的时间内获得这样的推广效果与他们免费邮寄光盘是分布开的，有钱就是牛！！！！系统默认主题颜色我觉得如果是比较明快的就好了，暗橙色看时间长了让人有种压抑感，个人感觉！～]]></content>
+      <tags>
+        <tag>ubuntu</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[程序员,看看你属于那种类型人才(转)]]></title>
+    <url>%2F20061010%2Fprogramer%2F</url>
+    <content type="text"><![CDATA[发布时间: 2006-9-30 11:29 作者: songwl 信息来源: CSDN 软件开发工作，其实是一种很复杂的工作，需要多方面的技能。我认为，尤其以学习能力和创新能力为主。所以，我以下对软件人才的层次划分，也围绕这两个能力展开。 一、门外汉型：几乎没有学习能力，更没有创新能力。比如，买了一本《一步一步跟我学VB编程》之类的书，对照书上写的，把例子程序给做出来了，还把例子程序的某些窗口标题给修改了一下。然后，就自认为自己可以做软件开发工作了。到处递简历，应聘的职位为软件开发工程师。这类人，以刚毕业的计算机专业的大学生为多（当然，刚毕业的学生中也有非常高级的人才）。读书期间，就以玩游戏为主，考试的时候，就搞点舞弊过关。 二、入门型：该类型的人员（不叫人才，所以叫人员），可能入门某一种到两种开发语言，10年前，我上大学的时候，这类人的典型特点是热衷于DOS命令的n种用法。比如，dir命令的各种参数。学习过basic语言，知道C语言中printf函数的各种参数的用法，到了2005年，这类人是热衷于windows下的注册表，热种于在自己的机器上安装各种开发工具（VB,VC,dephi，asp等）。但是，仅仅停留在编译开发工具中自带的几个例子程序中。（可能还会做点修改）。经过一段时间的学习，可能还自己能够编写个简单的windows应用程序，修改注册表的程序等等。其很多时间还是在玩游戏，上QQ聊天泡MM，看了一篇如何修改某病毒的文章，一定会对照文章上的说明，把病毒给修改了，然后到处发，以显示自己的能力。当然，很多时候，该类人即使对照文章的说明，也不能将病毒修改。那就找那些带配置工具的黑客程序去弄吧，比如。BO等就是他们最常用来炫耀的。中国的破解者与初级黑客，绝大部分是这一类人。懂的不多，还喜欢炫耀（为炫耀目的的破解和修改病毒就是这一类人的最大特点）。该类人员，一般都没有在软件公司从事软件开发工作。 三、基本型人才：该类型一般是大学毕业，并且从事软件开发工作超过2年的人为多，至少比较熟悉一门语言（以VB,dephi,java，asp等其中的一种）。也有少数人熟悉C或者C++，但是如果是C或者C++，一般对指针等概念还是似懂非懂的状态。哦，对了，该类人员可能还会在自己的机器上安装过linux或者sco unix等。但由于对自己没有信心，大部分人会在半个月之后把linux删除。该类型人才，有一定学习能力。创新能力为零。适合培养成为软件蓝领，如果人际交往能力还可以的话，可以培养成为一个初级营销人员。该类型的人典型的特点是：你要他做个项目，他首先就会问：用什么语言？（因为用他不熟悉的语言对他来说，他就没有信心），该类人员，习惯看中文文档，不得以的情况下，才会看英文文档。另外，该类人员，喜欢购买软件开发类的书籍。该类人员，一般在软件公司从事软件开发工作，待遇在4000元到10000元以下为主。 四、熟练工：该类型一般是毕业5年并一直从事软件开发工作，至少熟悉 VB,asp ,熟悉数据库，知道什么叫存储过程，什么叫触发器。知道软件工程管理的基本概念，如果做面象对象开发，可能还会用到Rose等工具。有过20人以下软件项目管理的经验。对于linux，至少知道是个开源的项目。由于做过比较大的软件项目，项目中带的小兵一般都不具备unix下的开发经验，所以，项目中难免会出现需要在unix下运行的代码，所以，就自己动手。用c编写过几段Unix下的小程序。学习能力比较强，该类人员，已经习惯看英文文档，有时候看翻译的别扭的中文文档会觉得不爽。干脆就找英文文档。该类人员，是否喜欢买书不得而知，如果喜欢买书，一般以非软件开发类书籍为主了。在技术选型方面具备一定的创新能力，至少，你叫他做一个报表程序，他会考虑用Excel的COM对象来实现。国内软件公司中的项目经理，绝大部分是这一类型的人才。待遇一般在6000到15000元左右。 五、聪明型：该类人员的工作经历不重要，可以是还没毕业的学生，也可以是工作了10年的老鸟，1周内（甚至一小时）就熟悉了一门语言，并且可以开始用该语言开发，该类人员，由于学习能力很强，短时间内就熟悉了许多语言，即使从来没用过该语言，也敢于在该语言上进行软件开发，选择什么样的语言，不在于学没学过，而在于是否适合解决当前问题。对技术充满好奇与激情，举个例子，如果该类人员接触过linux，马上就会被Linux的魅力所吸引。即使与自己的工作无关，也会一回家就研究linux，可以肯定的是，该类人员的笔记本电脑上，肯定安装有linux ，并且，linux的启动次数和windows的启动次数一样多甚至更多。如果该类人员接触到了人工智能，至少会编写一个推理机程序来用用。另外，该类型人才的典型特点是学习能力超强。英语不一定很厉害，但是，不害怕看英文资料。该类型人才，许多并不是计算机专业毕业，可以是学数学的，物理的，音乐的等等都有可能。我就见过一个学英语的学生属于这种类型。该类型的人才，几乎所有的病毒代码是他们写出来的（不算那些修改病毒代码的人）。爱表现，也是他们的特点。如果该类人员在读书，那么，他们是软件公司青睐的人才，绝对不会出现简历递出三份还没有人要的情况，一旦进入公司，在半年内，其才能一定会得到公司领导的认可，并作为重点培养对象。为了留住这样的人才，软件公司一般会每听说有别的公司要挖他的消息就会给他涨工资一次。薪水的增长速度往往令同事红眼。 六、技术天才型：该类人才，技术方面一流，如果只从技术方面的学习能力，创新能力来讲，都要超过以上的任何一种类型的人才。上帝造人总是很公平的，他们在技术方面是天才，往往其他方面几乎白痴，不善与人交往，甚至害怕与人交往。另外，某些东西对他们有致命吸引力，比如，有些人就迷恋自己做一个操作系统，有些人就迷恋人工智能。该类人员，不写软件则以，一写，肯定是一流的。全球一流。从语言来讲，因为他们几乎不用微软的开发工具做具体的项目，他们所看的技术资料，全部是英文资料，在网上交流的，全是操英语或者法语的人。即使是中国人，他们也习惯用英语与别人进行技术沟通。该类人才，如果在工作，一般是在某实验室，或者是在某基金的资助下开展研究，如果在软件公司，一定是主持举世瞩目的软件项目。或者，在自己开的小公司既当CEO又当CTO。由于其技术的优势明显，即使他不是一个很称职的CEO，也能让这个公司维持下去。 七、数学家型：该类型人才，也许根本就不懂具体某种语言的开发（也可以懂），整天就研究算法。建模。一般不属于计算机专业。他们要把自己的成果变成现实，往往习惯找聪明型或者天才型人才帮他们实现。该类人员，因为不学计算机，所以，无法描述他们在学习技术方面的能力，但是，创新能力绝对一流。该类人才，没有在软件公司工作的，当然，如果其成果有一定商业价值，他们会成为某软件公司的顾问。或者干脆在某软件公司的实验室中当个主任什么的。 八、比尔型：因为比尔的影响力巨大，所以，我们把具有一定软件开发能力，又有很强的商业运作能力的人归到这一类。比尔型人才，学习能力，在聪明型之上，在技术天才型之下。由于起社会知识面非常广泛，所以，知道什么软件能赚钱，怎么样做能赚钱。该类人写软件的目的只有一个，那就是赚钱，而不会太在乎采用什么样的技术。他们写软件，会极力迎合用户，迎合市场。 对人的划分，有时候是很难的，有的人是跨类型的。但是，缺少创造的人，最多就到达熟练工型，具有超强创造力的人，可以达到技术天才型和数学家型，如果还有商业头脑，成为比尔型也是可能。最后一句话，如果你连足够的学习能力都没有，那么，就请你离开软件开发行业，另谋出路比较合适。]]></content>
+      <tags>
+        <tag>职业规划</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[终于可以正常访问Space了]]></title>
+    <url>%2F20060921%2Fmsn-space%2F</url>
+    <content type="text"><![CDATA[CentOS自带的firefox忒烂, 一直不能正常访问MSN Space, 今天换了最新版本的Firefox 1.5.0.7感觉不错,速度比较快! 以后可以正常Blog了,嘿嘿 :)今天看来比较顺利,eva重新编译了一下,也可以正常上QQ了,昂昂,不错不错!!]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>centos</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[邮件服务器相关，只能发不能收问题]]></title>
+    <url>%2F20060911%2Femail-server%2F</url>
+    <content type="text"><![CDATA[好久不来，space 都快长草了，:D 今天安装邮件服务器碰到一个问题，一直以为是服务器配置问题，捣鼓了一下午，发现原来更改IP的时候我竟然忘了改MX纪录，真逊～邮件客户端只能收不能发的情况比较多，解决办法也比较简单，一般是客户端SMTP设置问题只能发不能收的情况一般来说从下面几点去考虑： 客户端pop3设置选项 pop3服务器配置 mx记录 第三个可能原因一般不容易出现也不容易想到，一般在更换IP的时候如果忘记更改MX纪录，就会出现只能发不能收的情况 更改MX记录也需要一定的解析时间查看MX纪录是否生效的方法： 1234567D:\&gt; nslookup&gt; set type=mx&gt; xxxx.cnServer: xxx.xxx.xxx.comAddress: 10.100.1.13Non-authoritative answer:huanlecheng.cn MX preference = 4, mail exchanger = xxx.xxx.xxx.xxx]]></content>
+      <tags>
+        <tag>邮件服务器</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[linux 修改时间]]></title>
+    <url>%2F20060825%2Flinux-date%2F</url>
+    <content type="text"><![CDATA[修改时区: 1&gt;找到相应的时区文件 /usr/share/zoneinfo/Asia/Shanghai用这个文件替换当前的/etc/localtime文件。或者找你认为是标准时间的服务器，然后 1scp root@xxx.xxx.xxx.xxx:/etc/localtime /etc/localtime 2&gt;修改/etc/sysconfig/clock文件，修改为： 123ZONE=”Asia/Shanghai”UTC=falseARC=false 修改日期时间 1&gt;用date修改日期时间 12date -s 08/24/2006date -s 13:02:00 2&gt;同步BIOS时钟，强制把系统时间写入CMOS 1clock -w 另外，查看Bois时间用 hwclock -rtzselect 可以交互式修改时区 :)]]></content>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[用vim，gvim替换换行符]]></title>
+    <url>%2F20060815%2Fgvim%2F</url>
+    <content type="text"><![CDATA[用vim，gvim替换换行符:%s/,/,^M/g 注意那个^M在Gvim中是先按ctrl+q在按回车打出来的,在Vim中是按ctrl+v再按回车才能打出来]]></content>
+      <tags>
+        <tag>vim</tag>
+        <tag>gvim</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[mysql优化]]></title>
+    <url>%2F20060804%2Fmysql-benchmark%2F</url>
+    <content type="text"><![CDATA[1234567mysql&gt; SELECT BENCHMARK(1000000,1+1);+------------------------+| BENCHMARK(1000000,1+1) |+------------------------+| 0 |+------------------------+1 row in set (0.32 sec) 上述结果是在Pentium II 400MHz的系统上执行得到的。 它告诉我们：MySQL在这个系统上可以在0.32秒内执行 1,000,000 次简单的加法运算。所有的MySQL函数都应该被最优化，不过仍然有些函数例外。BENCHMARK() 是一个用于检查查询语句中是否存在问题的非常好的工具。]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+        <tag>benchmark</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[关于mysql的password加密函数问题]]></title>
+    <url>%2F20060614%2Fmysql-password%2F</url>
+    <content type="text"><![CDATA[Mysql 自从4.1.1以后修改了用户密码的格式, 从16位增加到了41位, 采用了一种新的验证方法,在窗口中执行:123456789101112# mysql -u rootWelcome to the MySQL monitor. Commands end with ; or \g.Your MySQL connection id is 1 to server version: 5.0.0-alpha-ntType &apos;help;&apos; or &apos;\h&apos; for help. Type &apos;\c&apos; to clear the buffer.mysql&gt; select password(&apos;aa&apos;);+-------------------------------------------+| password(&apos;aa&apos;) |+-------------------------------------------+| *DEE59C300700AF9B586F9F2A702231C0AC373A13 |+-------------------------------------------+1 row in set (0.00 sec)mysql&gt; 从上可以看出password的结果返回了一个以’*’号开头的41位字符串,而以前是16位的可以强制服务器使用旧的密码方案：mysql的官方FAQ中说,需要加上-old-password这一参数, 12345678# mysqld-nt -old-passwordmysql&gt; select password(&apos;mypassword&apos;);+------------------------+| password(&apos;mypassword&apos;) |+------------------------+| 162eebfb6477e5d3 |+------------------------+1 row in set (0.55 sec) 可以看出password的结果又变成16位的了,可喜的变化,修改配置文件my.ini在”mysqld”段中加入”set-variable=old-passwords“例: 12345678[mysqld]basedir=C:/mysqlset-variable=old-passwords datadir=C:/mysql/data[WinMySQLadmin]Server=C:/mysql/bin/mysqld-nt.exeuser=rootpassword=mypassword 然后在服务管理器中起动mysql可以修改mysql.user表中把password的字段长度改成16系统就自动切换到了oldpassword方式,改成改回41后 又自动换到了新的验证方式.更改password方式后,要刷新授权表!~:)]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[使用mktime和strtotime函数获得前一天的日期]]></title>
+    <url>%2F20060531%2Fphp-date%2F</url>
+    <content type="text"><![CDATA[根据今天的日期获得昨天的日期 1$ydate = date(“Y-m-d H:i:s”,strtotime(“-1 day”)); 或者 12$ydate = date(&apos;Y-m-d H:i:s&apos;, mktime(date(&apos;H&apos;),date(&apos;i&apos;),date(&apos;s&apos;),date(&apos;m&apos;),date(&apos;d&apos;)-1,date(&apos;Y&apos;))); 提交的表单数据: 123456+——————————+ +——————————-+ +——————————+ +————————+|——Year—-∨ | |—-Month—- ∨| | —-Day—-∨ | | Submit |+——————————+ +——————————-+ +——————————+ +————————+$Today = $_POST[year].”-“.$_POST[month].”-“.$_POST[day]; $Yestoday = date(“Y-m-d”,mktime(0,0,0,$_POST[month],$_POST[day]-1,$_POST[year])); 或者 12345678910$Today = $_POST[year].”-“.$_POST[month].”-“.$_POST[day]; $Yestoday = date(“Y-m-d”,strtotime(“-1 day”));``` 以此方法可以得到明天，一个月以后的日期。。。。 一个月后的日期：``` $nextMonth = date(“Y-m-d”,mktime(0,0,0,$month+1,$day,$year)); 或者 1$nextMonth = date(“Y-m-d”,strtotime(“+1 month”)); 一年后的日期 1$nextMonth = date(“Y-m-d”,mktime(0,0,0,$month,$day,$year+1)); 或者 1$nextMonth = date(“Y-m-d”,strtotime(“+1 year”));]]></content>
+      <tags>
+        <tag>php</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[excel格式海量数据导入到mysql]]></title>
+    <url>%2F20060520%2Fmysql-excel-big-file%2F</url>
+    <content type="text"><![CDATA[(2007-10-17日更新) 使用load data infile要mysql支持 “load data infile” ，编译的时候需要带 --enable-local-infile 选项才行！ 有这样一个表：123456Create Table: CREATE TABLE `ttt` ( `c1` bigint(20) DEFAULT NULL, `c2` bigint(20) DEFAULT NULL, `c3` bigint(20) DEFAULT NULL, `c4` bigint(20) DEFAULT NULL) ENGINE=MyISAM DEFAULT CHARSET=gbk 一个文本文件 a.txt 内容：(间隔符号t)1234567111111 22222222 3333333 111111111111 22222222 3333333 111111111111 22222222 3333333 111111111111 22222222 3333333 111111111111 22222222 3333333 111111111111 22222222 3333333 111111... 导入数据库: 1load data local infile &apos;a.txt&apos; into table ttt fields terminated by &apos;t&apos; 指定字段 1load data local infile &apos;a.txt&apos; into table ttt fields terminated by &apos;t&apos; (c1,c2,c4) （ 过去的纪录 ） 这样一个excel文档: 123456789....0462311 25342 20034 345 200209 20258 234....(20列)3457657 80342 23456 457 345877 34546 205 ....3462311 20302 78900 456 214568 20258 345....6793454 20344 12367 678 789003 68794 890....8900345 20123 34578 672 123677 78090 124....4569001 23442 12379 120 567834 12314 789.......(60,000行) 这样的文件有n个。要将这个excel文件的数据导入数据库表(tbl_test)中的一个字段(field_num)中:即要得到这样的结果: 123456789...0462311 3457657 3462311 6793454 8900345 4569001 ...(1,200,000行) 怎么将数据导入数据库呢？ 方法有这样几种：1.将excel文档转换成cvs格式的文档，然后用程序将cvs导入数据库(数据量太大，速度很慢)。可以用php自己写程序，也可以用现成的工具，例如:Excel Parser Pro2.将excel文档直接导入数据库，用工具:Excel to Mysql demo3.直接用mysql从文本中导入数据，这个方法是比较快，比较可行的方法:首先需要，将数据整理成一列存到txt文本中(test.txt)，excel有行数限制。 12create table tbl_test ( field_num bigint(20) not null, primary key (field_num) ); load data local infile &apos;FilePath/test.txt&apos; into table tbl_test lines terminated by &apos;n&apos;; 然后再将这个数据转移到你所用的表的某一列: 1insert into tbl_freshman_card (fresh_serial) select field_num from tbl_test; 就搞定了。]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[ubuntu mount 中文问题]]></title>
+    <url>%2F20060418%2Flinux-mount-utf8%2F</url>
+    <content type="text"><![CDATA[1mount -o iocharset=utf8 /dev/sda1 /mnt]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>mount</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[linux下安装运行IE]]></title>
+    <url>%2F20060407%2Flinux-wine-ie%2F</url>
+    <content type="text"><![CDATA[做出来的页子要在firefox和IE下都测试通过了，才算通过了，可是换了linux以后，就没发用IE来测试页子了，用IE的用户还是占多数，怎么办呢，能不能在linux下安装IE呢？ 答案是肯定的具体步骤： 安装wine （http://www.winehq.com/site/download）选择符合自己系统的版本，这里选的for ubuntu 的版本（wine_0.9.10-winehq1-2_i386.deb）安装方法: 1$sudo dpkg -i wine_0.9.10-winehq1-2_i386.deb 如果你用的其他的发行版，可以下载源码包，自己编译 安装CrossOver Office （http://www.codeweavers.com/site/products/download_trial/）CrossOver Office是用来安装Windows程序的软件 12chmod u+x install-crossover-standard-demo-5.0.1.sh./install-crossover-standard-demo-5.0.1.sh 出现图形界面的时候，安装之 安装 DCOM95.EXE安装IE的时候需要它。运行CrossOver Office，选择安装DCOM95，下一步，点下载按钮，程序会从微软网站上将其下载下来， 然后安装即可 安装IE6.0步骤同安装DCOM95类似安装完毕，桌面上会出现IE久违的e形图标。打开的时候会慢些，因为是在wine环境下运行的，而且使用的时候会有些闪烁，不爽，不过仅仅为了测试，足宜……折腾了两天，终于可以用linux来工作了 …]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>wine</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[今日收到ubuntu的光盘]]></title>
+    <url>%2F20060404%2Fubuntu-dvd%2F</url>
+    <content type="text"><![CDATA[3月15日申请的，今天就收到了，还算是比较快的，老外办事就是认真，赞！]]></content>
+      <tags>
+        <tag>ubuntu</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[sql查询某个小时段的数据]]></title>
+    <url>%2F20060331%2Fmysql-select-hour%2F</url>
+    <content type="text"><![CDATA[123456789101112mysql&gt; select EXTRACT(HOUR FROM createdate) as hour, count(*) as count from user where left(createdate,10)=&apos;2006-03-30&apos; group by hour;+------+-------+| hour | count |+------+-------+| 0 | 779 || 1 | 909 || 2 | 488 || 3 | 189 || 4 | 170 || 5 | 285 |......]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[ssh密钥对验证方式]]></title>
+    <url>%2F20060329%2Fssh-rsa%2F</url>
+    <content type="text"><![CDATA[[原文]:HOWTO: set up ssh keysPaul Keck, 2001Getting Started First, install OpenSSH on two UNIX machines, hurly and burly.This works best using DSA keys and SSH2 by default as far as I cantell. All the other HOWTOs I’ve seen seem to deal with RSA keys andSSH1, and the instructions not surprisingly fail to work with SSH2. On each machine type ssh somemachine.example.com and make aconnection with your regular password. This will create a .ssh dir inyour home directory with the proper perms. On your primary machine where you want your secret keys to live (let’s say hurly), type 1ssh-keygen -t dsa This will prompt you for a secret passphrase. If this isyour primary identity key, make sure to use a good passphrase. If thisworks right you will get two files called id_dsa and id_dsa.pub in your.ssh dir. Note: it is possible to just press the enter key whenprompted for a passphrase, which will make a key with no passphrase.This is a Bad Idea ? for an identity key, so don’t do it! See below foruses of keys without passphrases. 1scp ~/.ssh/id_dsa.pub burly:.ssh/authorized_keys2 Copy the id_dsa.pub file to the other host’s .ssh dir with the name authorized_keys2. Now burly is ready to accept your ssh key. How to tell it whichkeys to use? The ssh-add command will do it. For a test, type 1ssh-agent sh -c &apos;ssh-add &amp;lt; /dev/null &amp;amp;&amp;amp; bash&apos; This will start the ssh-agent, add your defaultidentity(prompting you for your passphrase), and spawn a bash shell.From this new shell you should be able to: ssh burly 1ssh burly This should let you in without typing a password orpassphrase. Hooray! You can ssh and scp all you want from this bashshell and not have to type any password or passphrase. [实战]: 生成密匙对 1ssh-keygen -t rsa 这一步在~/.ssh目录下生成三个文件: id_rsa.pub ,id_rsa ,authorized_keys公共密钥存放在 id_rsa.pub 中私有密钥存放在 id_rsa 中 1scp ~/.ssh/id_rsa.pub root@xxx.xxx.xxx.xxx:~/.ssh/authorized_keys 有时需要更改.ssh 权限 为755 以后用ssh登陆的时候就不用输入密码了，使在script中使用scp或ssh的时候更为方便用ssh 执行远程程序在本地显示:1ssh -n xxx.xxx.xxx.xxx filename]]></content>
+      <tags>
+        <tag>ssh</tag>
+        <tag>rsa</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[手头有10个Gmail邀请，想要的来拿]]></title>
+    <url>%2F20060313%2Fgmail-invate-code%2F</url>
+    <content type="text"><![CDATA[留下你的Email就行了: D]]></content>
+      <tags>
+        <tag>gmail</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[apache怎样重置日志文件]]></title>
+    <url>%2F20060307%2Fapache-logs%2F</url>
+    <content type="text"><![CDATA[一直以为把网站维护好就高枕无忧了，这样的如意算盘是敲不得的，呵呵，我敲了没几天，就来问题了，程序提示设备空间不足，晕死，怎么会呢？？登陆到服务器，查看一下设备空间， 1fdisk -l 日，满了（100%）啥玩意占用那么多空间？难道是Web服务器中的文件吗？看看： 1du -sh /usr/local/apache 显示磁盘占用62G肯定是apache的日志太多了,access.log 文件中基本是每一万个请求增加 1Mb. 现在问题来了：直接移除.log文件可以吗？方法是不可取的，这样做即使access.log或error.log文件内容是空的，占用的大小也会是60多G，不会改变，因为 Apache 将继续向这个地方写日志文件, 结果是将来产生的日志文件的大小没有变化并包含着大量空字符. 那么怎么来重置log文件呢，就是让apache重新打开日志文件,正确的方法是转移日志文件并发送信号给 Apache 重新打开日志文件. 这个发给 Apache 的信号是SIGHUP (-1) signal. 如12mv access_log access_log.oldkill -1 cat httpd.pid 注意: httpd.pid文件中将包含目前 Apache 服务器的进程号 , 并保存在日志文件目录.很多管理员使用这种方式来备份每日每周的日志文件.]]></content>
+      <tags>
+        <tag>apache</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[通过ssh隧道穿梭登录水木清华BBS]]></title>
+    <url>%2F20060304%2Fssh-tunnel%2F</url>
+    <content type="text"><![CDATA[假定一台运行于218.xxx.xxx.xxx的linux服务器上正确配置了sshd服务，存在一个普通权限用户user.只要在终端下键入 1ssh -l user 218.xxx.xxx.xxx -L 218.xxx.xxx.xxx:2345:newsmth.org:23 回车输入user的密码即可，只需telnet 218.xxx.xxx.xxx:2345就可以访问水木论坛了~~:D]]></content>
+      <tags>
+        <tag>ssh隧道</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[通过安装log查看编译参数]]></title>
+    <url>%2F20060301%2Fmysql-configure%2F</url>
+    <content type="text"><![CDATA[在linux环境下通过源代码编译安装应用程序，一般安装程序在安装时都应该有安装日志，因此安装参数一般在安装日志中可以查到， 以mysql编译安装为例:mysql 在configure ,make ,make install 以后，会生成一个文件config.logmysql在编译时的./configure --prefix=… --with-…参数在config.log文件中就可以查到。 1234567891011121314 $ ./configure —prefix=/usr/local/mysql \--localstatedir=/usr/local/mysql/data \--with-mysqld-user=mysql \--with-unix-socket-path=/var/lib/mysql/mysql.sock \--enable-assembler \--with-client-ldflags=-all-static \--with-mysqld-ldflags=-all-static \--with-readline \--without-debug \--without-docs \--without-bench \--enable-thread-safe-client \--with-extra-charsets=complex \--with-innodb —with-charset=utf8 其他程序情况应该是相同的~]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>configure</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[察看mysql配置参数]]></title>
+    <url>%2F20060222%2Fmysql-variables%2F</url>
+    <content type="text"><![CDATA[1234567891011121314151617181920212223242526mysqladmin variables +————————————————-+—————————————————————+| Variable_name | Value |+————————————————-+—————————————————————+| back_log | 50 || basedir | / || binlog_cache_size | 32768 || bulk_insert_buffer_size | 8388608 || character_set_client | utf8 || character_set_connection | utf8 || character_set_database | utf8 || character_set_results | utf8 || character_set_server | utf8 || character_set_system | utf8 || character_sets_dir | /usr/share/mysql/charsets/ || collation_connection | utf8_general_ci || collation_database | utf8_general_ci || collation_server | utf8_general_ci || concurrent_insert | ON || connect_timeout | 5 || datadir | /var/lib/mysql/ || date_format | %Y-%m-%d |………]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[复制数据表]]></title>
+    <url>%2F20060222%2Fcopy-data-table%2F</url>
+    <content type="text"><![CDATA[一、用create方法复制表 整表复制 1mysql&gt; create table NewTable_name select * from OldTable_name; 复制表结构 1mysql&gt; create table NewTable_name select * from OldTable_name where 1&lt;&gt;1; 二、用insert方法复制表 查看建表语句 1mysql&gt; show create table OldTable_name; 2.建立新表3.拷贝数据到新表 1mysql&gt; insert into NewTable_name select * from OldTable_name;]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[往utf8的数据表中导入中文数据的问题]]></title>
+    <url>%2F20060222%2Fdatabase-utf8%2F</url>
+    <content type="text"><![CDATA[1.现在有一个data.sql 文件，内容如下: 12345678910111213Use DB_NAME;INSERT INTO `tbl_province` VALUES (&apos;1&apos;, &apos;北京&apos;);INSERT INTO `tbl_province` VALUES (&apos;2&apos;, &apos;上海&apos;);INSERT INTO `tbl_province` VALUES (&apos;3&apos;, &apos;天津&apos;);INSERT INTO `tbl_province` VALUES (&apos;4&apos;, &apos;重庆&apos;);INSERT INTO `tbl_province` VALUES (&apos;5&apos;, &apos;河北&apos;);INSERT INTO `tbl_province` VALUES (&apos;6&apos;, &apos;山西&apos;);INSERT INTO `tbl_province` VALUES (&apos;7&apos;, &apos;内蒙古&apos;);INSERT INTO `tbl_province` VALUES (&apos;8&apos;, &apos;辽宁&apos;);INSERT INTO `tbl_province` VALUES (&apos;9&apos;, &apos;吉林&apos;);INSERT INTO `tbl_province` VALUES (&apos;10&apos;, &apos;黑龙江&apos;);...... 如果直接插入一个utf8的数据表中将出现中文无法正常插入； 1mysql &lt; data.sql 2.故需要将data.sql从gb2312转化为utf8,才可以正常导入数据库 1# iconv -f gb2312 -t utf8 data.sql -o data_utf8.sql 转化后的data_utf8.sql内容为： 12345678910111213USE DB_NAME;INSERT INTO `tbl_province` VALUES (1, &apos;鍖椾含&apos;);INSERT INTO `tbl_province` VALUES (2, &apos;涓婃捣&apos;);INSERT INTO `tbl_province` VALUES (3, &apos;澶╂触&apos;);INSERT INTO `tbl_province` VALUES (4, &apos;閲嶅簡&apos;);INSERT INTO `tbl_province` VALUES (5, &apos;娌冲寳&apos;);INSERT INTO `tbl_province` VALUES (6, &apos;灞辫タ&apos;);INSERT INTO `tbl_province` VALUES (7, &apos;鍐呰挋鍙?);INSERT INTO `tbl_province` VALUES (8, &apos;杈藉畞&apos;);INSERT INTO `tbl_province` VALUES (9, &apos;鍚夋灄&apos;);INSERT INTO `tbl_province` VALUES (10, &apos;榛戦緳姹?);...... 3.将转化后的data_utf8.sql导入数据库 1mysql &lt; data_utf8.sql 4.导入成功 :D]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+        <tag>utf8</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[书写SQL几个注意的问题]]></title>
+    <url>%2F20060219%2Fwrite-sql%2F</url>
+    <content type="text"><![CDATA[操作sql语句的时候，特别是Update语句时，应该注意书写方式 先写update where …; 然后再写 update 和 where 之间写入要update的表和set 语句这应该养成一个习惯，否则一旦出现问题将是非常危险的，将导致整个数据表的误改~~~ 修改mysql 的 mysql表后要刷新授权表 1mysql&gt; flush privileges; 例如: 12mysql&gt; Update user set Password=old_password(&apos;123456&apos;) where Host=&apos;192.0.0.1&apos; and User=&apos;root&apos; ;mysql&gt; flush privileges; 建表采用Utf8编码 12345Create table xxx (.........) ENGINE=MyISAM DEFAULT CHARSET=utf8;]]></content>
+      <tags>
+        <tag>mysql</tag>
+        <tag>database</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[一个巧妙的小算法]]></title>
+    <url>%2F20060209%2Fa-algorithm%2F</url>
+    <content type="text"><![CDATA[写一个将变量a 和b的值互换的算法 大多数人会想到的算法是这样的 123tmp = a;a = b;b = tmp; 看看这个算法，挺巧妙 123a = a + b;b = a - b;a = a - b;]]></content>
+      <tags>
+        <tag>算法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[中国成为第二个拥有LINUX测试实验室的国家]]></title>
+    <url>%2F20060118%2Fchina-linux%2F</url>
+    <content type="text"><![CDATA[由中国电子技术标准化研究所和英特尔公司共建的linux国际标准测试实验室13日在北京落成，中国因此成为继英国之后全球第二个拥有该机构的国家。 linux国际标准测试实验室是在信息产业部的支持下建成的。中国电子技术标准化研究所所长莫玮说，这有助于促进我国IT企业学习、掌握国际标准体系和相关核心技术，提高国产linux操作系统和应用软件的兼容性，同时大幅降低企业的开发成本。他还透露，实验室将为正在制定的linux国家标准提供测试依据。 linux是一种可免费使用和自由传播的计算机操作系统，支持多用户、多任务、多进程、多中央处理器，尽管它的市场表现远不如微软的windows，但完全开放的特点使其成为目前运行硬件平台最多的操作系统。专家认为，linux操作系统的兼容性、易用性有待提高，北京测试实验室的主要任务就是帮助软件研发机构执行统一标准。 据了解，目前北京中科红旗、上海中标等国内软件公司已通过linux国际标准测试，个别地方政府还以招标方式采购了linux操作系统。自由标准组织(FSG)主席吉姆·泽林表示，中国近年来在linux操作系统研发及应用方面取得了明显成就，这是linux国际标准测试实验室最终选址北京的主要原因。]]></content>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[几种常见shell简介]]></title>
+    <url>%2F20060118%2Flinux-shell%2F</url>
+    <content type="text"><![CDATA[Linux系统提供多种不同的Shell以供选择。常用的有Bourne Shell（简称sh）、C-Shelll（简称csh）、Korn Shell（简称ksh）和Bourne Again Shell (简称bash)。 (1)Bourne Shell是AT&amp;T Bell实验室的 Steven Bourne为AT&amp;T的Unix开发的，它是Unix的默认Shell，也是其它Shell的开发基础。Bourne Shell在编程方面相当优秀，但在处理与用户的交互方面不如其它几种Shell。 (2)C Shell是加州伯克利大学的Bill Joy为BSD Unix开发的，与sh不同，它的语法与C语言很相似。它提供了Bourne Shell所不能处理的用户交互特征，如命令补全、命令别名、历史命令替换等。但是，C Shell与BourneShell并不兼容。 (3)Korn Shell是AT&amp;T Bell实验室的David Korn开发的，它集合了C Shell和Bourne Shell的优点，并且与Bourne Shell向下完全兼容。Korn Shell的效率很高，其命令交互界面和编程交互界面都很好。 (4)Bourne Again Shell (即bash)是自由软件基金会(GNU)开发的一个Shell，它是Linux系统中一个默认的Shell。Bash不但与Bourne Shell兼容，还继承了C Shell、Korn Shell等优点。]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>shell</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Apache中ssi的配置方法]]></title>
+    <url>%2F20060105%2Fapache-ssi%2F</url>
+    <content type="text"><![CDATA[1、查找12AddType text/html .shtmlAddHandler server-parsed .shtml 将前边的#注释符去掉 2、找到&lt;Directory &quot;d:/APM_Setup/htdocs&quot;&gt;&lt;/Directory&gt; 这里是网站根目录设置选项，(路径会有所不同)在Option 选项后加 Includes 123456&lt;Directory &quot;d:/APM_Setup/htdocs&quot;&gt; Options FollowSymLinks MultiViews ExecCGI Includes AllowOverride None Order allow,deny Allow from all&lt;/Directory&gt; 3、保存httpd.conf修改，重起apache]]></content>
+      <tags>
+        <tag>apache</tag>
+        <tag>shtml</tag>
+        <tag>ssi</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[厚积薄发,有的放矢-李开复博士给中国计算机系学生的建议]]></title>
+    <url>%2F20060104%2Fkai-fu-lee%2F</url>
+    <content type="text"><![CDATA[很多在校的大学同学问我们：“我今年还没有到毕业班，但我很想知道，如果将来我想申请Google中国工程研究院，现在应该如何让自己做好准备？”下面是Google中国总裁李开复博士和其他一些Google资深的华人工程师给广大同学的建议。 （1）练内功。不要只花功夫学习各种流行的编程语言和工具，以及一些公司招聘广告上要求的科目。要把数据结构、算法、数据库、操作系统原理、计算机体系结构、计算机网络，离散数学等基础课程学好。不妨试试Donald Knuth的Art of Computer Programming里的题目，如果你能够解决其中的大部分题目，就说明你在算法方面的功力不错了。 （2）多实战。通过编程的实战积累经验、内化知识。建议大家争取在大学四年中积累编写十万行代码的经验。 （3）求实干。不要轻视任何的实际工作，比如一些看似简单的编码或测试。要不懈追求对细节一丝不苟的实干作风与职业精神。 （4）不放弃数学。数学是思维的体操，数学无处不在。尤其当你对一些“数学密集型”的领域有兴趣，例如视频、图像处理等等，你需要使它成为你的利器。 （5）培养团队精神，学会与人合作。 （6）激励创新意识，不为书本和权威所约束。 （7）有策略地“打工”。在不影响学业的前提下，寻找真正有意义的暑期工作或兼职。去找一个重视代码的公司，在一个好的“老板”指导下完成真正会被用户使用的程序。不要急于去一个要你做“头”而独挡一面的地方，因为向别人学习，是你的目的。打工和找工作一样，“不要只看待遇和职衔，要挑一个你能够学习的环境，一个愿意培养员工的企业，一个重视你的专业的公司，最后，要挑一个好老板。”]]></content>
+      <tags>
+        <tag>李开复</tag>
+        <tag>Google</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[netpbm工具的安装]]></title>
+    <url>%2F20051229%2Fnetpnm%2F</url>
+    <content type="text"><![CDATA[做好的程序今天传到测试服务器上,发现发布图片的时候竟然无法生成缩略图，换到另一台服务器上功能正常，那肯定是测试服务器的问题喽，经过一番折腾，排除了程序错误，apache和php的配置问题，最后发现原来测试服务器上没有装netpbm工具包，真是害苦了我了，一上午时间就这样折腾过去了，真郁闷~ 安装过程:下载最新的netpnm包(netpbm-10.28.tar)查看文件压缩格式1file netpbm-10.28.tar //发现是gz的压缩包 解压缩:123tar zxvf netpbm-10.28.tarcd netpbm-10.28./configure 根据提示输入安装参数123make#这一步要指定pkg的位置 /usr/local/netpbm_dir./installnetpbm 开始安装 12ln -s /usr/local/netpbm/bin/* /usr/local/bin/ln -s /usr/local/netpbm/lib/libnetpbm.so.10 /usr/local/lib/]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>netpbm</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[linux tar命令回顾]]></title>
+    <url>%2F20051229%2Flinux-tar%2F</url>
+    <content type="text"><![CDATA[自从毕业以后，4个多月没大用linux了，许多命令都淡忘了，说”一天不练手脚慢，两天不练丢一半，三天不练门外汉，四天不练瞪眼看”，我现在都快到瞪眼看的程度了，幸亏现在工作能用到它，才不至于荒废~ 今天回顾一下tar命令的用法: tar是打包工具，是备份数据的常用工具。(打包用，不是压缩) 用法: 解包： tar xvf FileName.tar打包：tar cvf FileName.tar DirName（注：tar是打包，不是压缩！） 打包并压缩为.gz格式 1tar zcvf Filename.tar.gz Dirname 参数： c 创建新的档案文件。如果用户想备份一个目录或是一些文件，就要选择这个选项。r 把要存档的文件追加到档案文件的未尾。例如用户已经作好备份文件，又发现还有一个目录或是一些文件忘记备份了，这时可以使用该选项，将忘记的目录或文件追加到备份文件中。t 列出档案文件的内容，查看已经备份了哪些文件。u 更新文件。就是说，用新增的文件取代原备份文件，如果在备份文件中找不到要更新的文件，则把它追加到备份文件的最后。x 从档案文件中释放文件。辅助选项：b 该选项是为磁带机设定的。其后跟一数字，用来说明区块的大小，系统预设值为20（20512 bytes）。f 使用档案文件或设备，这个选项通常是必选的。k 保存已经存在的文件。例如我们把某个文件还原，在还原的过程中，遇到相同的文件，不会进行覆盖。m 在还原文件时，把所有文件的修改时间设定为现在。M 创建多卷的档案文件，以便在几个磁盘中存放。v 详细报告tar处理的文件信息。如无此选项，tar不报告文件信息。w 每一步都要求确认。z 用gzip来压缩/解压缩文件，加上该选项后可以将档案文件进行压缩，但还原时也一定要使用该选项进行解压缩。 其他压缩工具: .gz 解压1：gunzip FileName.gz解压2：gzip -d FileName.gz压缩：gzip FileName .tar.gz 解压：tar zxvf FileName.tar.gz压缩：tar zcvf FileName.tar.gz DirName .bz2 解压1：bzip2 -d FileName.bz2解压2：bunzip2 FileName.bz2压缩： bzip2 -z FileName .tar.bz2 解压：tar jxvf FileName.tar.bz2压缩：tar jcvf FileName.tar.bz2 DirName .bz 解压1：bzip2 -d FileName.bz压缩：未知 .tar.bz 解压：tar jxvf FileName.tar.bz压缩：tar jcvf FileName.tar.bz DirName .Z 解压：uncompress FileName.Z压缩：compress FileName .tar.Z 解压：tar Zxvf FileName.tar.Z压缩：tar Zcvf FileName.tar.Z DirName .tgz 解压：tar zxvf FileName.tgz压缩：tar zcvf FileName.tgz DirName .zip 解压：unzip FileName.zip压缩：zip FileName.zip DirName .rar 解压：rar e FileName.rar压缩：rar a FileName.rar .rpm 解包：rpm2cpio FileName.rpm | cpio -div]]></content>
+      <tags>
+        <tag>linux</tag>
+        <tag>tar</tag>
+      </tags>
+  </entry>
+</search>

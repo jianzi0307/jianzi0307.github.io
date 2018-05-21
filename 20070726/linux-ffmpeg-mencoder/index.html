@@ -1,0 +1,362 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+  
+    <meta name="keywords" content="linux,mencoder,ffmepg," />
+  
+
+  
+    <meta name="description" content="海纳百川 有容乃大" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>ffmpeg &amp; mencoder视频转换环境安装手记 [ 健子的博客 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+</head>
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="http://localhost:4000/images/avatar.jpeg">
+    <span class="title">健子的博客</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="https://jianzi0307.github.io" class="pure-menu-link">关于</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/atom.xml" class="pure-menu-link">订阅</a></li>
+          
+      
+  </ul>
+   
+</nav>
+
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        ffmpeg &amp; mencoder视频转换环境安装手记
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2007-07-25T16:00:00.000Z">
+        2007-07-26
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ffmepg/">ffmepg</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/">linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mencoder/">mencoder</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+      <span class="slash">/</span>
+    </header>
+
+    <div class="post-content">
+      <p>网上查了不少的ffmpeg编译文章，发现其实困难的不是ffmpeg的编译和安装，<br>困难的是把各种解码器凑齐，这个不容易！-.-!!!</p>
+<p>准备:</p>
+<p>编译ffmpeg之前，系统需要以下支持：</p>
+<blockquote>
+<ol>
+<li>lame (支持MP3)</li>
+<li>支持Ogg Vorbis </li>
+<li>xvid x264，现在最流行的两种高质量的压缩格式</li>
+<li>AC3和dts编码的支持</li>
+<li>mpg4 aac格式支持 （手机用户）</li>
+<li>支持3gp格式（手机用户）</li>
+</ol>
+</blockquote>
+<ol>
+<li>安装lame  （<a href="http://lame.sourceforge.net/index.php）" target="_blank" rel="noopener">http://lame.sourceforge.net/index.php）</a></li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># tar zxvf lame-3.97-i686-1jto.tgz</span><br><span class="line">(生成两个目录install/,usr/)</span><br><span class="line"># cp usr/bin/lame /usr/bin/ </span><br><span class="line"># cp -r usr/include/lame/ /usr/include/</span><br><span class="line"># cp -r usr/lib/* /usr/lib/</span><br></pre></td></tr></table></figure>
+<p>如果下载是源码的话:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># tar zxvf lame-3.97.tar.gz</span><br><span class="line"># cd lame-3.97</span><br><span class="line"># ./configure  —prefix=/usr —enable-shared</span><br><span class="line"># make</span><br><span class="line"># make install</span><br></pre></td></tr></table></figure></p>
+<ol start="2">
+<li>ogg vorbis:这个一般的redhat自带,不需要下载.可以去看看/usr/lib/bvorbis.a在不在</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># ls /usr/lib/libvorbis.*</span><br></pre></td></tr></table></figure>
+<p>如果不在,安装以下rpm包（安装盘中自带）<br>libvorbis, libvorbis-devel,libogg, libogg-devel</p>
+<ol start="3">
+<li>到<a href="http://www.xvid.org/下载XVid" target="_blank" rel="noopener">http://www.xvid.org/下载XVid</a><br><a href="http://downloads.xvid.org/downloads/xvidcore-1.1.0.tar.gz" target="_blank" rel="noopener">http://downloads.xvid.org/downloads/xvidcore-1.1.0.tar.gz</a></li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># ./configure —prefix=/usr</span><br><span class="line"># make</span><br><span class="line"># make install</span><br></pre></td></tr></table></figure>
+<p>在这里下载x264<br><a href="ftp://ftp.videolan.org/pub/videolan/x264/snapshots" target="_blank" rel="noopener">ftp://ftp.videolan.org/pub/videolan/x264/snapshots</a><br>或者<br>svn co svn://svn.videolan.org/x264/trunk x264</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># ./configure —prefix=/usr —enable-shared</span><br><span class="line"># make</span><br><span class="line"># make install</span><br></pre></td></tr></table></figure>
+<p>[注] 如果你的机器是多cpu的服务器,x264在make的时候会提示类似下面的错误：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">……</span><br><span class="line"></span><br><span class="line">common/cpu.c: In functionx264_cpu_num_processors’: common/cpu.c:220: warning: passing arg 2 of sched_getaffinity&apos; makes integer from pointer without a cast</span><br><span class="line">common/cpu.c:220: error: too few arguments to functionsched_getaffinity’</span><br><span class="line">make: * [common/cpu.o] Error 1</span><br></pre></td></tr></table></figure></p>
+<p>解决办法：<br>例如您的服务器cpu个数是2个</p>
+<p>修改common/cpu.c<br>找到下面的代码段：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">elif defined(SYS_LINUX)</span><br><span class="line">unsigned int bit;</span><br><span class="line">int np;</span><br><span class="line">cpu_set_t p_aff;</span><br><span class="line">memset( &amp;p_aff, 0, sizeof(p_aff) );</span><br><span class="line">sched_getaffinity( 0, &amp;p_aff );</span><br><span class="line">for( np = 0, bit = 0; bit &lt; sizeof(p_aff); bit++ )</span><br><span class="line">np += (((uint8_t *)&amp;p_aff)[bit / 8] &gt;&gt; (bit % 8)) &amp; 1;</span><br><span class="line">return np;</span><br></pre></td></tr></table></figure></p>
+<p>修改为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">elif defined(SYS_LINUX)</span><br><span class="line">int np;</span><br><span class="line">np =2;</span><br><span class="line">return np;</span><br></pre></td></tr></table></figure></p>
+<p>np表示你的cpu个数。</p>
+<ol start="4">
+<li>系统似乎已经支持ac3编码，编译的时候只要加–enable-a52 –enable-gpl参数就行<br>LibDTS 下载：<br><a href="http://download.chinaunix.net/down.php?id=11568&amp;ResourceID=5785&amp;site=1" target="_blank" rel="noopener">http://download.chinaunix.net/down.php?id=11568&amp;ResourceID=5785&amp;site=1</a></li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># ./configure —prefix=/usr</span><br><span class="line"># make</span><br><span class="line"># make install</span><br></pre></td></tr></table></figure>
+<ol start="5">
+<li>MPEG-4 AAC格式支持需要安装faad2和faac这两个包！<br>我没找到官方的下载地址，（<a href="http://www.audiocoding.com" target="_blank" rel="noopener">www.audiocoding.com</a> 这个域名貌似不能用了！）<br>从discuz的服务器上下载吧，(修正后的)</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget http://download.discuz.net/env/video/faac-1.25-Comsenz.tar.bz2</span><br><span class="line">wget http://download.discuz.net/env/video/faad2-2.5-Comsenz.tar.bz2`</span><br></pre></td></tr></table></figure>
+<p>安装faad2<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tar xjvf faad2-2.5-Comsenz.tar.bz2</span><br><span class="line">cd faad2-Comsenz</span><br><span class="line">autoreconf -vif</span><br><span class="line">./configure —prefix=/usr —with-mp4v2 —enable-shared</span><br><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></p>
+<p>安装faac<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">cd /usr/local/video/</span><br><span class="line">tar xjvf faac-1.25-Comsenz.tar.bz2</span><br><span class="line">cd faac-Comsenz</span><br><span class="line">autoreconf -vif</span><br><span class="line">./configure —prefix=/usr —with-mp4v2 —enable-shared</span><br><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure></p>
+<p>这两个包编译时间有点小长…耐心等待… ^^</p>
+<ol start="6">
+<li>支持3gp格式，这也是现在好多手机支持的格式<br>amrwb_float ：<br>wget <a href="http://www.3gpp.org/ftp/Specs/archive/26_series/26.204/26204-510.zip" target="_blank" rel="noopener">http://www.3gpp.org/ftp/Specs/archive/26_series/26.204/26204-510.zip</a></li>
+</ol>
+<p>amr_float ：<br>wget <a href="http://www.3gpp.org/ftp/Specs/archive/26_series/26.104/26104-510.zip" target="_blank" rel="noopener">http://www.3gpp.org/ftp/Specs/archive/26_series/26.104/26104-510.zip</a></p>
+<p>分别解压拷贝到ffmpeg/libavcodec/amrwb_float和ffmpeg/libavcodec/amrwb_float<br>ffmpeg编译时加编译参数：–enable-amr_nb –enable-amr_wb</p>
+<p>编译安装ffmpeg<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># ./configure --prefix=/usr --enable-gpl --enable-shared --enable-mp3lame --enable-amr_nb --enable-amr_wb \</span><br><span class="line">--enable-amr_if2 --enable-libogg --enable-vorbis --enable-xvid --enable-a52 --enable-a52bin --enable-faadbin \</span><br><span class="line">--enable-dts --enable-pp --enable-faad --enable-faac --enable-x264 --enable-pthreads --disable-ffserver --disable-ffplay</span><br><span class="line"># make</span><br><span class="line"># make install</span><br></pre></td></tr></table></figure></p>
+<p>（ffmpeg 安装完）</p>
+<p>注：最新版本的ffmpeg已经比以前支持更多的格式了.只需安装lame,xvid,x264就可以了！</p>
+<p>mencoder 安装<br>安装mplayer即可，从mplayer官方网站（<a href="http://www.mplayerhq.hu/）,下载最新的mplayer和解码包" target="_blank" rel="noopener">http://www.mplayerhq.hu/）,下载最新的mplayer和解码包</a></p>
+<p>mplayer :<br>wget <a href="http://www1.mplayerhq.hu/MPlayer/releases/MPlayer-1.0rc1.tar.bz2" target="_blank" rel="noopener">http://www1.mplayerhq.hu/MPlayer/releases/MPlayer-1.0rc1.tar.bz2</a></p>
+<p>codecs:<br>wget <a href="http://www1.mplayerhq.hu/MPlayer/releases/codecs/essential-20061022.tar.bz2" target="_blank" rel="noopener">http://www1.mplayerhq.hu/MPlayer/releases/codecs/essential-20061022.tar.bz2</a></p>
+<p>编译安装<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tar jxvf essential-20061022.tar.bz2</span><br><span class="line">mv essential-20061022 /usr/lib/codecs</span><br><span class="line">tar  jxvf MPlayer-1.0rc1.tar.bz2</span><br><span class="line">cd MPlayer-1.0rc1</span><br><span class="line">./configure —prefix=/usr/local —enable-gui —enable-largefiles —enable-gif —enable-png —enable-jpeg —language=zh_CN—with-codecsdir=/usr/lib/codecs/</span><br><span class="line">make ; make install</span><br></pre></td></tr></table></figure></p>
+<p>（mencoder 安装完）</p>
+<p>================================================================</p>
+<p>Ffmpeg使用语法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg [[options][`-i’ input_file]]… &#123;[options] output_file&#125;…</span><br></pre></td></tr></table></figure></p>
+<p>如果没有输入文件，那么视音频捕捉（只在Linux下有效，因为Linux下把音视频设备当作文件句柄来处理）就会起作用。作为通用的规则，选项一般用于下一个特定的文件。如果你给 –b64选项，改选会设置下一个视频速率。对于原始输入文件，格式选项可能是需要的。缺省情况下，ffmpeg试图尽可能的无损转换，采用与输入同样的音频视频参数来输出。</p>
+<p><strong>视频文件截图</strong></p>
+<p>截取一张352x240尺寸大小的，格式为jpg的图片<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -i test.asf -y -f image2 -t 0.001 -s 352x240 a.jpg</span><br></pre></td></tr></table></figure></p>
+<p>把视频的前３０帧转换成一个Animated Gif<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -i test.asf -vframes 30 -y -f gif a.gif</span><br></pre></td></tr></table></figure></p>
+<p>截取指定时间的缩微图<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -i test.avi -y -f image2 -ss 8 -t 0.001 -s 350x240 test.jpg</span><br><span class="line">-ss后跟的时间单位为秒</span><br></pre></td></tr></table></figure></p>
+<p>转换文件为3GP格式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -y -i test.mpeg -bitexact -vcodec h263 -b 128 -r 15 -s 176x144</span><br><span class="line">-acodec aac -ac 2 -ar 22500 -ab 24 -f 3gp test.3gp</span><br><span class="line">或</span><br><span class="line">ffmpeg -y -i test.mpeg -ac 1 -acodec amr_nb -ar 8000 -s 176x144 -b 128 -r 15 test.3gp</span><br><span class="line">视频格式转换</span><br></pre></td></tr></table></figure></p>
+<p>如何使用 ffmpeg 编码得到高质量的视频<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg.exe -i “D:VideoFearlessFearless.avi” -target film-dvd -s 720x352</span><br><span class="line">-padtop 64 -padbottom 64 -maxrate 7350000 -b 3700000 -sc_threshold 1000000000</span><br><span class="line">-trellis -cgop -g 12 -bf 2 -qblur 0.3 -qcomp 0.7 -me full -dc 10 -mbd 2</span><br><span class="line">-aspect 16:9 -pass 2 -passlogfile “D:Videoffmpegencode” -an -f mpeg2video “D:Fearless.m2v”</span><br></pre></td></tr></table></figure></p>
+<p>转换指定格式文件到FLV格式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg.exe -i test.mp3 -ab 56 -ar 22050 -b 500 -r 15 -s 320x240 f:test.flv</span><br><span class="line">ffmpeg.exe -i test.wmv -ab 56 -ar 22050 -b 500 -r 15 -s 320x240 f:test.flv</span><br></pre></td></tr></table></figure></p>
+<p>转码解密的VOB<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -i snatch_1.vob -f avi -vcodec mpeg4 -b 800 -g 300 -bf 2 -acodec mp3 -ab 128 snatch.avi</span><br></pre></td></tr></table></figure></p>
+<p>上面的命令行将vob的文件转化成avi文件，mpeg4的视频和mp3的音频。注意命令中使用了B帧，所以mpeg4流是divx5兼容的。GOP大小是300意味着29.97帧频下每10秒就有INTRA帧。该映射在音频语言的DVD转码时候尤其有用。</p>
+<p>同时编码到几种格式并且在输入流和输出流之间建立映射<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -i /tmp/a.wav -ab 64 /tmp/a.mp2 -ab 128 /tmp/b.mp2 -map 0:0 -map 0:0</span><br></pre></td></tr></table></figure></p>
+<p>上面的命令行转换一个64Kbits 的a.wav到128kbits的a.mp2 ‘-map file:index’在输出流的顺序上定义了哪一路输入流是用于每一个输出流的。</p>
+<p>转换文件为3GP格式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -i test.avi -y -b 20 -s sqcif -r 10 -acodec amr_wb -ab 23.85 -ac 1 -ar 16000 test.3gp</span><br><span class="line">注：如果要转换为3GP格式，则ffmpeg在编译时必须加上--enable-amr_nb --enable-amr_wb</span><br></pre></td></tr></table></figure></p>
+<p><strong>屏幕录制</strong></p>
+<p>使用ffmpeg录像屏幕<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -vcodec mpeg4 -b 1000 -r 10 -g 300 -vd x11:0,0 -s 1024x768 ~/test.avi</span><br></pre></td></tr></table></figure></p>
+<p>其中，-vd x11:0,0 指录制所使用的偏移为 x=0 和 y=0，-s 1024×768 指录制视频的大小为 1024×768。录制的视频文件为 test.avi，将保存到用户主目录中</p>
+<p>如果你只想录制一个应用程序窗口或者桌面上的一个固定区域，那么可以指定偏移位置和区域大小。使用xwininfo -frame命令可以完成查找上述参数。<br>重新调整视频尺寸大小<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ffmpeg -vcodec mpeg4 -b 1000 -r 10 -g 300 -i ~/test.avi -s 800×600 ~/test-800-600.avi</span><br><span class="line">注：ffmpeg的屏幕录制功能只能在Linux环境下有效。</span><br></pre></td></tr></table></figure></p>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share">
+
+</div>
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/20070706/lighttpd-mysql-php-install/" rel="next" title="lighttpd + mysql + php(fast-cgi)安装与配置手记">
+          lighttpd + mysql + php(fast-cgi)安装与配置手记
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/20070822/whine/" rel="prev" title="发点牢骚">
+            发点牢骚
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://jianzi0307.github.io">首页</a> |
+        <a class="bottom-item" href="https://jianzi0307.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/jianzi0307" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

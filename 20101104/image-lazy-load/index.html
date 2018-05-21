@@ -1,0 +1,305 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+  
+    <meta name="keywords" content="前端优化,懒加载," />
+  
+
+  
+    <meta name="description" content="海纳百川 有容乃大" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>使用ImageLazyLoad技术，对图片延迟加载 [ 健子的博客 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+</head>
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="http://localhost:4000/images/avatar.jpeg">
+    <span class="title">健子的博客</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="https://jianzi0307.github.io" class="pure-menu-link">关于</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/atom.xml" class="pure-menu-link">订阅</a></li>
+          
+      
+  </ul>
+   
+</nav>
+
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        使用ImageLazyLoad技术，对图片延迟加载
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2010-11-03T16:00:00.000Z">
+        2010-11-04
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/前端优化/">前端优化</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/懒加载/">懒加载</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+      <span class="slash">/</span>
+    </header>
+
+    <div class="post-content">
+      <p>ImageLazyLoad技术，就是在下拉滚动条的时候加载图片，这种比较<br>适合一个网页上有很多图片的情况，例如我的网站:<a href="http://www.uucc5.com" target="_blank" rel="noopener">www.uucc5.com</a><br>满页都是图片，那么如果用户访问的时候，会在加载完整个页面等待很长时间，而用第一眼看到的只是第一屏的内容，所以第二屏、第三屏等的内容加载时间其实是<br>在浪费时间！如果用户只看了第一屏，而不翻屏就关掉了浏览器，那么第二屏第三屏下载的资源也是一中流量的浪费！<br>并且加载用户体验也不好！那么这就有了这个小技巧，使用javascript来实现图片缓冲，只加载用户要看的屏幕的资源，这个小技巧的好处是提高访问速<br>度，提高用户体验，对seo没有什么帮助！，不废话，说做法：</p>
+<p>一、使用JQuery插件 ，插件名: jquery.lazyload（7kb大小），压缩后（3kb大小）：</p>
+<p>1.导入JS插件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;script src=&quot;http://bchuan.com/jquery.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;</span><br><span class="line">&lt;script src=&quot;http://bchuan.com/jquery.lazyload.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;</span><br></pre></td></tr></table></figure></p>
+<p>2.在你的页面中加入如下的javascript：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(&quot;img&quot;).lazyload();</span><br></pre></td></tr></table></figure></p>
+<p>这将会使所有的图片都延迟加载。</p>
+<p>当然插件还有几个配置项可供设置：<br>1.改变threshold<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(&quot;img&quot;).lazyload(&#123; threshold : 200 &#125;);</span><br></pre></td></tr></table></figure></p>
+<p>把阀值设置成200 意思就是当图片没有看到之前先load 200像素。</p>
+<p>2.当然了你也可以通过设置占位符图片和自定事件来触发加载图片事件<br>复制代码<br>代码如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$(&quot;img&quot;).lazyload(&#123;</span><br><span class="line">	placeholder : &quot;img/grey.gif&quot;,</span><br><span class="line">	event : &quot;click&quot;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>3.可以通过定义effect 参数来定义一些图片显示效果<br>复制代码<br>代码如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$(&quot;img&quot;).lazyload(&#123;</span><br><span class="line">	placeholder : &quot;img/grey.gif&quot;,</span><br><span class="line">	effect : &quot;fadeIn&quot;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p>
+<p>LazyLoad(延迟加载)技术不仅仅用在对网页中图片的延迟加载，对数据同样可以，Google Reader和Bing图片搜索就把LazyLoad技术运用的淋漓尽致；</p>
+<p>缺陷：</p>
+<blockquote>
+<p>1.与Ajax技术的冲突；<br>2.图片的延迟加载，遇到高度特别高的图片，会出现停止加载的问题；<br>3.写代码不规范的同学要注意了，不管由于什么原因，如果您的页面中，img标签的height属性未定义，那么我建议您最好不要使用ImageLazyLoad</p>
+</blockquote>
+<p>二、使用淘宝的延迟加载技术:(2kb大小)<br><a href="http://a.tbcdn.cn/kissy/1.0.0/build/imglazyload/imglazyload-min.js" target="_blank" rel="noopener">http://a.tbcdn.cn/kissy/1.0.0/build/imglazyload/imglazyload-min.js</a><br>调用方法也是很简单的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;script src=&quot;http://a.tbcdn.cn/kissy/1.0.0/build/imglazyload/imglazyload-min.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;</span><br><span class="line">&lt;script type=&quot;text/javascript&quot;&gt;&lt;!--//&lt;![CDATA[KISSY.ImageLazyload();//--&gt;]]&gt;&lt;/script&gt;</span><br></pre></td></tr></table></figure></p>
+<p>注：该脚本依赖 yahoo-dom-event, 页面中需要加载 yui 2.x,你也可以直接引用下面的地址:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;script src=&quot;http://kissy.googlecode.com/svn/trunk/third-party/yui2/yahoo-dom-event/yahoo-dom-event.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;</span><br></pre></td></tr></table></figure></p>
+<p>配置参数如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;script type=&quot;text/javascript&quot;&gt;</span><br><span class="line">KISSY.ImageLazyload(&#123;</span><br><span class="line">	mod: &quot;manual&quot;, // 延迟模式。默认为 auto</span><br><span class="line">	diff: 200 // 当前屏幕下多远处的图片开始延迟加载。默认两屏外的图片才延迟加载</span><br><span class="line">&#125;);</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure></p>
+<p>manual 模式时，需要手动将页面中需要延迟加载的图片的 src 属性名更改为 data-lazyload-src. 比如 SRP 页面，宝贝列表的后20个图片延迟加载。 输出时，html 代码为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;img data-lazy-src=&quot;http://jianzi0307.blog.163.com/blog/path/to/img&quot; alt=&quot;something&quot; /&gt;</span><br></pre></td></tr></table></figure></p>
+<p>如果您是Jquery，Prototype等这些JS框架的粉丝，他们都有定制的LazyLoad Plugin提供：<br><a href="http://www.appelsiini.net/projects/lazyload" target="_blank" rel="noopener">http://www.appelsiini.net/projects/lazyload</a></p>
+<p>LazyLoad(延迟加载)技术不仅仅用在对网页中图片的延迟加载，对数据同样可以。</p>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share">
+
+</div>
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/20100708/as3-game-map-scroll/" rel="next" title="滚动地图层的方法">
+          滚动地图层的方法
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/20110803/uptime/" rel="prev" title="监控系统的平均负载">
+            监控系统的平均负载
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://jianzi0307.github.io">首页</a> |
+        <a class="bottom-item" href="https://jianzi0307.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/jianzi0307" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

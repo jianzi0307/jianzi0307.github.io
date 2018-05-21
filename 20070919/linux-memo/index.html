@@ -1,0 +1,363 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+  
+    <meta name="keywords" content="linux," />
+  
+
+  
+    <meta name="description" content="海纳百川 有容乃大" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>那些年记下的琐碎知识点 [ 健子的博客 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+</head>
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="http://localhost:4000/images/avatar.jpeg">
+    <span class="title">健子的博客</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="https://jianzi0307.github.io" class="pure-menu-link">关于</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/atom.xml" class="pure-menu-link">订阅</a></li>
+          
+      
+  </ul>
+   
+</nav>
+
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        那些年记下的琐碎知识点
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2007-09-18T16:00:00.000Z">
+        2007-09-19
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/">linux</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+      <span class="slash">/</span>
+    </header>
+
+    <div class="post-content">
+      <p>清除Linux历史记录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd ~</span><br><span class="line">rm -f .bash_history</span><br><span class="line">history -c</span><br><span class="line"># history -w ( 立即更新bash_history )</span><br></pre></td></tr></table></figure>
+<p>vim 设置php语法高亮</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">:set sysntax=php</span><br></pre></td></tr></table></figure>
+<p><strong> mysql 问题 </strong></p>
+<p>1&gt;无法起动</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ll /usr/local/mysql</span><br><span class="line">drwx——— 4 root root 4096 1月 17 22:56 var</span><br><span class="line">chown -R mysql.myql var</span><br><span class="line">ll /usr/local/mysql //var为数据库所在目录 有时也常用/opt/data</span><br><span class="line">drwx——— 4 mysql mysql 4096 1月 17 23:00 var</span><br></pre></td></tr></table></figure>
+<p>分析：var文件夹属主开始为root，其他用户没有对var写入的权限</p>
+<p>2&gt;mysql数据库中user是全局权限，db数据库中是数据库级权限</p>
+<p>创建一个数据库级用户方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">mysql -u root -p</span><br><span class="line">password:</span><br><span class="line"></span><br><span class="line">show databases;</span><br><span class="line">+—————+</span><br><span class="line">| Database |</span><br><span class="line">+—————+</span><br><span class="line">| articles |</span><br><span class="line">| mysql |</span><br><span class="line">+—————+</span><br><span class="line">2 rows in set (0.01 sec)</span><br><span class="line"></span><br><span class="line">use mysql;</span><br><span class="line">Database changed</span><br><span class="line"></span><br><span class="line">show tables;</span><br><span class="line">+————————-+</span><br><span class="line">| Tables_in_mysql |</span><br><span class="line">+————————-+</span><br><span class="line">| columns_priv |</span><br><span class="line">| db |</span><br><span class="line">| func |</span><br><span class="line">| host |</span><br><span class="line">| tables_priv |</span><br><span class="line">| user |</span><br><span class="line">+————————-+</span><br><span class="line">6 rows in set (0.01 sec)</span><br><span class="line"></span><br><span class="line">describe user;</span><br></pre></td></tr></table></figure>
+<p>显示表结构 (略)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">insert into user (host,user,password) value (“%”,”aaa”,password(“1qazxsw2”));</span><br></pre></td></tr></table></figure>
+<p>注意空格 user表前三个字段为主机、用户名、密码,其他字段为全局权限，均为“N”;</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">describe db;</span><br><span class="line">+———————————-+————————+———+——-+————+——+</span><br><span class="line">| Field | Type | Null | Key | Default|Extra|</span><br><span class="line">+———————————-+————————+———+——-+————+——+</span><br><span class="line">| Host | char(60) binary| | PRI | | |</span><br><span class="line">| Db | char(64) binary| | PRI | | |</span><br><span class="line">| User | char(16) binary| | PRI | | |</span><br><span class="line">| Select_priv | enum(‘N’,’Y’) | | | N | |</span><br><span class="line">| Insert_priv | enum(‘N’,’Y’) | | | N | |</span><br><span class="line">| Update_priv | enum(‘N’,’Y’) | | | N | |</span><br><span class="line">| Delete_priv | enum(‘N’,’Y’) | | | N | |</span><br><span class="line">| Create_priv | enum(‘N’,’Y’) | | | N | |</span><br><span class="line">| Drop_priv | enum(‘N’,’Y’) | | | N | |</span><br><span class="line">| Grant_priv | enum(‘N’,’Y’) | | | N | |</span><br><span class="line">| References_priv | enum(‘N’,’Y’) | | | N | |</span><br><span class="line">| Index_priv | enum(‘N’,’Y’) | | | N | |</span><br><span class="line">| Alter_priv | enum(‘N’,’Y’) | | | N | |</span><br><span class="line">| Create_tmp_table_priv | enum(‘N’,’Y’) | | | N | |</span><br><span class="line">| Lock_tables_priv | enum(‘N’,’Y’) | | | N | |</span><br><span class="line">+———————————-+————————+———+——-+————+——+</span><br><span class="line">15 rows in set (0.00 sec)</span><br><span class="line"></span><br><span class="line">insert into db values(“%”,”articles”,”aaa”,’Y’,’Y’,’Y’,’Y’,’Y’,’Y’,’N’,’Y’,’Y’,’Y’,’Y’,’Y’);</span><br></pre></td></tr></table></figure>
+<p>这样就建了一个用户，他具有对数据库articles的除了Grant权限外所有的操作权限。</p>
+<p><strong>linux应用</strong></p>
+<p>1&gt;mount 乱码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mount /dev/sda1 /mnt/usb/ -o iocharset=cp936</span><br><span class="line">mount /dev/sda1 /mnt/usb/-o pagecode=936 iocharset=cp936</span><br><span class="line">mount -t vfat -o iocharset=cp936,codepage=936 /dev/sda1 /mnt/usb/</span><br></pre></td></tr></table></figure>
+<p>2&gt;mrxvt安装参数</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">./configure —prefix=/usr/local/mrxvt —enable-everything —disable-debug</span><br><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+<p>*更改》 FC3里需要加参数以支持中文</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">./configure —prefix=/usr/local/mrxvt —enable-xim —enable-cjk —with-encoding=gbk</span><br><span class="line">make</span><br><span class="line">make install</span><br></pre></td></tr></table></figure>
+<p>3&gt;让mrxvt支持中文输入和中文显示</p>
+<p>显示效果是宋体</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mrxvt -km gb -fm --simsun-medium-r-normal---160---m--gb2312.1980-0</span><br></pre></td></tr></table></figure>
+<p>或者</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mrxvt -km gb</span><br></pre></td></tr></table></figure>
+<p>4&gt;让vim在rxvt或mrxvt下显示颜色</p>
+<p>修改.bashrc文件:<br>加 export TERM=”rxvt”即可</p>
+<p>5&gt;lftp下查看当前路径</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">lftp www@202.194.114.1&gt; !ls</span><br><span class="line">6&gt;setup-&gt;System services</span><br><span class="line">[]iptables</span><br><span class="line">[]network</span><br><span class="line">[*]sshd</span><br></pre></td></tr></table></figure>
+<p>7&gt;编译gimp注意事项</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./configure —prefix=filedir —disable-print</span><br></pre></td></tr></table></figure>
+<p>禁止打印选项以后才能编译通过，要想使用gaim打印功能需要安装 libieee1284包</p>
+<p>8&gt;硬盘查速</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hdparm -Tt /dev/hda</span><br></pre></td></tr></table></figure>
+<p>支持dma方式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hdparm -d1 /dev/hda</span><br></pre></td></tr></table></figure></p>
+<p>不支持dma方式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hdparm -d0 /dev/hda</span><br></pre></td></tr></table></figure></p>
+<p>9&gt;<br>看分辨率</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xrandr</span><br></pre></td></tr></table></figure>
+<p>切换分辨率<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xrandr -s n</span><br></pre></td></tr></table></figure></p>
+<p>n表示序号</p>
+<p>10&gt;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -L</span><br></pre></td></tr></table></figure></p>
+<p>11&gt;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uname -a</span><br></pre></td></tr></table></figure></p>
+<p>12&gt;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">lftp www@2020.194..:/ mirror dirname 下载一个文件夹</span><br><span class="line">lftp www@202.194..:/mirror -R dirname 上传一个文件夹</span><br></pre></td></tr></table></figure></p>
+<p>13&gt;<br>安装字体的目录<br>/usr/share/fonts<br>安装完字体后刷新一下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fc-cache -f</span><br></pre></td></tr></table></figure></p>
+<p>14&gt;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps -e</span><br></pre></td></tr></table></figure></p>
+<p>15&gt;<br>安全检查：<br>a&gt;定时备份查看日志<br>b&gt;netstat -a,ps -e 监听端口，进程<br>c&gt;定期检查root用户的history列表，last列表，vipw用户列表是否正常<br>d&gt;定期tar</p>
+<p>16&gt;<br>X<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xinit — :1 启动x</span><br></pre></td></tr></table></figure></p>
+<p>几个窗口管理器<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">twm</span><br><span class="line">mwm</span><br><span class="line">kwin</span><br></pre></td></tr></table></figure></p>
+<p>任务条<br>kicker</p>
+<p>KDE桌面<br>kdesktop</p>
+<p>17&gt;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">gvim里自动排版代码:全选Ctrl+A,然后Ctrl+Alt+Tab</span><br><span class="line">vim下:先按 v,然后按上下键,选定代码段，然后Ctrl+Alt+Tab</span><br><span class="line">vim下全选方法:Esc-&gt;ggVG,选定一行: V</span><br><span class="line">vim下撤消方法: :u</span><br></pre></td></tr></table></figure></p>
+<p>18&gt;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mii-tool -F 10baseT-HD</span><br></pre></td></tr></table></figure></p>
+<p>19&gt;<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wget -R 网址 下载整站</span><br></pre></td></tr></table></figure></p>
+<p>设置代理 ：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vi .wgetrc</span><br><span class="line">加入：</span><br><span class="line">http-proxy = 代理服务器:端口</span><br><span class="line">ftp-proxy = 代理服务器:端口</span><br></pre></td></tr></table></figure></p>
+<p>20&gt;<br>设置vim退格键为删除<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stty sane</span><br></pre></td></tr></table></figure></p>
+<p>21&gt;<br>用scp远程拷贝文件时出现:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span><br><span class="line">@ WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED! @</span><br><span class="line">@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span><br><span class="line">IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!</span><br><span class="line">Someone could be eavesdropping on you right now (man-in-the-middle attack)!</span><br><span class="line">It is also possible that the RSA host key has just been changed.</span><br><span class="line">The fingerprint for the RSA key sent by the remote host is</span><br><span class="line">6e:1a:60:d0:ee:d0:7c:91:df:94:de:09:35:7b:08:ba.</span><br><span class="line">Please contact your system administrator.</span><br><span class="line">Add correct host key in /root/.ssh/known_hosts to get rid of this message.</span><br><span class="line">Offending key in /root/.ssh/known_hosts:8</span><br><span class="line">RSA host key for hostname has changed and you have requested strict checking.</span><br><span class="line">Host key verification failed.</span><br></pre></td></tr></table></figure>
+<p>画面时怎样解决呢?</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim ~/.ssh/known_hosts</span><br></pre></td></tr></table></figure>
+<p>清除即可</p>
+<p>22&gt;<br>清除history记录方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rm -rf ~/.bash_history</span><br><span class="line">HISTSIZE=0</span><br></pre></td></tr></table></figure>
+<p>注意：HISTSIZE=0才有效</p>
+<p>23&gt;<br>合理利用linux日志文件:<br>a&gt; /var/log/lastlog<br>记录最后进入系统的用户的信息，包括登录的时间、登录是否成功等信息。这样用户登录后只要用lastlog命令查看一下/var/log/lastlog文件中记录的所用帐号的最后登录时间，再与自己的用机记录对比一下就可以发现该帐号是否被黑客盗用。<br>b&gt; /var/log/secure<br>记录系统自开通以来所有用户的登录时间和地点，可以给系统管理员提供更多的参考。<br>c&gt;/var/log/wtmp文件<br>记录当前和历史上登录到系统的用户的登录时间、地点和注销时间等信息。可以用last命令查看，若想清除系统登录信息，只需删除这个文件，系统会生成新的登录信息。<br>d&gt;/var/run/utmp<br>w&amp;who 命令要用到该文件</p>
+<p>24&gt;<br>取消root命令历史纪录增加安全性<br>在linux下，系统会自动记录用户输入过的命令，而root用户发出的命令往往具有敏感的信息，为了保证安全性，一般应该不记录或者少记录root的命令历史记录。为了设置系统不记录每个人执行过的命令<br>就在/etc/profile里来个<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">HISTFILESIZE=0</span><br><span class="line">HISTSIZE=0</span><br></pre></td></tr></table></figure></p>
+<p>或者<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ln -s /dev/null ~/.bash_history</span><br></pre></td></tr></table></figure></p>
+<p>这样就可以了</p>
+<p>25&gt;<br>让linux对ping命令不反映<br>在linux里，如果要想使ping 没反应也就是用来忽略icmp包.<br>可以用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 1 &gt; /proc/sys/net/ipv4/icmp_echo_igore_all</span><br></pre></td></tr></table></figure></p>
+<p>若想恢复就用<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 0 &gt; /proc/sys/net/ipv4/icmp_echo_igore_all</span><br></pre></td></tr></table></figure></p>
+<p>26&gt;<br>Linux下Java环境配置</p>
+<p>vi .bashrc<br>添加<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME = /usr/local/j2sdk1.4.2_02/</span><br><span class="line">export PATH = $JAVA_HOME/bin:$PATH</span><br><span class="line">export CLASSPATH = $CLASSPATH:$JAVA_HOME/lib:$JAVA_HOME/jre/lib/rt.jar:.</span><br></pre></td></tr></table></figure></p>
+<p>注意CLASSPATH最后的:.<br>然后注销重新登录</p>
+<p>27&gt;<br>native2ascii用法<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">native2ascii -encoding gb2312 filename1 filename2</span><br></pre></td></tr></table></figure></p>
+<p>28&gt; 常用</p>
+<p>查找所有内容包含 ‘abc’ 的文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">find / | xargs grep -l ‘abc’ (只显示文件名)</span><br><span class="line">[root@TestServer ~]# find . | xargs grep -l ‘abc’</span><br><span class="line">./require/filename1.php</span><br><span class="line">./require/filename2.php</span><br><span class="line">./include/filename3.php</span><br><span class="line">…</span><br><span class="line"></span><br><span class="line">find / | xargs grep ‘abc’ (显示文件名和包含 ‘abc’ 的那一行)</span><br><span class="line">[root@TestServer ~]# find . | xargs grep ‘abc’</span><br><span class="line">./require/filename1.php:$mail = “abc@163.com</span><br></pre></td></tr></table></figure></p>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share">
+
+</div>
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/20070906/wolf/" rel="next" title="职场向狼学习十条处世哲学(转)">
+          职场向狼学习十条处世哲学(转)
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/20070924/mid-autumn-festival/" rel="prev" title="没有团圆的中秋节">
+            没有团圆的中秋节
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://jianzi0307.github.io">首页</a> |
+        <a class="bottom-item" href="https://jianzi0307.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/jianzi0307" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

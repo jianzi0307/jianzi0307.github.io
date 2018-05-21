@@ -1,0 +1,300 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+  
+    <meta name="keywords" content="swift," />
+  
+
+  
+    <meta name="description" content="海纳百川 有容乃大" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>Swift学习知识点 [ 健子的博客 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+</head>
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="http://localhost:4000/images/avatar.jpeg">
+    <span class="title">健子的博客</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="https://jianzi0307.github.io" class="pure-menu-link">关于</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/atom.xml" class="pure-menu-link">订阅</a></li>
+          
+      
+  </ul>
+   
+</nav>
+
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        Swift学习知识点
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2014-06-18T16:00:00.000Z">
+        2014-06-19
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/swift/">swift</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+      <span class="slash">/</span>
+    </header>
+
+    <div class="post-content">
+      <p>一、控制流<br>1.1 if语句中，条件必须是一个布尔表达式，这意味着 if score {…} 这样的代码会编译报错，不会隐式的与0做比较，与C、java等语言不同；<br>1.2 运行switch中匹配的语句，程序会退出switch语句，并不会继续执行下去，所以不需要在每个语句结尾写break；必须包含default语句，否则会报错；<br>1.3 swift中特有的范围操作符..和…区别：..不包含上界，…包含上界，例如：0..3 表示 0,1,2 不包含3，0…3 表示 0,1,2,3包含3</p>
+<p>二、函数和闭包<br>2.1 函数定义方法：用func声明一个函数，使用名字和参数调用函数，使用-&gt;来指定函数返回值，无返回值可以省略；<br>2.2 函数参数是可变的，用一个数组来获取它们；例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">func sumOf(numbers: Int …) -&gt; Int &#123;</span><br><span class="line">	var sum = 0</span><br><span class="line">	for number in numbers &#123; //将numbers视为一个数组来操作</span><br><span class="line">		sum += number</span><br><span class="line">	&#125;</span><br><span class="line">	return sum</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>2.3 函数可以嵌套，被嵌套的函数可以访问外侧函数中的常量和变量；函数可以作为另一个函数的返回值；</p>
+<p>三、对象和类<br>3.1 使用init来创建一个构造器，使用deinit创建一个析构函数；</p>
+<p>四、常量和变量<br>4.1 如果使用与Swift保留字相同的名称作为常量或变量名时，使用反引号（·）将关键字包围的方式作为名字使用，不过尽量避免与保留关键字相同；<br>4.2 输出函数有println，另外还有print，二者区别是：println会换行，print不会换行；</p>
+<p>五、注释<br>5.1 swift中，注释可以嵌套，这与其他语言不同，其他语言大多数注释是不可以嵌套的；</p>
+<p>六、数据类型<br>6.1、整型，尽量不要使用UInt，除非你真的需要存储一个和当前平台原生字长相同的无符号整型，除了这种情况，最好使用Int，即使你要存储的值是非负数。统一使用Int可以提高代码的可复用性，避免不同类型数字之间的转换，并且匹配数字的类型推测；<br>6.2 如果你没有给浮点字面量标明类型，Swift会推测为Double类型；推测浮点数类型时，Swift总是会选择Double，而不是Float；如果表达式中同时出现整数和浮点数，会被推测为Double类型；<br>例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">let pi = 3.1415926 //pi会被推测为Double类型</span><br></pre></td></tr></table></figure></p>
+<p>6.3 数值字面量可以包括额外的格式来增强可读性，并不影响字面量，例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">let paddedDouble = 000123.456 // 123.456</span><br><span class="line">let oneMillion = 1_000_000 //1000000</span><br><span class="line">let justOverOneMillion = 1_000_000.000_000_1 //1000000.0000001</span><br></pre></td></tr></table></figure></p>
+<p>6.4 不同类型不能直接做运算，需要显式类型转换，例如，UInt16类型不能和UInt8类型直接相加，因为他们类型不同：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">let twoThousand:UInt16 = 2_000</span><br><span class="line">let one:UInt8 = 1</span><br><span class="line">let twoThousandAndOne = twoThousand + UInt16(one)</span><br></pre></td></tr></table></figure></p>
+<p>6.5 整数和浮点数的转换必须显式指定类型；<br>6.6 字面量不同于数字类常量和变量，没有特定的类型，可以直接运算，例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">let sum = 3 + 0.14158</span><br></pre></td></tr></table></figure></p>
+<p>6.7 在需要使用Bool类型的地方使用了非布尔值，Swift的类型安全机制会报错；例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">let i = 1</span><br><span class="line">if i &#123;</span><br><span class="line">//这个例子会报错，不会通过编译</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>6.8 元组类型的正确描述：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">let http404Error = (404,”Not Found”) //描述为：一个类型为(Int,String)的元组</span><br></pre></td></tr></table></figure></p>
+<p>6.9 元组在临时组织值的时候很有用，但是并不适合创建复杂的数据结构，如果数据结构不是临时使用，请使用类或者结构体，而不是元组；<br>6.10 nil不能用于非可选的常量和变量<br>例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">let a = nil //编译报错</span><br><span class="line">var b = nil //编译报错</span><br><span class="line">let a? = nil //正确</span><br><span class="line">let b? = nil //正确</span><br></pre></td></tr></table></figure></p>
+<p>6.11 如果一个变量之后可能变成nil的画，请不要使用隐式解包可选类型，如果需要在变量的生命周期中判断是否为nil的话，请使用普通可选类型；</p>
+<p>未完待续…</p>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share">
+
+</div>
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/20130110/sersync/" rel="next" title="sersync和rsync部署实时同步环境">
+          sersync和rsync部署实时同步环境
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/20150128/linux-apropos/" rel="prev" title="Linux命令apropos解析">
+            Linux命令apropos解析
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://jianzi0307.github.io">首页</a> |
+        <a class="bottom-item" href="https://jianzi0307.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/jianzi0307" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

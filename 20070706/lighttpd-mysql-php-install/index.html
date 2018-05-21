@@ -1,0 +1,331 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+  
+    <meta name="keywords" content="mysql,php,lighttpd," />
+  
+
+  
+    <meta name="description" content="海纳百川 有容乃大" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>lighttpd + mysql + php(fast-cgi)安装与配置手记 [ 健子的博客 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+</head>
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="http://localhost:4000/images/avatar.jpeg">
+    <span class="title">健子的博客</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="https://jianzi0307.github.io" class="pure-menu-link">关于</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/atom.xml" class="pure-menu-link">订阅</a></li>
+          
+      
+  </ul>
+   
+</nav>
+
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        lighttpd + mysql + php(fast-cgi)安装与配置手记
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2007-07-05T16:00:00.000Z">
+        2007-07-06
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/lighttpd/">lighttpd</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/php/">php</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+      <span class="slash">/</span>
+    </header>
+
+    <div class="post-content">
+      <p>准备:</p>
+<blockquote>
+<p>lighttpd-1.4.15.tar.gz<br>php-4.4.2.tar.gz<br>mysql-5.0.20a.tar.gz</p>
+</blockquote>
+<p>开始:<br>1 编译安装lighttpd</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">tar zxvf lighttpd-1.4.15.tar.gz</span><br><span class="line">cd lighttpd-1.4.15</span><br><span class="line">ls</span><br><span class="line">./configure —prefix=/usr/local/lighttpd</span><br><span class="line">make &amp;&amp; make install</span><br></pre></td></tr></table></figure>
+<p>创建网站根目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir /usr/local/lighttpd/htdocs</span><br></pre></td></tr></table></figure>
+<p>创建配置文件放置目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir /usr/local/lighttpd/etc</span><br></pre></td></tr></table></figure>
+<p>创建日志目录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir /usr/local/lighttpd/logs</span><br></pre></td></tr></table></figure>
+<p>将配置文件拷贝到/usr/local/lighttpd/etc</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp doc/lighttpd.conf /usr/local/lighttpd/etc</span><br></pre></td></tr></table></figure>
+<p>启动lighttpd</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/lighttpd/bin/lighttpd -f /usr/local/lighttpd/etc/lighttpd.conf</span><br></pre></td></tr></table></figure>
+<p>2 安装 MYSQL</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">tar zxvf mysql-5.0.20a.tar.gz</span><br><span class="line">cd mysql-5.0.20a</span><br><span class="line">./configure —prefix=/usr/local/mysql</span><br><span class="line">make;make install</span><br><span class="line">groupadd mysql</span><br><span class="line">useradd -g mysql mysql</span><br><span class="line">cp support-files/my-medium.cnf /etc/my.cnf</span><br><span class="line">cd /usr/local/mysql/</span><br></pre></td></tr></table></figure>
+<p>初始化</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/mysql_install_db —user=mysql</span><br></pre></td></tr></table></figure>
+<p>运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bin/mysqld_safe —user=mysql &amp;</span><br></pre></td></tr></table></figure>
+<p>设置自动启动（略）</p>
+<p>3 安装 php (fast-cgi)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">tar zxvf php-4.4.2.tar.gz</span><br><span class="line">cd php-4.4.2</span><br></pre></td></tr></table></figure>
+<p>编译，加<code>--enable-fastcgi</code>和<code>--enable-force-cgi-redirect</code>选项</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">./configure --prefix=/usr/local/php-fastcgi  --enable-fastcgi --enable-force-cgi-redirect --with-zlib \</span><br><span class="line">--with-gd --with-ttf --with-png --with-expat-dir=/usr --with-gmp --with-xml --with-mysql=/usr/local/mysql \</span><br><span class="line">--with-charset=utf-8 --disable-debug --disable-posix --disable-rpath --enable-safe-mode --enable-magic-quotes \</span><br><span class="line">--disable-dmalloc --enable-bcmath --enable-dio --enable-gd-native-ttf --enable-sysvsem --enable-sysvshm \</span><br><span class="line">--enable-wddx --enable-versioning --enable-pic --enable-inline-optimization --enable-memory-limit --enable-mbstring \</span><br><span class="line">--enable-mbregex --enable-mbstr-enc-trans --with-config-file-path=/usr/local/lib --enable-ftp --disable-debug \</span><br><span class="line">--enable-track-vars=yes --with-jpeg-dir --with-freetype-dir --enable-gd-native-ttf --enable-dl</span><br><span class="line">make;make install</span><br></pre></td></tr></table></figure>
+<p>4 配置lighttpd</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#vim /usr/local/lighttpd/etc/lighttpd.conf</span><br></pre></td></tr></table></figure>
+<p>修改一下内容</p>
+<p>加载cgi，fastcgi模块<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">server.modules              = (</span><br><span class="line">			 “mod_rewrite”,</span><br><span class="line">#                        “mod_redirect”,</span><br><span class="line">#                        “mod_alias”,</span><br><span class="line">			 “mod_access”,</span><br><span class="line">#                        “mod_cml”,</span><br><span class="line">#                        “mod_trigger_b4_dl”,</span><br><span class="line">#                        “mod_auth”,</span><br><span class="line">#                        “mod_status”,</span><br><span class="line">#                        “mod_setenv”,</span><br><span class="line">			 “mod_fastcgi”,</span><br><span class="line">#                        “mod_proxy”,</span><br><span class="line">#                        “mod_simple_vhost”,</span><br><span class="line">#                        “mod_evhost”,</span><br><span class="line">#                        “mod_userdir”,</span><br><span class="line">			 “mod_cgi”,</span><br><span class="line">#                        “mod_compress”,</span><br><span class="line">#                        “mod_ssi”,</span><br><span class="line">#                        “mod_usertrack”,</span><br></pre></td></tr></table></figure></p>
+<p>网站根目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">## a static document-root, for virtual-hosting take look at the</span><br><span class="line">## server.virtual-* options</span><br><span class="line">server.document-root      = “/usr/local/lighttpd/htdocs”</span><br></pre></td></tr></table></figure></p>
+<p>日志目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">## where to send error-messages to</span><br><span class="line">server.errorlog             = “/usr/local/lighttpd/logs/lighttpd.error.log”</span><br><span class="line">…..</span><br><span class="line">…..</span><br><span class="line">#### accesslog module</span><br><span class="line">accesslog.filename          = “/usr/local/lighttpd/logs/access.log”</span><br></pre></td></tr></table></figure></p>
+<p>默认首页格式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># files to check for if …/ is requested</span><br><span class="line">index-file.names  = ( “index.php”, “index.html”,</span><br><span class="line">			 “index.htm”, “default.htm” )</span><br></pre></td></tr></table></figure></p>
+<p>FastCgi模块<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#### fastcgi module</span><br><span class="line">## read fastcgi.txt for more info</span><br><span class="line">## for PHP don’t forget to set cgi.fix_pathinfo = 1 in the php.ini</span><br><span class="line">fastcgi.server= (“.php” =&gt;</span><br><span class="line">(( “socket” =&gt; “/tmp/php.socket”,</span><br><span class="line">“bin-path” =&gt; “/usr/local/php-fastcgi/bin/php”,</span><br><span class="line">“min-procs” =&gt; 1,</span><br><span class="line">“max-procs” =&gt; 32,</span><br><span class="line">“max-load-per-proc” =&gt; 4,</span><br><span class="line">“idle-timeout” =&gt; 20</span><br><span class="line">))</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p>CGI模块<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#### CGI module</span><br><span class="line">cgi.assign = (</span><br><span class="line">		 “.sh” =&gt; “/bin/bash”,     #shell script</span><br><span class="line">		 “.pl”  =&gt; “/usr/bin/perl”,  #Perl</span><br><span class="line">		“.cgi” =&gt; “”</span><br><span class="line">)</span><br></pre></td></tr></table></figure></p>
+<p>5 修改php.ini</p>
+<p>设置 cgi.fix_pathinfo = 1</p>
+<p>6 配置完毕，重起lighttpd</p>
+<p>查其PID<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ps  auxww |grep lighttpd</span><br></pre></td></tr></table></figure></p>
+<p>kill掉<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">kill -9 PID</span><br></pre></td></tr></table></figure></p>
+<p>启动<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/lighttpd/bin/lighttpd -f /usr/local/lighttpd/etc/lighttpd.conf</span><br></pre></td></tr></table></figure></p>
+<p>7.简单管理脚本<br>为了方便管理lighttpd,写几个简单的脚本<br>checkLighttpd.sh（检查lighttpd进程）:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">ps auxww |grep lighttpd|grep -v grep</span><br></pre></td></tr></table></figure></p>
+<p>killLighttpd.sh(杀死lighttpd进程) :<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">LIGHTTPD_PID=ps auxww |grep lighttpd |grep -v grep | awk &apos;&#123;print $2&#125;&apos;</span><br><span class="line">kill -9 $LIGHTTPD_PID</span><br></pre></td></tr></table></figure></p>
+<p>startLighttpd.sh (启动lighttpd):<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">/usr/local/lighttpd/sbin/lighttpd -f /usr/local/lighttpd/etc/lighttpd.conf</span><br><span class="line">chmod +x  startLighttpd.sh killLighttpd.sh checkLighttpd.sh</span><br></pre></td></tr></table></figure></p>
+<p>8 测试：<br>用c,shell,perl,php分别写几个小程序作测试(略)</p>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share">
+
+</div>
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/20070705/memcached-install/" rel="next" title="memcached缓存服务器的安装">
+          memcached缓存服务器的安装
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/20070726/linux-ffmpeg-mencoder/" rel="prev" title="ffmpeg &amp; mencoder视频转换环境安装手记">
+            ffmpeg &amp; mencoder视频转换环境安装手记
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://jianzi0307.github.io">首页</a> |
+        <a class="bottom-item" href="https://jianzi0307.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/jianzi0307" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

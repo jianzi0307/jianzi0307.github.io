@@ -1,0 +1,337 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+  
+    <meta name="keywords" content="freebsd," />
+  
+
+  
+    <meta name="description" content="海纳百川 有容乃大" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>FreeBSD 点滴 [ 健子的博客 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+</head>
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="http://localhost:4000/images/avatar.jpeg">
+    <span class="title">健子的博客</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="https://jianzi0307.github.io" class="pure-menu-link">关于</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/atom.xml" class="pure-menu-link">订阅</a></li>
+          
+      
+  </ul>
+   
+</nav>
+
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        FreeBSD 点滴
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2008-12-05T16:00:00.000Z">
+        2008-12-06
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/freebsd/">freebsd</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+      <span class="slash">/</span>
+    </header>
+
+    <div class="post-content">
+      <p>一，修改系统时区 UTC -&gt; CST ，修改日期时间</p>
+<p>1、#tzsetup  (图形化)</p>
+<p>是一个不错的timezone设定工具,进去之后选择5.Asia -&gt; ShangHai</p>
+<p>2、另一个方法是：</p>
+<p>cp /usr/share/zoneinfo/Asia/Shanghai  /etc/localtime<br>adjkerntz -a<br>date<br>Sun Dec  7 02:14:12 CST 2008<br>ps：(adjkerntz = adjust kernal timezone)</p>
+<p>修改日期时间，必须有root权限</p>
+<p>date YYMMDDHHMM<br>比如要修改时间为2007年4月15日7点52</p>
+<p>date 0704150752<br>只改时间的话</p>
+<p>date HHMM<br>使用NTP服务器更新本地时间</p>
+<p>ntpdate time.nist.gov<br>常用的NTP服务器<br>time.nist.gov<br>time.windows.com<br>chime.utoronto.ca<br>ntp.pipex.net</p>
+<p>二，察看系统负载，连接数，网卡流量</p>
+<ol>
+<li><p>察看系统负载</p>
+<p> #systat<br> #uptime<br>2.连接数</p>
+</li>
+</ol>
+<p>netstat -n | awk ‘/^tcp/ {++S[$NF]} END {for(a in S) print a, S[a]}’<br>显示：<br>FIN_WAIT_1 569<br>FIN_WAIT_2 2695<br>LAST_ACK 54<br>CLOSING 1<br>SYN_RCVD 97<br>TIME_WAIT 616<br>ESTABLISHED 3717</p>
+<p>3.察看网卡流量</p>
+<p>   #systat -if<br>   显示：<br>                    /0   /1   /2   /3   /4   /5   /6   /7   /8   /9   /10<br>     Load Average   |||||</p>
+<pre><code>Interface           Traffic               Peak                Total
+      lo0  in      0.000 KB/s          0.000 KB/s          140.613 MB
+           out     0.000 KB/s          0.000 KB/s          140.613 MB
+
+     bce1  in    323.006 KB/s        323.006 KB/s            2.979 GB
+           out   369.025 KB/s        369.025 KB/s          772.895 MB
+
+     bce0  in     50.116 KB/s         50.116 KB/s          206.448 MB
+           out   186.891 KB/s        186.891 KB/s            1.887 GB
+</code></pre><p>Linux下用 #traffic<br>三，系统状态(systat)<br>systat 能实时查看各种信息<br>systat -pigs 默认值CPU<br>systat -iostat 硬盘IO<br>systat -swap 交换分区<br>systat -mbufs 网络缓冲区<br>systat -vmstat 虚拟内存<br>systat -netstat 网络<br>systat -icmp ICMP协议<br>systat -ip IP协议<br>systat -tcp TCP协议<br>systat -ifstat 网卡</p>
+<p>显示PCI总线设备信息<br>pciconf -lv<br>显示内核加载的模块<br>kldstat -v<br>显示指定模块<br>kldstat -m ipfilter</p>
+<p>即插即用设备<br>pnpinfo</p>
+<p>显示设备占用的IRQ和内存地址<br>devinfo -u</p>
+<p>cpu<br>sysctl -a|grep cpu<br>sysctl -a|grep sched 查看使用的调度器，我编译的是ULE</p>
+<p>虚拟内存<br>vmstat</p>
+<p>硬盘<br>gstat<br>systat -iostat<br>iostat</p>
+<p>网卡<br>ifconfig<br>systat -ifstat</p>
+<p>网络<br>netstat<br>sockstat<br>tcpdump<br>trafshow<br>systat -mbufs<br>systat -icmp<br>systat -ip<br>systat -tcp</p>
+<p>四,FreeBsd对单进程占用内存量的限制</p>
+<p>FreeBSD 系统会默认限制单进程占用内存大小,默认是不能超过512M,有时候我们跑得进程会超过这个数值,进程申请的最大内存受到限制，这个时候会导致内存溢出,进程退出．</p>
+<p>用命令ulimit可以查看系统参数：</p>
+<p>[root@Squid2 ~]# ulimit -a<br>core file size          (blocks, -c) unlimited<br>data seg size           (kbytes, -d) 524288<br>file size               (blocks, -f) unlimited<br>max locked memory       (kbytes, -l) unlimited<br>max memory size         (kbytes, -m) unlimited<br>open files                      (-n) 11095<br>pipe size            (512 bytes, -p) 1<br>stack size              (kbytes, -s) 65536<br>cpu time               (seconds, -t) unlimited<br>max user processes              (-u) 5547<br>virtual memory          (kbytes, -v) unlimited</p>
+<p>我们可以看出，单进程的内存占用数被限制在了512M</p>
+<p> 修改办法：</p>
+<p>修改/boot/loader.conf<br>添加：kern.maxdsiz=”2G” </p>
+<p>重新启动服务器，ulimit -a 再看</p>
+<p>[root@Squid2 ~]# ulimit -a<br>core file size          (blocks, -c) unlimited<br>data seg size           (kbytes, -d) 2097152<br>file size               (blocks, -f) unlimited<br>max locked memory       (kbytes, -l) unlimited<br>max memory size         (kbytes, -m) unlimited<br>open files                      (-n) 11095<br>pipe size            (512 bytes, -p) 1<br>stack size              (kbytes, -s) 65536<br>cpu time               (seconds, -t) unlimited<br>max user processes              (-u) 5547<br>virtual memory          (kbytes, -v) unlimited</p>
+<p>单线程内存申请最大值已经被强制改到2G了。</p>
+<p>五，彻底关闭sendmail服务</p>
+<p>Freebsd 默认会开启sendmail服务，而且不容易关掉</p>
+<p>必须修改配置文件，并关闭一些相关进程才可：</p>
+<p>修改/etc/rc.conf 加入下面几条：</p>
+<p>sendmail_enable=”NO”<br>sendmail_submit_enable=”NO”<br>sendmail_outbound_enable=”NO”<br>sendmail_msp_queue_enable=”NO”</p>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share">
+
+</div>
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/20081201/freebsd-ports/" rel="next" title="Freebsd 没有安装ports系统">
+          Freebsd 没有安装ports系统
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/20081230/freebsd-snmp/" rel="prev" title="Freebsd下安装snmp">
+            Freebsd下安装snmp
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://jianzi0307.github.io">首页</a> |
+        <a class="bottom-item" href="https://jianzi0307.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/jianzi0307" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

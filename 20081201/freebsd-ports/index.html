@@ -1,0 +1,333 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hans">
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#202020"/>
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <script src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+  
+  
+    <meta name="keywords" content="freebsd,ports," />
+  
+
+  
+    <meta name="description" content="海纳百川 有容乃大" />
+  
+  
+  <link rel="icon" type="image/x-icon" href="/logo.png">
+  <title>Freebsd 没有安装ports系统 [ 健子的博客 ]</title>
+  
+    <!-- stylesheets list from config.yml -->
+    
+      <link rel="stylesheet" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css">
+    
+      <link rel="stylesheet" href="/css/xoxo.css">
+    
+  
+</head>
+
+<body>
+  <div class="nav-container">
+    <nav class="home-menu pure-menu pure-menu-horizontal">
+  <a class="pure-menu-heading" href="/">
+    <img class="avatar" src="http://localhost:4000/images/avatar.jpeg">
+    <span class="title">健子的博客</span>
+  </a>
+
+  <ul class="pure-menu-list clearfix">
+      
+          
+            <li class="pure-menu-item"><a href="/" class="pure-menu-link">首页</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/archives" class="pure-menu-link">归档</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/tags" class="pure-menu-link">标签</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="https://jianzi0307.github.io" class="pure-menu-link">关于</a></li>
+          
+      
+          
+            <li class="pure-menu-item"><a href="/atom.xml" class="pure-menu-link">订阅</a></li>
+          
+      
+  </ul>
+   
+</nav>
+
+  </div>
+
+  <div class="container" id="content-outer">
+    <div class="inner" id="content-inner">
+      <div class="post-container">
+  <article class="post" id="post">
+    <header class="post-header text-center">
+      <h1 class="title">
+        Freebsd 没有安装ports系统
+      </h1>
+      <span>
+        
+        <time class="time" datetime="2008-11-30T16:00:00.000Z">
+        2008-12-01
+      </time>
+        
+      </span>
+      <span class="slash">/</span>
+      <span class="post-meta">
+      <span class="post-tags">
+        <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/freebsd/">freebsd</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ports/">ports</a></li></ul>
+      </span>
+    </span>
+      <span class="slash">/</span>
+      <span class="read">
+      <span id="busuanzi_value_page_pv"></span> 点击
+    </span>
+      <span class="slash">/</span>
+    </header>
+
+    <div class="post-content">
+      <p>一、安装ports系统<br>有三种方法来安装 Ports 系统：</p>
+<ol>
+<li><p>通过安装盘，安装系统的时候选择安装ports系统<br>这是最简单的方法，但是也有缺点。因为 Ports 系统总是随时更新的。因此你从安装光盘上安装的 Ports 系统肯定不是最新的了。</p>
+</li>
+<li><p>使用 portsnap 安装/同步 ports 系统</p>
+</li>
+</ol>
+<p>这是推荐的方法。</p>
+<p>使用portsnap不需要事先安装 ports tree，并且能够在任何时候恢复到已知的最新状态（即使手工对ports tree进行了修改）。</p>
+<p>使用 portsnap 分成两个步骤：下载压缩的 portsnap 快照，和更新现有系统。下载或更新 portsnap 快照的方法是portsnap fetch；首次安装，或希望将 ports tree 恢复到快照的样子，应使用 portsnapextract；之后更新系统中的 ports tree，则可以通过 portsnap update 来完成。对于服务器而言，推荐在crontab 中增加在每天3点执行 portsnap cron，以减少使用时所需要的下载时间。</p>
+<p>首次下载 portsnap快照时，需要下载一个大约50MB的快照基础文件。在中国大陆，由于网络状况的原因，这可能需要较长时间。可以考虑用 portsnap fetch-s portsnap.cn.freebsd.org 做首次下载；之后的下载，还是推荐使用正常的 portsnap fetch。</p>
+<p>可以使用下面步骤完成上述情况</p>
+<p>a&gt;.首先设置一个比较快的portsnap服务器，如果系统默认的地址你的访问速度也很快，可以不修改</p>
+<p>vi /etc/portsnap.conf<br>设置SERVERNAME=portsnap.cn.freebsd.org ,你可以设置相对你速度快点的服务器的地址</p>
+<p>b&gt;.执行下面命令</p>
+<p>portsnap fetch extract    这里直接下载ports并且解压<br>这样就完成了下载ports系统以及解压到/usr下面了</p>
+<p>c&gt;.设置最快的ports镜像</p>
+<p>用ports安装软件的时候，如果没有设置相对于你来说最快的ports服务器地址，那就会默认的 <a href="ftp://ftp.freebsd.org/pub/FreeBSD/ports/distfiles/，这个地址对于很多地方来说是很慢的。" target="_blank" rel="noopener">ftp://ftp.freebsd.org/pub/FreeBSD/ports/distfiles/，这个地址对于很多地方来说是很慢的。</a></p>
+<p>修改 /etc/make.conf 加入以下代码</p>
+<p>MASTER_SITE_OVERRIDE=<br><a href="ftp://ftp.freebsdchina.org/pub/FreeBSD/ports/distfiles/${DIST_SUBDIR}" target="_blank" rel="noopener">ftp://ftp.freebsdchina.org/pub/FreeBSD/ports/distfiles/${DIST_SUBDIR}</a><br><a href="ftp://ftp.tw.freebsd.org/pub/FreeBSD/ports/distfiles/${DIST_SUBDIR}" target="_blank" rel="noopener">ftp://ftp.tw.freebsd.org/pub/FreeBSD/ports/distfiles/${DIST_SUBDIR}</a><br>如果你有最快的地址，可以加到上面去，下载就会块了</p>
+<ol start="3">
+<li>使用 csup/cvsup 安装/同步 Ports 系统</li>
+</ol>
+<p>这种方法已经不再推荐使用。</p>
+<p>不管事先你有没有安装 Ports 系统，你都可以使用 csup/cvsup （推荐使用csup，这是基本系统中自己带的）来安装/同步最新的 Ports 系统。把/usr/share/examples/cvsup/ports-supfile 拷贝到一个地方（比如/home/user/tmp/ports-supfile），然后作适当的修改（比如修改要连接的服务器）。最后使用如下命令来安装/同步：</p>
+<p>csup -L 2 /home/user/tmp/ports-supfile</p>
+<p>Ports 树的目录结构</p>
+<p>假设你的 ports 树安装在默认位置 /usr/ports。</p>
+<p>文件：</p>
+<p>/usr/ports/CHANGES # ports 开发者、维护者等的记录文档。<br>/usr/ports/COPYRIGHT # ports 树的版权。<br>/usr/ports/GIDs # 一些 port 可能用到的组名称。<br>/usr/ports/INDEX-xxx # 每个 port 的摘要<br>/usr/ports/KNOBS # 编译 port 时需要的一些环境变量与解释。<br>/usr/ports/LEGAL # 某些 port 的协议限制。<br>/usr/ports/MOVED # 被移动/删除了的 port 列表。<br>/usr/ports/Makefile # ports 树总的 BSD Makefile。<br>/usr/ports/README<br>/usr/ports/UIDs # 一些 port 可能用到的用户名称。<br>/usr/ports/UPDATING # ports 树的更新记录以及建议。</p>
+<p>目录：</p>
+<p>/usr/ports/Mk # 编译 port 需要的 Makefile 集合。<br>/usr/ports/Templates # 一些模板。<br>/usr/ports/Tools # 一些工具。</p>
+<p>除开以上文件和目录，其他所有的目录都是 ports。一个 port 的目录结构：</p>
+<p>/usr/ports/分类/名称</p>
+<p>比如 firefox 被分类在 www。因此 firefox 在 ports 树中的位置就是：</p>
+<p>/usr/ports/www/firefox</p>
+<p>二、使用 Ports 系统<br>1 查询</p>
+<p>比如，你想知道 ports 中是否有 pidgin 这个软件，那么可以这样：</p>
+<p>$cd /usr/ports<br>$make search key=pidgin</p>
+<p>同样也可以使用</p>
+<p>$cd /usr/ports<br>$make search name=pidgin</p>
+<p>/usr/ports/README 中还有更多的例子可以参考。<br>2 安装</p>
+<p>非常简单。比如你要安装 firefox，那么作为超级用户 root：</p>
+<p>cd /usr/ports/www/firefox<br>make install clean<br>3 卸载</p>
+<p>要卸载 firefox 的话：</p>
+<p>cd /usr/ports/www/firefox<br>make deinstall clean<br>4 升级</p>
+<p>要升级 firefox：</p>
+<p>cd /usr/ports/www/firefox<br>make deinstall reinstall clean</p>
+
+    </div>
+
+    <div>全文完。</div>
+  </article>
+  <div class="toc-container">
+    
+
+  </div>
+</div>
+<div class="copyright">
+    <span>本作品采用</span>
+    <a href="https://creativecommons.org/licenses/by/4.0/">知识共享署名 4.0 国际许可协议</a>
+    <span>进行许可。 转载时请注明原文链接。</span>
+</div>
+<div class="share">
+
+</div>
+  
+    <div class="post-nav">
+      <div class="post-nav-item post-nav-next">
+        
+          <span>〈 </span>
+          <a href="/20081123/shell-check-netstat/" rel="next" title="一个查看网络状态的脚本">
+          一个查看网络状态的脚本
+          </a>
+        
+      </div>
+  
+      <div class="post-nav-item post-nav-prev">
+          
+          <a href="/20081206/freebsd-tips/" rel="prev" title="FreeBSD 点滴">
+            FreeBSD 点滴
+          </a>
+          <span>〉</span>
+        
+      </div>
+    </div>
+  
+
+
+    </div>
+
+    
+
+  </div>
+  <footer class="footer text-center">
+    <div id="bottom-inner">
+        <a class="bottom-item" href="https://jianzi0307.github.io">首页</a> |
+        <a class="bottom-item" href="https://jianzi0307.github.io" target="_blank">主站</a> |
+        <a class="bottom-item" href="https://github.com/jianzi0307" target="_blank">GitHub</a> |
+        <a class="bottom-item" href="https://hexo.io" target="_blank">Powered by hexo</a> |
+        <a class="bottom-item" href="https://github.com/KevinOfNeu/hexo-theme-xoxo" target="_blank">Theme xoxo</a>
+    </div>
+</footer>
+  
+
+<script>
+  (function(window, document, undefined) {
+
+    var timer = null;
+
+    function returnTop() {
+      cancelAnimationFrame(timer);
+      timer = requestAnimationFrame(function fn() {
+        var oTop = document.body.scrollTop || document.documentElement.scrollTop;
+        if (oTop > 0) {
+          document.body.scrollTop = document.documentElement.scrollTop = oTop - 50;
+          timer = requestAnimationFrame(fn);
+        } else {
+          cancelAnimationFrame(timer);
+        }
+      });
+    }
+
+    var hearts = [];
+    window.requestAnimationFrame = (function() {
+      return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+          setTimeout(callback, 1000 / 60);
+        }
+    })();
+    init();
+
+    function init() {
+      css(".heart{z-index:9999;width: 10px;height: 10px;position: fixed;background: #f00;transform: rotate(45deg);-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);}.heart:after,.heart:before{content: '';width: inherit;height: inherit;background: inherit;border-radius: 50%;-webkit-border-radius: 50%;-moz-border-radius: 50%;position: absolute;}.heart:after{top: -5px;}.heart:before{left: -5px;}");
+      attachEvent();
+      gameloop();
+      addMenuEvent();
+    }
+
+    function gameloop() {
+      for (var i = 0; i < hearts.length; i++) {
+        if (hearts[i].alpha <= 0) {
+          document.body.removeChild(hearts[i].el);
+          hearts.splice(i, 1);
+          continue;
+        }
+        hearts[i].y--;
+        hearts[i].scale += 0.004;
+        hearts[i].alpha -= 0.013;
+        hearts[i].el.style.cssText = "left:" + hearts[i].x + "px;top:" + hearts[i].y + "px;opacity:" + hearts[i].alpha + ";transform:scale(" + hearts[i].scale + "," + hearts[i].scale + ") rotate(45deg);background:" + hearts[i].color;
+      }
+      requestAnimationFrame(gameloop);
+    }
+
+    /**
+     * 给logo设置点击事件
+     * 
+     * - 回到顶部
+     * - 出现爱心
+     */
+    function attachEvent() {
+      var old = typeof window.onclick === "function" && window.onclick;
+      var logo = document.getElementById("logo");
+      if (logo) {
+        logo.onclick = function(event) {
+          returnTop();
+          old && old();
+          createHeart(event);
+        }
+      }
+      
+    }
+
+    function createHeart(event) {
+      var d = document.createElement("div");
+      d.className = "heart";
+      hearts.push({
+        el: d,
+        x: event.clientX - 5,
+        y: event.clientY - 5,
+        scale: 1,
+        alpha: 1,
+        color: randomColor()
+      });
+      document.body.appendChild(d);
+    }
+
+    function css(css) {
+      var style = document.createElement("style");
+      style.type = "text/css";
+      try {
+        style.appendChild(document.createTextNode(css));
+      } catch (ex) {
+        style.styleSheet.cssText = css;
+      }
+      document.getElementsByTagName('head')[0].appendChild(style);
+    }
+
+    function randomColor() {
+      // return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
+      return "#F44336";
+    }
+
+    function addMenuEvent() {
+      var menu = document.getElementById('menu-main-post');
+      if (menu) {
+        var toc = document.getElementById('toc');
+        if (toc) {
+          menu.onclick = function() {
+            if (toc) {
+              if (toc.style.display == 'block') {
+                toc.style.display = 'none';
+              } else {
+                toc.style.display = 'block';
+              }
+            }
+          };
+        } else {
+          menu.style.display = 'none';
+        }
+      }
+    }
+
+  })(window, document);
+</script>
+
+  
+
+
+
+</body>
+</html>

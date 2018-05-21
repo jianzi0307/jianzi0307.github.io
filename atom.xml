@@ -1,0 +1,525 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>健子的博客</title>
+  
+  <subtitle>健子的博客</subtitle>
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://localhost:4000/"/>
+  <updated>2018-05-21T16:13:18.137Z</updated>
+  <id>http://localhost:4000/</id>
+  
+  <author>
+    <name>jianzi0307</name>
+    
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>ARGB颜色合成与提取公式</title>
+    <link href="http://localhost:4000/20180522/argb/"/>
+    <id>http://localhost:4000/20180522/argb/</id>
+    <published>2018-05-21T16:13:18.137Z</published>
+    <updated>2018-05-21T16:13:18.137Z</updated>
+    
+    <content type="html"><![CDATA[<p>色彩合成:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//设alpha,red,green,blue都是0~255之间的数</span><br><span class="line">color32 = alpha &lt;&lt; 24 | red &lt;&lt; 16 | green &lt;&lt; 8 | blue;</span><br></pre></td></tr></table></figure></p><p>色彩提取:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">alpha = color32 &gt;&gt; 24;</span><br><span class="line">red = color32 &gt;&gt; 16 &amp; 0xFF;</span><br><span class="line">green = color32 &gt;&gt; 8 &amp; 0xFF;</span><br><span class="line">blue = color32 &amp; 0xFF;</span><br></pre></td></tr></table></figure></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;色彩合成:&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br
+      
+    
+    </summary>
+    
+    
+      <category term="as3" scheme="http://localhost:4000/tags/as3/"/>
+    
+      <category term="颜色合成" scheme="http://localhost:4000/tags/%E9%A2%9C%E8%89%B2%E5%90%88%E6%88%90/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>mysql优化</title>
+    <link href="http://localhost:4000/20180516/mysql-index-oprimize/"/>
+    <id>http://localhost:4000/20180516/mysql-index-oprimize/</id>
+    <published>2018-05-15T16:00:00.000Z</published>
+    <updated>2018-05-15T17:18:25.965Z</updated>
+    
+    <content type="html"><![CDATA[<p>第一方面：30种mysql优化sql语句查询的方法<br>1.对查询进行优化，应尽量避免全表扫描，首先应考虑在 where 及 order by 涉及的列上建立索引。<br>　　2.应尽量避免在 where 子句中使用!=或&lt;&gt;操作符，否则将引擎放弃使用索引而进行全表扫描。<br>　　3.应尽量避免在 where 子句中对字段进行 null 值判断，否则将导致引擎放弃使用索引而进行全表扫描，如：<br>　　select id from t where num is null<br>　　可以在num上设置默认值0，确保表中num列没有null值，然后这样查询：<br>　　select id from t where num=0<br>　　4.应尽量避免在 where 子句中使用 or 来连接条件，否则将导致引擎放弃使用索引而进行全表扫描，如：<br>　　select id from t where num=10 or num=20<br>　　可以这样查询：<br>　　select id from t where num=10<br>　　union all<br>　　select id from t where num=20<br>　　5.下面的查询也将导致全表扫描：<br>　　select id from t where name like ‘%abc%’<br>　　若要提高效率，可以考虑全文检索。<br>　　6.in 和 not in 也要慎用，否则会导致全表扫描，如：<br>　　select id from t where num in(1,2,3)<br>　　对于连续的数值，能用 between 就不要用 in 了：<br>　　select id from t where num between 1 and 3<br>　　7.如果在 where 子句中使用参数，也会导致全表扫描。因为SQL只有在运行时才会解析局部变量，但优化程序不能将访问计划的选择推迟到运行时;它必须在编译时进行选择。然而，如果在编译时建立访问计划，变量的值还是未知的，因而无法作为索引选择的输入项。如下面语句将进行全表扫描：<br>　　select id from t where num=@num<br>　　可以改为强制查询使用索引：<br>　　select id from t with(index(索引名)) where num=@num<br>　　8.应尽量避免在 where 子句中对字段进行表达式操作，这将导致引擎放弃使用索引而进行全表扫描。如：<br>　　select id from t where num/2=100<br>　　应改为:<br>　　select id from t where num=100*2<br>　　9.应尽量避免在where子句中对字段进行函数操作，这将导致引擎放弃使用索引而进行全表扫描。如：<br>　　select id from t where substring(name,1,3)=’abc’–name以abc开头的id<br>　　select id from t where datediff(day,createdate,’2005-11-30’)=0–’2005-11-30’生成的id<br>　　应改为:<br>　　select id from t where name like ‘abc%’<br>　　select id from t where createdate&gt;=’2005-11-30’ and createdate&lt;’2005-12-1’<br>　　10.不要在 where 子句中的“=”左边进行函数、算术运算或其他表达式运算，否则系统将可能无法正确使用索引。<br>　　11.在使用索引字段作为条件时，如果该索引是复合索引，那么必须使用到该索引中的第一个字段作为条件时才能保证系统使用该索引，否则该索引将不会被使用，并且应尽可能的让字段顺序与索引顺序相一致。<br>　　12.不要写一些没有意义的查询，如需要生成一个空表结构：<br>　　select col1,col2 into #t from t where 1=0<br>　　这类代码不会返回任何结果集，但是会消耗系统资源的，应改成这样：<br>　　create table #t(…)</p><p>　　13.很多时候用 exists 代替 in 是一个好的选择：<br>　　select num from a where num in(select num from b)<br>　　用下面的语句替换：<br>　　select num from a where exists(select 1 from b where num=a.num)<br>　　14.并不是所有索引对查询都有效，SQL是根据表中数据来进行查询优化的，当索引列有大量数据重复时，SQL查询可能不会去利用索引，如一表中有字段sex，male、female几乎各一半，那么即使在sex上建了索引也对查询效率起不了作用。<br>　　15.索引并不是越多越好，索引固然可以提高相应的 select 的效率，但同时也降低了 insert 及 update 的效率，因为 insert 或 update 时有可能会重建索引，所以怎样建索引需要慎重考虑，视具体情况而定。一个表的索引数最好不要超过6个，若太多则应考虑一些不常使用到的列上建的索引是否有必要。<br>　　16.应尽可能的避免更新 clustered 索引数据列，因为 clustered 索引数据列的顺序就是表记录的物理存储顺序，一旦该列值改变将导致整个表记录的顺序的调整，会耗费相当大的资源。若应用系统需要频繁更新 clustered 索引数据列，那么需要考虑是否应将该索引建为 clustered 索引。<br>　　17.尽量使用数字型字段，若只含数值信息的字段尽量不要设计为字符型，这会降低查询和连接的性能，并会增加存储开销。这是因为引擎在处理查询和连接时会逐个比较字符串中每一个字符，而对于数字型而言只需要比较一次就够了。<br>　　18.尽可能的使用 varchar/nvarchar 代替 char/nchar ，因为首先变长字段存储空间小，可以节省存储空间，其次对于查询来说，在一个相对较小的字段内搜索效率显然要高些。<br>　　19.任何地方都不要使用 select <em> from t ，用具体的字段列表代替“</em>”，不要返回用不到的任何字段。<br>　　20.尽量使用表变量来代替临时表。如果表变量包含大量数据，请注意索引非常有限(只有主键索引)。<br>　　21.避免频繁创建和删除临时表，以减少系统表资源的消耗。<br>　　22.临时表并不是不可使用，适当地使用它们可以使某些例程更有效，例如，当需要重复引用大型表或常用表中的某个数据集时。但是，对于一次性事件，最好使用导出表。<br>　　23.在新建临时表时，如果一次性插入数据量很大，那么可以使用 select into 代替 create table，避免造成大量 log ，以提高速度;如果数据量不大，为了缓和系统表的资源，应先create table，然后insert。<br>　　24.如果使用到了临时表，在存储过程的最后务必将所有的临时表显式删除，先 truncate table ，然后 drop table ，这样可以避免系统表的较长时间锁定。<br>　　25.尽量避免使用游标，因为游标的效率较差，如果游标操作的数据超过1万行，那么就应该考虑改写。<br>　　26.使用基于游标的方法或临时表方法之前，应先寻找基于集的解决方案来解决问题，基于集的方法通常更有效。<br>　　27.与临时表一样，游标并不是不可使用。对小型数据集使用 FAST_FORWARD 游标通常要优于其他逐行处理方法，尤其是在必须引用几个表才能获得所需的数据时。在结果集中包括“合计”的例程通常要比使用游标执行的速度快。如果开发时间允许，基于游标的方法和基于集的方法都可以尝试一下，看哪一种方法的效果更好。<br>　　28.在所有的存储过程和触发器的开始处设置 SET NOCOUNT ON ，在结束时设置 SET NOCOUNT OFF 。无需在执行存储过程和触发器的每个语句后向客户端发送 DONE_IN_PROC 消息。<br>　　29.尽量避免向客户端返回大数据量，若数据量过大，应该考虑相应需求是否合理。<br>　　30.尽量避免大事务操作，提高系统并发能力。</p><p>上面有几句写的有问题。</p><p>第二方面：<br>select Count (<em>)和Select Count(1)以及Select Count(column)区别<br>一般情况下，Select Count (</em>)和Select Count(1)两着返回结果是一样的<br>    假如表沒有主键(Primary key), 那么count(1)比count(<em>)快，<br>    如果有主键的話，那主键作为count的条件时候count(主键)最快<br>    如果你的表只有一个字段的话那count(</em>)就是最快的<br>   count(*) 跟 count(1) 的结果一样，都包括对NULL的统计，而count(column) 是不包括NULL的统计</p><p>第三方面：<br>索引列上计算引起的索引失效及优化措施以及注意事项</p><p>创建索引、优化查询以便达到更好的查询优化效果。但实际上，MySQL有时并不按我们设计的那样执行查询。MySQL是根据统计信息来生成执行计划的，这就涉及索引及索引的刷选率，表数据量，还有一些额外的因素。<br>Each table index is queried, and the best index is used unless the optimizer believes that it is more efficient to use a table scan. At one time, a scan was used based<br> on whether the best index spanned more than 30% of the table, but a fixed percentage no longer determines the choice between using an index or a scan. The optimizer now is more complex and bases its estimate on additional factors such as table size, number<br> of rows, and I/O block size.<br>简而言之，当MYSQL认为符合条件的记录在30%以上，它就不会再使用索引，因为mysql认为走索引的代价比不用索引代价大，所以优化器选择了自己认为代价最小的方式。事实也的确如此</p><p>是MYSQL认为记录是30%以上，而不是实际MYSQL去查完再决定的。都查完了，还用什么索引啊？！<br>MYSQL会先估算，然后决定是否使用索引。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;第一方面：30种mysql优化sql语句查询的方法&lt;br&gt;1.对查询进行优化，应尽量避免全表扫描，首先应考虑在 where 及 order by 涉及的列上建立索引。&lt;br&gt;　　2.应尽量避免在 where 子句中使用!=或&amp;lt;&amp;gt;操作符，否则将引擎放弃使用索引而进
+      
+    
+    </summary>
+    
+    
+      <category term="mysql优化" scheme="http://localhost:4000/tags/mysql%E4%BC%98%E5%8C%96/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>如何选择MongoDB片键？</title>
+    <link href="http://localhost:4000/20150129/mongo-shard-key/"/>
+    <id>http://localhost:4000/20150129/mongo-shard-key/</id>
+    <published>2015-01-28T16:00:00.000Z</published>
+    <updated>2018-05-21T16:40:32.022Z</updated>
+    
+    <content type="html"><![CDATA[<p>本文探讨了如何合理设置MongoDB片键以发挥分片机制的优势<br>英文出处：<a href="https://bugsnag.com/blog/mongo-shard-key" target="_blank" rel="noopener">https://bugsnag.com/blog/mongo-shard-key</a></p><p>简而言之，使用 {_id: ‘hashed’} 或 {projectId: 1, _id: 1} 来作为片键。<br>几个月前，我们对MongoDB集群进行分片(shard)处理，数据设置了两个副本集合(replica set)。上周，我们添加了一个新的分片。首次分片花了一些功夫，不过我们仍然在没有停机的情况下完成了这个工作，如今添加一个新的分片是很轻而易举的事情。</p><p><strong>MongoDB的分片是如何工作的？</strong></p><p>MongoDB的分片机制能够帮助你将你的数据库划分到多个服务器，通常在生产环境中可以将数据集划分到多个副本集中。但分片最好在数据库建立早期划分，因为一旦你的数据大于512GB那么分片划分就不是那么容易了。这受到MongoDB纵向扩展能力的限制。</p><p>为了实现分片，你必须向MongoDB指定使用哪个索引作为片键，然后MongoDB会根据你的设置将你的数据划分到有着相同片键的数据块(Chunk)中。而后这些数据块将根据片键的大致顺序分散到副本集中。</p><p><img src="/20150129/mongo-shard-key/sharding.png" alt="sharding"></p><p><strong>如何选择MongoDB片键</strong></p><p>正如你所见，分片之后数据的存放位置依赖于片键，所以合理的选择片键十分重要。</p><p><strong>怎样设置一个好的片键 ( shard key )</strong></p><p>MongoDB的内部机制保证了每个副本集(RS)包含了同样数量的块，在上图中一个RS包含两个块，而在Bugsnag.com的集群中，每个RS包含6300个块。但这几乎是唯一的保证机制了。</p><p>片键的选择决定了三个重要的方面：</p><ol><li>读和写的分布</li></ol><p>其中最重要的一点是读和写的分布。如果你总是朝一台机器写，那么这台机器将会成为写瓶颈，则你的集群的写性能将会降低。这无关乎你的集群有多少个节点，因为所有的写操作都只在一个地方进行。因此，你不应该使用单调递增的_id或时间戳作为片键，这样将会导致你一直往最后一个副本集中添加数据。</p><p>相类似的是如果你的读操作一直都在同一个副本集上，那么你最好祈求你的任务能在机器内存所能承受的范围之内。通过副本集将读请求划分开能够使你的工作数据集大小随着分片数线性扩展。这样的话你能够将负载压力均分到各台机器的内存和磁盘之上。</p><ol start="2"><li>数据块的大小</li></ol><p>其次是数据块的大小。MongoDB能够将大的数据块划分成更小的，但这种情况仅仅在片键不同的情况下发生。如果你有巨量的数据文档都使用了同样的片键，那么你相应的会得到巨大的数据块。出现巨大块是非常不好的，不仅仅因为它会导致数据的不平均分布，还因为一旦这个数据块的大小超过某个值，那么你就不能够在分片之间移动它了。</p><ol start="3"><li>每个查询命中的分片数目</li></ol><p>最后一点，如果能够保证大部分的查询请求都能够命中尽可能少的分片那就最好了。对于一个查询请求来说，其延迟直接取决于最慢的那个命中服务器的延迟；所以你命中的分片越少，那么理论上来说查询将会越快。这一点并不是硬性的规定，不过如果能够做到充分考虑那么应该是很有利的。因为数据块在分片上的分布仅仅是近似的遵循片键的顺序，而并不是严格的强制指定。</p><p><strong>好的片键( shard key )设置方案</strong></p><p>上面说了这么多，那么怎么才能设计一个好的片键呢？</p><p>Hashed id</p><p>作为第一个方案，你可以使用数据文档_id的哈希作为片键。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.events.createIndex(&#123;_id: &apos;hashed&apos;&#125;)</span><br></pre></td></tr></table></figure><p>这个方案能够是的读和写都能够平均分布，并且它能够保证每个文档都有不同的片键所以数据块能够很精细。</p><p>似乎还是不够完美，因为这样的话对多个文档的查询必将命中所有的分片。虽说如此，这也是一种比较好的方案了。</p><p>多租户混合索引(Multi-tenant compound index)</p><p>如果想击败哈希索引模式，那么你需要将关联的文档在索引中尽可能聚集在一起的方法。在Bugsnag，我们通过project聚合文档，因为在我们的业务场景中，我们的app大部分的查询请求都在project范围内。所以对于你的app来说你得指定适合你的聚合方式。</p><p>但是我们不能简单地使用projectID作为片键，因为那会导致巨大块的产生，所以我们引入了_id来将大project打散到多个块中。这些打散的块仍旧是索引连续的，所以仍然会分布在用一个分片上。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.events.createIndex(&#123;projectId: 1, _id: 1&#125;)</span><br></pre></td></tr></table></figure><p>这个方案很适合我们，因为对于一个project来说，读和写几乎是独立于project存在时间的，并且旧的project通常都会被删除掉。如果情况改变，我们可能会看到在新的project会有微小的负载上升情况。</p><p>为了避免这种问题，我们未来可能会在当MongoDB支持哈希值的混合索引之后，将索引设置为{projectId: ‘hashed’, _id: 1}。相关文档(SERVER-10220)</p><p>总结</p><p>找一个好的片键是很难的，不过这真的只有两种方案。如果在应用中找不出一个好的聚合键，那么对_id做哈希吧。如果你能够找到，那么将它与_id聚合以避免巨大块的产生。请记住无论你使用何种聚合键，它都需要能够将读和写平均分布以充分利用集群中的每个节点。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;本文探讨了如何合理设置MongoDB片键以发挥分片机制的优势&lt;br&gt;英文出处：&lt;a href=&quot;https://bugsnag.com/blog/mongo-shard-key&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;https://bugsnag.
+      
+    
+    </summary>
+    
+    
+      <category term="mongodb" scheme="http://localhost:4000/tags/mongodb/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>快速掌握Mongodb的CRUD操作</title>
+    <link href="http://localhost:4000/20150128/mongodb-crud/"/>
+    <id>http://localhost:4000/20150128/mongodb-crud/</id>
+    <published>2015-01-27T16:00:00.000Z</published>
+    <updated>2018-05-21T16:35:40.346Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>本文旨在梳理mongodb的crud操作，达到快速掌握的目的。</p></blockquote><p>一、C(Create) - insert<br>插入数据比较简单</p><p>先创建一个局部变量article，然后插入数据<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; article = &#123;title:&quot;t1&quot;,content:&quot;c1&quot;&#125;</span><br><span class="line">&#123; &quot;title&quot; : &quot;t1&quot;, &quot;content&quot; : &quot;c1&quot; &#125;</span><br><span class="line">mongoshell&gt; db.article.insert(article)</span><br><span class="line">WriteResult(&#123; &quot;nInserted&quot; : 1 &#125;)</span><br></pre></td></tr></table></figure></p><p>或者直接插入BSON对象<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; db.article.insert(&#123;title:&quot;t1&quot;,content:&quot;c1&quot;&#125;)</span><br><span class="line">WriteResult(&#123; &quot;nInserted&quot; : 1 &#125;)</span><br></pre></td></tr></table></figure></p><p>用for循环创建多条数据<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; for(i=1;i&lt;100;i++)db.article.insert(&#123;article_id:i,title:&quot;tttt&quot;&#125;)</span><br><span class="line">WriteResult(&#123; &quot;nInserted&quot; : 1 &#125;)</span><br></pre></td></tr></table></figure></p><p>二、R(Retrieve) - find / findOne</p><p>查询所有数据<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; db.article.find()</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef04&quot;), &quot;article_id&quot; : 1, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef05&quot;), &quot;article_id&quot; : 2, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef06&quot;), &quot;article_id&quot; : 3, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br><span class="line">...</span><br><span class="line">Type &quot;it&quot; for more</span><br></pre></td></tr></table></figure></p><p>键入it继续显示<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; it</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef18&quot;), &quot;article_id&quot; : 21, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef19&quot;), &quot;article_id&quot; : 22, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef1a&quot;), &quot;article_id&quot; : 23, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br><span class="line">...</span><br><span class="line">Type &quot;it&quot; for more</span><br></pre></td></tr></table></figure></p><p>显示一条数据<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; db.article.findOne()</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c259b14b5ac2d180425d&quot;), &quot;title&quot; : &quot;tttt&quot; &#125;</span><br></pre></td></tr></table></figure></p><p>按照条件查询多条<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; db.article.find(&#123;article_id:5&#125;)</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef08&quot;), &quot;article_id&quot; : 5, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br></pre></td></tr></table></figure></p><p>按照条件查询一条<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; db.article.findOne(&#123;article_id:5&#125;)</span><br><span class="line">&#123;</span><br><span class="line">        &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef08&quot;),</span><br><span class="line">        &quot;article_id&quot; : 5,</span><br><span class="line">        &quot;title&quot; : &quot;tttt&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p><p>过滤条件 skip limit sort等<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; db.article.find().skip(3).limit(4).sort(&#123;article_id:1&#125;)</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef06&quot;), &quot;article_id&quot; : 3, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef07&quot;), &quot;article_id&quot; : 4, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef08&quot;), &quot;article_id&quot; : 5, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br></pre></td></tr></table></figure></p><p>三、U(Update) - update</p><p>3.1 update的四个参数：<br>格式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">db.collection.update(查询条件，更新数据，记录不存在是否添加，是否多文档操作)</span><br></pre></td></tr></table></figure></p><p>更新一条记录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; db.article.update(&#123;title:&apos;t&apos;&#125;,&#123;title:&apos;tt&apos;&#125;)</span><br></pre></td></tr></table></figure></p><p>3.2 指定第三个参数为true，在没有符合条件的结果时，会自动增加一条记录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">mongodbshell&gt; db.article.update(&#123;title:&quot;aaa&quot;&#125;,&#123;title:&quot;ccc&quot;&#125;,true)</span><br><span class="line">WriteResult(&#123;</span><br><span class="line">        &quot;nMatched&quot; : 0,</span><br><span class="line">        &quot;nUpserted&quot; : 1,</span><br><span class="line">        &quot;nModified&quot; : 0,</span><br><span class="line">        &quot;_id&quot; : ObjectId(&quot;54c8c259b14b5ac2d180425d&quot;)</span><br><span class="line">&#125;)</span><br><span class="line">mongoshell&gt; db.article.find(&#123;title:&quot;ccc&quot;&#125;)</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c259b14b5ac2d180425d&quot;), &quot;title&quot; : &quot;ccc&quot; &#125;</span><br></pre></td></tr></table></figure></p><p>3.3 更新指定字段数据需要使用$set操作符，否则将会替换整条记录</p><p>例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; db.article.update(&#123;title:&apos;tttt&apos;&#125;,&#123;title:&apos;mmmmmm&apos;&#125;)</span><br><span class="line">WriteResult(&#123; &quot;nMatched&quot; : 1, &quot;nUpserted&quot; : 0, &quot;nModified&quot; : 1 &#125;)</span><br><span class="line">mongoshell&gt; db.article.find().limit(5)</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef04&quot;), &quot;title&quot; : &quot;mmmmmm&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef05&quot;), &quot;article_id&quot; : 2, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef06&quot;), &quot;article_id&quot; : 3, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br></pre></td></tr></table></figure></p><p>应该添加$set操作符<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; db.article.update(&#123;title:&apos;tttt&apos;&#125;,&#123;$set:&#123;title:&apos;mmmmmm&apos;&#125;&#125;)</span><br><span class="line">WriteResult(&#123; &quot;nMatched&quot; : 1, &quot;nUpserted&quot; : 0, &quot;nModified&quot; : 1 &#125;)</span><br><span class="line">mongoshell&gt; db.article.find().limit(5)</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef04&quot;), &quot;article_id&quot; : 1, &quot;title&quot; : &quot;mmmmmm&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef05&quot;), &quot;article_id&quot; : 2, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef06&quot;), &quot;article_id&quot; : 3, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br></pre></td></tr></table></figure></p><p>3.4 update默认只更新符合条件的第一条数据，除非指定第四个参数为true</p><p>例如：更新title为’tttt’的记录，默认只更新符合条件的第一条<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; db.article.update(&#123;title:&apos;tttt&apos;&#125;,&#123;$set:&#123;title:&apos;oooo&apos;&#125;&#125;)</span><br><span class="line">WriteResult(&#123; &quot;nMatched&quot; : 1, &quot;nUpserted&quot; : 0, &quot;nModified&quot; : 1 &#125;)</span><br><span class="line">mongoshell&gt; db.article.find().limit(5)</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef04&quot;), &quot;article_id&quot; : 1, &quot;title&quot; : &quot;oooo&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef05&quot;), &quot;article_id&quot; : 2, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef06&quot;), &quot;article_id&quot; : 3, &quot;title&quot; : &quot;tttt&quot; &#125;</span><br></pre></td></tr></table></figure></p><p>开启多文档更新，更新所有符合条件的记录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; db.article.update(&#123;title:&apos;tttt&apos;&#125;,&#123;$set:&#123;title:&apos;oooo&apos;&#125;&#125;,false,true)</span><br><span class="line">WriteResult(&#123; &quot;nMatched&quot; : 1, &quot;nUpserted&quot; : 0, &quot;nModified&quot; : 1 &#125;)</span><br><span class="line">mongoshell&gt; db.article.find().limit(5)</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef04&quot;), &quot;article_id&quot; : 1, &quot;title&quot; : &quot;oooo&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef05&quot;), &quot;article_id&quot; : 2, &quot;title&quot; : &quot;oooo&quot; &#125;</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c8c3c9a7a818872690ef06&quot;), &quot;article_id&quot; : 3, &quot;title&quot; : &quot;oooo&quot; &#125;</span><br></pre></td></tr></table></figure></p><p>3.4 多文档操作需要使用\$set操作符 (例子同上)</p><p>四、D(Delete) - remove</p><p>4.1 必须传递参数，指定删除条件，否则报错（设计目的是为了防止误操作删除数据）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; db.article.remove()</span><br><span class="line">2015-01-28T11:54:42.189+0000 remove needs a query at src/mongo/shell/collection.js:299</span><br></pre></td></tr></table></figure></p><p>4.2 跟update不同，默认会删除所有符合条件的记录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; db.article.remove(&#123;title:&apos;tttt&apos;&#125;)</span><br><span class="line">WriteResult(&#123; &quot;nRemoved&quot; : 98 &#125;)</span><br></pre></td></tr></table></figure></p><p>五、其他常用命令</p><p>5.1 显示数据库 show dbs<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; show dbs</span><br><span class="line">admin  (empty)</span><br><span class="line">blog  0.078GB</span><br><span class="line">local  0.078GB</span><br><span class="line">test   (empty)</span><br></pre></td></tr></table></figure></p><p>5.2 显示数据集 show collections / show tables<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; show collections</span><br><span class="line">article</span><br><span class="line">user</span><br><span class="line">system.indexes</span><br><span class="line">mongoshell&gt; show tables</span><br><span class="line">article</span><br><span class="line">user</span><br><span class="line">system.indexes</span><br></pre></td></tr></table></figure></p><p>5.4 删除数据集<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; db.article.drop()</span><br><span class="line">true</span><br><span class="line">mongoshell&gt; show collections</span><br><span class="line">user</span><br><span class="line">system.indexes</span><br></pre></td></tr></table></figure></p><p>5.3 删除数据库<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">mongoshell&gt; show dbs</span><br><span class="line">admin  (empty)</span><br><span class="line">blog  0.078GB</span><br><span class="line">local  0.078GB</span><br><span class="line">test   (empty)</span><br><span class="line">mongoshell&gt; use blog</span><br><span class="line">switched to db blog</span><br><span class="line">mongoshell&gt; db.dropDatabase()</span><br><span class="line">&#123; &quot;dropped&quot; : &quot;blog&quot;, &quot;ok&quot; : 1 &#125;</span><br><span class="line">mongoshell&gt; show dbs</span><br><span class="line">admin  (empty)</span><br><span class="line">local  0.078GB</span><br><span class="line">test   (empty)</span><br></pre></td></tr></table></figure></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;blockquote&gt;
+&lt;p&gt;本文旨在梳理mongodb的crud操作，达到快速掌握的目的。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;一、C(Create) - insert&lt;br&gt;插入数据比较简单&lt;/p&gt;
+&lt;p&gt;先创建一个局部变量article，然后插入数据&lt;br&gt;&lt;fig
+      
+    
+    </summary>
+    
+    
+      <category term="mongodb" scheme="http://localhost:4000/tags/mongodb/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Mongodb在Cygwin下的搭建</title>
+    <link href="http://localhost:4000/20150128/mongodb-cygwin/"/>
+    <id>http://localhost:4000/20150128/mongodb-cygwin/</id>
+    <published>2015-01-27T16:00:00.000Z</published>
+    <updated>2018-05-21T16:26:42.271Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote><p>本文旨在如何快速搭建一个简单的mongodb环境</p></blockquote><p>一、搭建cynwin环境<br>略过</p><p>二、下载mongodb<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">下载地址：http://www.mongodb.org/downloads</span><br></pre></td></tr></table></figure></p><p>三、搭建mongodb</p><p>3.1 安装mongodb<br>直接运行mongodb-win32-x86_64-2008plus-2.6.7-signed.msi，按照提示安装mongodb</p><p>3.2 配置环境变量<br>在环境变量PATH中添加 D:\Program Files\MongoDB 2.6 Standard\bin (改为自己的安装路径)<br>这时候就可以在cygwin中使用mongodb提供的命令了。</p><p>3.3 创建数据库目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shell&gt; mkdir mongodb_dev</span><br></pre></td></tr></table></figure></p><p>3.4 创建数据存储目录、配置目录、日志目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">shell&gt; cd mongodb_dev</span><br><span class="line">shell&gt; mkdir data</span><br><span class="line">shell&gt; mkdir conf</span><br><span class="line">shell&gt; mkdir log</span><br></pre></td></tr></table></figure></p><p>3.5 创建配置文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">shell&gt; cd conf</span><br><span class="line">shell&gt; touch mongod.conf</span><br><span class="line">shell&gt; vim mongod.conf</span><br></pre></td></tr></table></figure></p><p>填写一下内容：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#监听端口</span><br><span class="line">port = 12345</span><br><span class="line">#数据存储目录</span><br><span class="line">dbpath = data</span><br><span class="line">#日志目录</span><br><span class="line">logpath = log/mongod.log</span><br><span class="line">#Linux环境下开启守护进程</span><br><span class="line">#fork = true</span><br></pre></td></tr></table></figure></p><p>3.6 开启mongodb服务<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">shell&gt; mongod -f conf/mongod.conf</span><br></pre></td></tr></table></figure></p><p>这样一个简单的mongodb环境就搭建起来了</p><p>3.7 客户端连接mongodb服务<br>使用mongo命令行客户端<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">shell&gt; mongo 127.0.0.1:12345</span><br><span class="line">MongoDB shell version: 2.6.7</span><br><span class="line">connecting to: 127.0.0.1:12345/test</span><br><span class="line">&gt; show dbs</span><br><span class="line">admin  (empty)</span><br><span class="line">local  0.078GB</span><br><span class="line">&gt; use mydb</span><br><span class="line">switched to db mydb</span><br><span class="line">&gt; db.collection1.insert(&#123;&quot;name&quot;:&quot;xiaowang&quot;,&quot;email&quot;:&quot;xiaowang@gmail.com&quot;&#125;)</span><br><span class="line">WriteResult(&#123; &quot;nInserted&quot; : 1 &#125;)</span><br><span class="line">&gt; db.collection1.find()</span><br><span class="line">&#123; &quot;_id&quot; : ObjectId(&quot;54c7cad435f1aa5d551a15f1&quot;), &quot;name&quot; : &quot;xiaowang&quot;, &quot;email&quot; : &quot;xiaowang@gmail.com&quot; &#125;</span><br></pre></td></tr></table></figure></p><p>也可以下载Mongo的GUI客户端mongoVUE（Mac下使用MongoHub）等软件来连接。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;blockquote&gt;
+&lt;p&gt;本文旨在如何快速搭建一个简单的mongodb环境&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;一、搭建cynwin环境&lt;br&gt;略过&lt;/p&gt;
+&lt;p&gt;二、下载mongodb&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;tabl
+      
+    
+    </summary>
+    
+    
+      <category term="mongodb" scheme="http://localhost:4000/tags/mongodb/"/>
+    
+      <category term="cygwin" scheme="http://localhost:4000/tags/cygwin/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Linux命令apropos解析</title>
+    <link href="http://localhost:4000/20150128/linux-apropos/"/>
+    <id>http://localhost:4000/20150128/linux-apropos/</id>
+    <published>2015-01-27T16:00:00.000Z</published>
+    <updated>2018-05-21T16:23:37.083Z</updated>
+    
+    <content type="html"><![CDATA[<p>平时在Linux下寻求帮助，一般是使用man来查看命令帮助文档，但前提是必须得知道命令怎么写；<br>例如:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@svr ~]# man utime</span><br></pre></td></tr></table></figure></p><p>但是如果想完成某项功能，具体的命令又忘记了，这个时候怎么办呢？</p><p>我们可以使用 man -k 关键字，来查找相关的命令；</p><p>例如:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@svr ~]# man -k ifconfig</span><br><span class="line">ifcfg                (8)  - simplistic script which replaces ifconfig IP managment</span><br><span class="line">ifconfig             (8)  - configure a network interface</span><br><span class="line">ifconfig_selinux     (8)  - Security Enhanced Linux Policy for the ifconfig processes</span><br><span class="line">pifconfig            (8)  - display information about a network interface</span><br></pre></td></tr></table></figure></p><p>另外Linux命令有一个同样功能的命令：apropos，它跟man -k其实是一个命令；<br>用法：opropos 关键字</p><p>例如:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@svr ~]# apropos ifconfig</span><br><span class="line">ifcfg                (8)  - simplistic script which replaces ifconfig IP managment</span><br><span class="line">ifconfig             (8)  - configure a network interface</span><br><span class="line">ifconfig_selinux     (8)  - Security Enhanced Linux Policy for the ifconfig processes</span><br><span class="line">pifconfig            (8)  - display information about a network interface</span><br></pre></td></tr></table></figure></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;平时在Linux下寻求帮助，一般是使用man来查看命令帮助文档，但前提是必须得知道命令怎么写；&lt;br&gt;例如:&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=
+      
+    
+    </summary>
+    
+    
+      <category term="linux" scheme="http://localhost:4000/tags/linux/"/>
+    
+      <category term="apropos" scheme="http://localhost:4000/tags/apropos/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Swift学习知识点</title>
+    <link href="http://localhost:4000/20140619/swift/"/>
+    <id>http://localhost:4000/20140619/swift/</id>
+    <published>2014-06-18T16:00:00.000Z</published>
+    <updated>2018-05-21T16:20:42.423Z</updated>
+    
+    <content type="html"><![CDATA[<p>一、控制流<br>1.1 if语句中，条件必须是一个布尔表达式，这意味着 if score {…} 这样的代码会编译报错，不会隐式的与0做比较，与C、java等语言不同；<br>1.2 运行switch中匹配的语句，程序会退出switch语句，并不会继续执行下去，所以不需要在每个语句结尾写break；必须包含default语句，否则会报错；<br>1.3 swift中特有的范围操作符..和…区别：..不包含上界，…包含上界，例如：0..3 表示 0,1,2 不包含3，0…3 表示 0,1,2,3包含3</p><p>二、函数和闭包<br>2.1 函数定义方法：用func声明一个函数，使用名字和参数调用函数，使用-&gt;来指定函数返回值，无返回值可以省略；<br>2.2 函数参数是可变的，用一个数组来获取它们；例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">func sumOf(numbers: Int …) -&gt; Int &#123;</span><br><span class="line">var sum = 0</span><br><span class="line">for number in numbers &#123; //将numbers视为一个数组来操作</span><br><span class="line">sum += number</span><br><span class="line">&#125;</span><br><span class="line">return sum</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p><p>2.3 函数可以嵌套，被嵌套的函数可以访问外侧函数中的常量和变量；函数可以作为另一个函数的返回值；</p><p>三、对象和类<br>3.1 使用init来创建一个构造器，使用deinit创建一个析构函数；</p><p>四、常量和变量<br>4.1 如果使用与Swift保留字相同的名称作为常量或变量名时，使用反引号（·）将关键字包围的方式作为名字使用，不过尽量避免与保留关键字相同；<br>4.2 输出函数有println，另外还有print，二者区别是：println会换行，print不会换行；</p><p>五、注释<br>5.1 swift中，注释可以嵌套，这与其他语言不同，其他语言大多数注释是不可以嵌套的；</p><p>六、数据类型<br>6.1、整型，尽量不要使用UInt，除非你真的需要存储一个和当前平台原生字长相同的无符号整型，除了这种情况，最好使用Int，即使你要存储的值是非负数。统一使用Int可以提高代码的可复用性，避免不同类型数字之间的转换，并且匹配数字的类型推测；<br>6.2 如果你没有给浮点字面量标明类型，Swift会推测为Double类型；推测浮点数类型时，Swift总是会选择Double，而不是Float；如果表达式中同时出现整数和浮点数，会被推测为Double类型；<br>例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">let pi = 3.1415926 //pi会被推测为Double类型</span><br></pre></td></tr></table></figure></p><p>6.3 数值字面量可以包括额外的格式来增强可读性，并不影响字面量，例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">let paddedDouble = 000123.456 // 123.456</span><br><span class="line">let oneMillion = 1_000_000 //1000000</span><br><span class="line">let justOverOneMillion = 1_000_000.000_000_1 //1000000.0000001</span><br></pre></td></tr></table></figure></p><p>6.4 不同类型不能直接做运算，需要显式类型转换，例如，UInt16类型不能和UInt8类型直接相加，因为他们类型不同：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">let twoThousand:UInt16 = 2_000</span><br><span class="line">let one:UInt8 = 1</span><br><span class="line">let twoThousandAndOne = twoThousand + UInt16(one)</span><br></pre></td></tr></table></figure></p><p>6.5 整数和浮点数的转换必须显式指定类型；<br>6.6 字面量不同于数字类常量和变量，没有特定的类型，可以直接运算，例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">let sum = 3 + 0.14158</span><br></pre></td></tr></table></figure></p><p>6.7 在需要使用Bool类型的地方使用了非布尔值，Swift的类型安全机制会报错；例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">let i = 1</span><br><span class="line">if i &#123;</span><br><span class="line">//这个例子会报错，不会通过编译</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p><p>6.8 元组类型的正确描述：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">let http404Error = (404,”Not Found”) //描述为：一个类型为(Int,String)的元组</span><br></pre></td></tr></table></figure></p><p>6.9 元组在临时组织值的时候很有用，但是并不适合创建复杂的数据结构，如果数据结构不是临时使用，请使用类或者结构体，而不是元组；<br>6.10 nil不能用于非可选的常量和变量<br>例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">let a = nil //编译报错</span><br><span class="line">var b = nil //编译报错</span><br><span class="line">let a? = nil //正确</span><br><span class="line">let b? = nil //正确</span><br></pre></td></tr></table></figure></p><p>6.11 如果一个变量之后可能变成nil的画，请不要使用隐式解包可选类型，如果需要在变量的生命周期中判断是否为nil的话，请使用普通可选类型；</p><p>未完待续…</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;一、控制流&lt;br&gt;1.1 if语句中，条件必须是一个布尔表达式，这意味着 if score {…} 这样的代码会编译报错，不会隐式的与0做比较，与C、java等语言不同；&lt;br&gt;1.2 运行switch中匹配的语句，程序会退出switch语句，并不会继续执行下去，所以不需要
+      
+    
+    </summary>
+    
+    
+      <category term="swift" scheme="http://localhost:4000/tags/swift/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>sersync和rsync部署实时同步环境</title>
+    <link href="http://localhost:4000/20130110/sersync/"/>
+    <id>http://localhost:4000/20130110/sersync/</id>
+    <published>2013-01-09T16:00:00.000Z</published>
+    <updated>2018-05-21T16:11:22.540Z</updated>
+    
+    <content type="html"><![CDATA[<p>by jianzi 2013/1/9<br>一、与使用rsync单向同步的区别是：（2013.10.01纠正：rsync也可以双向同步）<br>普通单向同步是在源服务器运行rsync守护进程 # rsync -daemon ，在目标服务器执行命令“rsync -artuz -R —delete ….”<br>使用sersync和rsync实时同步，则在源服务器上安装sersync，运行sersync守护进程,在目标服务器运行rsync —daemon守护进程；</p><p>二、部署流水账：<br>目标服务器1： 192.168.0.100<br>目标服务器2： 192.168.0.101<br>源服务器： 192.168.0.22</p><p>1、在所有目标服务器上部署rsync守护进程<br>即：在192.168.0.100和192.168.0.101上<br>创建 /etc/rsyncd.conf<br>内容：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">uid=root</span><br><span class="line">gid=root</span><br><span class="line">max connections=36000</span><br><span class="line">use chroot=no</span><br><span class="line">log file=/var/log/rsyncd.log</span><br><span class="line">pid file=/var/run/rsyncd.pid</span><br><span class="line">lock file=/var/run/rsyncd.lock</span><br><span class="line">[dev_www]</span><br><span class="line">path=/home/www #目标服务器上的保存目录</span><br><span class="line">comment = dev</span><br><span class="line">ignore errors = yes</span><br><span class="line">read only = no</span><br><span class="line">hosts allow = 192.168.0.22 #源服务器IP地址，这里允许源服务器推送文件</span><br><span class="line">hosts deny = *</span><br></pre></td></tr></table></figure></p><p>运行rsync守护进程<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># rsync —daemon</span><br></pre></td></tr></table></figure></p><p>添加到启动文件当中去<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># echo “rsync —daemon” &gt;&gt; /etc/rc.local</span><br></pre></td></tr></table></figure></p><p>2、在源服务器上安装运行sersync<br>下载sersync可执行分发包：<a href="http://code.google.com/p/sersync/" target="_blank" rel="noopener">http://code.google.com/p/sersync/</a></p><p>解压：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># tar zxvf sersync2.5.4_64bit_binary_stable_final.tar.gz</span><br></pre></td></tr></table></figure></p><p>配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#cd GNU-Linux-x86</span><br><span class="line">#vim confxml.xml</span><br></pre></td></tr></table></figure></p><p>修改相关配置段：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;!— 过滤不需要同步的文件规则 —&gt;</span><br><span class="line">&lt;filter start=”false”&gt;</span><br><span class="line">&lt;exclude expression=”(.).svn”&gt;&lt;/exclude&gt;</span><br><span class="line">&lt;exclude expression=”(.).gz”&gt;&lt;/exclude&gt;</span><br><span class="line">&lt;exclude expression=”(.).fla”&gt;&lt;/exclude&gt;</span><br><span class="line">&lt;exclude expression=”^info/“&gt;&lt;/exclude&gt;</span><br><span class="line">&lt;exclude expression=”^static/*”&gt;&lt;/exclude&gt;</span><br><span class="line">&lt;/filter&gt;</span><br><span class="line">&lt;!— 打开调试模式 —&gt;</span><br><span class="line">&lt;debug start=”true”/&gt;</span><br><span class="line">&lt;!— 源数据目录 和 目标服务器 —&gt;</span><br><span class="line">&lt;localpath watch=”/root/rsync_data/dev_www”&gt;</span><br><span class="line">&lt;remote ip=”192.168.0.100” name=”dev_www”/&gt;</span><br><span class="line">&lt;remote ip=”192.168.0.101” name=”dev_www”/&gt;</span><br><span class="line">&lt;/localpath&gt;</span><br></pre></td></tr></table></figure></p><p>第一次先整体同步<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># ./sersync2 -r</span><br></pre></td></tr></table></figure></p><p>运行守护进程实时同步<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># ./sersync2 -d</span><br></pre></td></tr></table></figure></p><p>添加到启动文件中去<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># echo “/root/GNU-Linux-x86/sersync2 -d” &gt;&gt; /etc/rc.local</span><br></pre></td></tr></table></figure></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;by jianzi 2013/1/9&lt;br&gt;一、与使用rsync单向同步的区别是：（2013.10.01纠正：rsync也可以双向同步）&lt;br&gt;普通单向同步是在源服务器运行rsync守护进程 # rsync -daemon ，在目标服务器执行命令“rsync -artuz 
+      
+    
+    </summary>
+    
+    
+      <category term="rsync" scheme="http://localhost:4000/tags/rsync/"/>
+    
+      <category term="sersync" scheme="http://localhost:4000/tags/sersync/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>AS3位运算</title>
+    <link href="http://localhost:4000/20110829/as3-bit/"/>
+    <id>http://localhost:4000/20110829/as3-bit/</id>
+    <published>2011-08-28T16:00:00.000Z</published>
+    <updated>2018-05-21T16:07:02.601Z</updated>
+    
+    <content type="html"><![CDATA[<p>左位移几就相当于乘以2的几次方（ Left bit shifting to multiply by any power of two ）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//将一个值向左侧移动一位与这个值乘以 2 等效 。浮点数通过舍去小数点后面的所有位来转换为整数。</span><br><span class="line">大约快了300%</span><br><span class="line">x = x * 2;</span><br><span class="line">x = x * 64;</span><br></pre></td></tr></table></figure></p><p>//相当于：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x = x &lt;&lt; 1;</span><br><span class="line">x = x &lt;&lt; 6;</span><br></pre></td></tr></table></figure></p><p>右位移几就相当于除以2的几次方（Right bit shifting to divide by any power of two）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//将一个值右移一位等效于将它除以 2 并舍去余数。浮点数通过舍去小数点后面的所有位来转换为整数。</span><br><span class="line">大约快了350%</span><br><span class="line">x = x / 2;</span><br><span class="line">x = x / 64;</span><br></pre></td></tr></table></figure></p><p>//相当于：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x = x &gt;&gt; 1;</span><br><span class="line">x = x &gt;&gt; 6;</span><br></pre></td></tr></table></figure></p><p>Number 到 integer(整数)转换</p><p>在AS3中使用int(x)快了10% 。尽管如此位操作版本在AS2中工作的更好<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x = int(1.232)</span><br></pre></td></tr></table></figure></p><p>//相当于：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x = 1.232 &gt;&gt; 0;</span><br></pre></td></tr></table></figure></p><p>提取颜色组成成分</p><p>不完全是个技巧，是正常的方法 (Not really a trick, but the regular way of extracting values using bit masking and shifting.)</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//24bit</span><br><span class="line">var color:uint = 0x336699;</span><br><span class="line">var r:uint = color &gt;&gt; 16;</span><br><span class="line">var g:uint = color &gt;&gt; 8 &amp; 0xFF;</span><br><span class="line">var b:uint = color &amp; 0xFF;</span><br><span class="line">//32bit</span><br><span class="line">var color:uint = 0xff336699;</span><br><span class="line">var a:uint = color &gt;&gt;&gt; 24;</span><br><span class="line">var r:uint = color &gt;&gt;&gt; 16 &amp; 0xFF;</span><br><span class="line">var g:uint = color &gt;&gt;&gt; 8 &amp; 0xFF;</span><br><span class="line">var b:uint = color &amp; 0xFF;</span><br></pre></td></tr></table></figure><p>合并颜色组成成分</p><p>替换值到正确位置并组合他们 (‘Shift up’ the values into the correct position and combine them.)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">//24bit</span><br><span class="line">var r:uint = 0x33;</span><br><span class="line">var g:uint = 0x66;</span><br><span class="line">var b:uint = 0x99;</span><br><span class="line">var color:uint = r &lt;&lt; 16 | g &lt;&lt; 8 | b;</span><br><span class="line">//32bit</span><br><span class="line">var a:uint = 0xff;</span><br><span class="line">var r:uint = 0x33;</span><br><span class="line">var g:uint = 0x66;</span><br><span class="line">var b:uint = 0x99;</span><br><span class="line">var color:uint = a &lt;&lt; 24 | r &lt;&lt; 16 | g &lt;&lt; 8 | b;</span><br></pre></td></tr></table></figure></p><p>使用异或运算交换整数而不需要用临时变量</p><p>很可爱的技巧, 在本页顶端的链接里有详细的解释 ，这里快了 20%<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">var t:int = a;</span><br><span class="line">a = b;</span><br><span class="line">b = t;</span><br></pre></td></tr></table></figure></p><p>//相当于:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a ^= b;</span><br><span class="line">b ^= a;</span><br><span class="line">a ^= b;</span><br></pre></td></tr></table></figure></p><p>自增/自减(Increment/decrement)</p><p>这个比以前的慢不少，但却是个模糊你代码的好方法；-）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">i = -~i; // i++</span><br><span class="line">i = ~-i; // i—</span><br></pre></td></tr></table></figure></p><p>取反（Sign flipping using NOT or XOR）</p><p>另人奇怪的是这个居然快了300%！<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">i = -i;</span><br></pre></td></tr></table></figure></p><p>//相当于：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">i = ~i + 1;</span><br></pre></td></tr></table></figure></p><p>//或者<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">i = (i ^ -1) + 1;</span><br></pre></td></tr></table></figure></p><p>使用bitwise AND快速取模 （Fast modulo operation using bitwise AND）</p><p>如果除数是2的次方，取模操作可以这样做：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">模数= 分子 &amp; (除数 - 1);</span><br></pre></td></tr></table></figure></p><p>这里大约快了600%<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x = 131 % 4;</span><br></pre></td></tr></table></figure></p><p>//相当于：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x = 131 &amp; (4 - 1);</span><br></pre></td></tr></table></figure></p><p>检查是否为偶数（Check if an integer is even/uneven using bitwise AND）</p><p>这里快了 600%<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">isEven = (i % 2) == 0;</span><br></pre></td></tr></table></figure></p><p>//相当于：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">isEven = (i &amp; 1) == 0;</span><br></pre></td></tr></table></figure></p><p>绝对值</p><p>忘记 Math.abs()吧 (Forget Math.abs() for time critical code.)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">version 1 比 Math.abs() 快了2500% ，version 2 居然比 version 1 又快了20% ！</span><br><span class="line">//version 1</span><br><span class="line">i = x &lt; 0 ? -x : x;</span><br><span class="line">//version 2</span><br><span class="line">i = (x ^ (x &gt;&gt; 31)) - (x &gt;&gt; 31);</span><br></pre></td></tr></table></figure></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;左位移几就相当于乘以2的几次方（ Left bit shifting to multiply by any power of two ）&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pr
+      
+    
+    </summary>
+    
+    
+      <category term="as3" scheme="http://localhost:4000/tags/as3/"/>
+    
+      <category term="位运算" scheme="http://localhost:4000/tags/%E4%BD%8D%E8%BF%90%E7%AE%97/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>监控系统的平均负载</title>
+    <link href="http://localhost:4000/20110803/uptime/"/>
+    <id>http://localhost:4000/20110803/uptime/</id>
+    <published>2011-08-02T16:00:00.000Z</published>
+    <updated>2018-05-21T16:08:47.359Z</updated>
+    
+    <content type="html"><![CDATA[<p>1.为什么要监控系统的平均负载？<br>有时我们会感觉到系统响应很慢，但是又找不到具体原因，这时要查平均负载，检查是否有大量的进程在排队等待</p><p>2.平均负载是什么?<br>特定时间间隔内运行队列中的平均进程数，好象还不够明白：就是进程队列的长度，有多少个进程在排队等待运行</p><p>3.什么是”进程队列”?<br>一个进程满足以下条件就会位于进程队列中<br>A&gt;它没有在等待I/O操作的结果<br>B&gt;它没有主动进入等待状态(即没有调用wait)<br>C&gt;它没有被停止</p><p>4.如何查看平均负载?<br>最简单的命令是 uptime<br>bash# uptime<br>00:44:22 up 1:17, 3 users, load average: 8.13, 5.90, 4,94</p><p>5.显示的内容是什么意思?<br>load average: 8.13,5.90,4,94<br>显示的是过去的1,5,15分钟内进程队列中的平均进程数量</p><p>6.如何衡量当前系统是否负载过高?<br>如果每个cpu(可以按CPU核心的数量计算)上当前活动进程数不大于3，则系统性能良好，<br>不大于4，表示可以接受<br>如大于5，则系统性能问题严重<br>上面例中的8.13,如果有2个cpu核心,则8.13/2=4.065, 此系统性能可以接受<br>建议设置严格的报警值为: CPU核心的数量<br>比如：CPU核心数量为2，则设置报警值为2<br>(这样设置是合理的，因为毕竟不是每个应用都支持多CPU及多核心)</p><p>7.其他查看平均负载的命令<br>tload #能够绘制出负载变化的图形<br>uptime #同时显示开机以来的时间<br>w #同时显示出已登录的用户<br>top #这个对资源占用太高，不建议使用<br>cat /proc/loadavg #通过/proc系统信息得到平均负载</p><p>8.如果你要持续的观察平均负载，建议用 watch uptime 或 watch cat /proc/loadavg</p><p>关于watch:每隔一定时间执行指定的程序，并全屏显示结果。时间默认是2秒</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;1.为什么要监控系统的平均负载？&lt;br&gt;有时我们会感觉到系统响应很慢，但是又找不到具体原因，这时要查平均负载，检查是否有大量的进程在排队等待&lt;/p&gt;
+&lt;p&gt;2.平均负载是什么?&lt;br&gt;特定时间间隔内运行队列中的平均进程数，好象还不够明白：就是进程队列的长度，有多少个进程在排
+      
+    
+    </summary>
+    
+    
+      <category term="uptime" scheme="http://localhost:4000/tags/uptime/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>使用ImageLazyLoad技术，对图片延迟加载</title>
+    <link href="http://localhost:4000/20101104/image-lazy-load/"/>
+    <id>http://localhost:4000/20101104/image-lazy-load/</id>
+    <published>2010-11-03T16:00:00.000Z</published>
+    <updated>2018-05-21T15:48:57.476Z</updated>
+    
+    <content type="html"><![CDATA[<p>ImageLazyLoad技术，就是在下拉滚动条的时候加载图片，这种比较<br>适合一个网页上有很多图片的情况，例如我的网站:<a href="http://www.uucc5.com" target="_blank" rel="noopener">www.uucc5.com</a><br>满页都是图片，那么如果用户访问的时候，会在加载完整个页面等待很长时间，而用第一眼看到的只是第一屏的内容，所以第二屏、第三屏等的内容加载时间其实是<br>在浪费时间！如果用户只看了第一屏，而不翻屏就关掉了浏览器，那么第二屏第三屏下载的资源也是一中流量的浪费！<br>并且加载用户体验也不好！那么这就有了这个小技巧，使用javascript来实现图片缓冲，只加载用户要看的屏幕的资源，这个小技巧的好处是提高访问速<br>度，提高用户体验，对seo没有什么帮助！，不废话，说做法：</p><p>一、使用JQuery插件 ，插件名: jquery.lazyload（7kb大小），压缩后（3kb大小）：</p><p>1.导入JS插件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;script src=&quot;http://bchuan.com/jquery.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;</span><br><span class="line">&lt;script src=&quot;http://bchuan.com/jquery.lazyload.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;</span><br></pre></td></tr></table></figure></p><p>2.在你的页面中加入如下的javascript：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(&quot;img&quot;).lazyload();</span><br></pre></td></tr></table></figure></p><p>这将会使所有的图片都延迟加载。</p><p>当然插件还有几个配置项可供设置：<br>1.改变threshold<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$(&quot;img&quot;).lazyload(&#123; threshold : 200 &#125;);</span><br></pre></td></tr></table></figure></p><p>把阀值设置成200 意思就是当图片没有看到之前先load 200像素。</p><p>2.当然了你也可以通过设置占位符图片和自定事件来触发加载图片事件<br>复制代码<br>代码如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$(&quot;img&quot;).lazyload(&#123;</span><br><span class="line">placeholder : &quot;img/grey.gif&quot;,</span><br><span class="line">event : &quot;click&quot;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p><p>3.可以通过定义effect 参数来定义一些图片显示效果<br>复制代码<br>代码如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$(&quot;img&quot;).lazyload(&#123;</span><br><span class="line">placeholder : &quot;img/grey.gif&quot;,</span><br><span class="line">effect : &quot;fadeIn&quot;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure></p><p>LazyLoad(延迟加载)技术不仅仅用在对网页中图片的延迟加载，对数据同样可以，Google Reader和Bing图片搜索就把LazyLoad技术运用的淋漓尽致；</p><p>缺陷：</p><blockquote><p>1.与Ajax技术的冲突；<br>2.图片的延迟加载，遇到高度特别高的图片，会出现停止加载的问题；<br>3.写代码不规范的同学要注意了，不管由于什么原因，如果您的页面中，img标签的height属性未定义，那么我建议您最好不要使用ImageLazyLoad</p></blockquote><p>二、使用淘宝的延迟加载技术:(2kb大小)<br><a href="http://a.tbcdn.cn/kissy/1.0.0/build/imglazyload/imglazyload-min.js" target="_blank" rel="noopener">http://a.tbcdn.cn/kissy/1.0.0/build/imglazyload/imglazyload-min.js</a><br>调用方法也是很简单的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;script src=&quot;http://a.tbcdn.cn/kissy/1.0.0/build/imglazyload/imglazyload-min.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;</span><br><span class="line">&lt;script type=&quot;text/javascript&quot;&gt;&lt;!--//&lt;![CDATA[KISSY.ImageLazyload();//--&gt;]]&gt;&lt;/script&gt;</span><br></pre></td></tr></table></figure></p><p>注：该脚本依赖 yahoo-dom-event, 页面中需要加载 yui 2.x,你也可以直接引用下面的地址:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;script src=&quot;http://kissy.googlecode.com/svn/trunk/third-party/yui2/yahoo-dom-event/yahoo-dom-event.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;</span><br></pre></td></tr></table></figure></p><p>配置参数如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;script type=&quot;text/javascript&quot;&gt;</span><br><span class="line">KISSY.ImageLazyload(&#123;</span><br><span class="line">mod: &quot;manual&quot;, // 延迟模式。默认为 auto</span><br><span class="line">diff: 200 // 当前屏幕下多远处的图片开始延迟加载。默认两屏外的图片才延迟加载</span><br><span class="line">&#125;);</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure></p><p>manual 模式时，需要手动将页面中需要延迟加载的图片的 src 属性名更改为 data-lazyload-src. 比如 SRP 页面，宝贝列表的后20个图片延迟加载。 输出时，html 代码为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;img data-lazy-src=&quot;http://jianzi0307.blog.163.com/blog/path/to/img&quot; alt=&quot;something&quot; /&gt;</span><br></pre></td></tr></table></figure></p><p>如果您是Jquery，Prototype等这些JS框架的粉丝，他们都有定制的LazyLoad Plugin提供：<br><a href="http://www.appelsiini.net/projects/lazyload" target="_blank" rel="noopener">http://www.appelsiini.net/projects/lazyload</a></p><p>LazyLoad(延迟加载)技术不仅仅用在对网页中图片的延迟加载，对数据同样可以。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;ImageLazyLoad技术，就是在下拉滚动条的时候加载图片，这种比较&lt;br&gt;适合一个网页上有很多图片的情况，例如我的网站:&lt;a href=&quot;http://www.uucc5.com&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;www.uucc5.co
+      
+    
+    </summary>
+    
+    
+      <category term="前端优化" scheme="http://localhost:4000/tags/%E5%89%8D%E7%AB%AF%E4%BC%98%E5%8C%96/"/>
+    
+      <category term="懒加载" scheme="http://localhost:4000/tags/%E6%87%92%E5%8A%A0%E8%BD%BD/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>滚动地图层的方法</title>
+    <link href="http://localhost:4000/20100708/as3-game-map-scroll/"/>
+    <id>http://localhost:4000/20100708/as3-game-map-scroll/</id>
+    <published>2010-07-07T16:00:00.000Z</published>
+    <updated>2018-05-21T15:51:04.185Z</updated>
+    
+    <content type="html"><![CDATA[<p>玩rpg游戏的时候，会看到角色始终在屏幕中间移动，感觉是地图在动，人物位置不动，这是如何来实现的呢？<br>看了下面这个简单例子你便知道其中的道理，原理是利用DisplayObject的ScrollRect：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line">package</span><br><span class="line">&#123;</span><br><span class="line">import flash.display.Loader;</span><br><span class="line">import flash.display.Sprite;</span><br><span class="line">import flash.events.Event;</span><br><span class="line">import flash.events.MouseEvent;</span><br><span class="line">import flash.geom.Rectangle;</span><br><span class="line">import flash.net.URLRequest;</span><br><span class="line">/**</span><br><span class="line"> * 滚动地图的例子：</span><br><span class="line"> * 将window.x和window.y放在EnterFrame中，实时修改为角色走动的坐标即可实现地图平滑滚动</span><br><span class="line"> * 这里简单用鼠标点击坐标作为角色的位置</span><br><span class="line"> * jianzi 2010.7.8</span><br><span class="line"> */</span><br><span class="line">public class Main extends Sprite</span><br><span class="line">&#123;</span><br><span class="line">//地图尺寸</span><br><span class="line">private static const mapWidth:int = 2762;</span><br><span class="line">private static const mapHeight:int = 1558;</span><br><span class="line">//地图入口坐标</span><br><span class="line">private static const enterX:int = 1000;</span><br><span class="line">private static const enterY:int = 1200;</span><br><span class="line">//滚动区域</span><br><span class="line">private var window:Rectangle;</span><br><span class="line">//地图层</span><br><span class="line">private var scene:Sprite</span><br><span class="line">public function Main()</span><br><span class="line">&#123;</span><br><span class="line">//地图层</span><br><span class="line">scene = new Sprite();</span><br><span class="line">scene.graphics.beginFill(Math.random() * 0xffffff);</span><br><span class="line">scene.graphics.drawRect(0,0,mapWidth,mapHeight);</span><br><span class="line">scene.graphics.endFill();</span><br><span class="line">//加载地图</span><br><span class="line">var loader:Loader = new Loader();</span><br><span class="line">loader.contentLoaderInfo.addEventListener(Event.COMPLETE,onComplete);</span><br><span class="line">loader.load(new URLRequest(&quot;map.jpg&quot;));</span><br><span class="line">scene.addChild(loader);</span><br><span class="line">addChild(scene);</span><br><span class="line">//滚动区域，设置为stage大小，定位地图在入口点(enterX,enterY)</span><br><span class="line">window = new Rectangle();</span><br><span class="line">window.x = enterX - stage.stageWidth/2;</span><br><span class="line">window.y = enterY - stage.stageHeight/2;</span><br><span class="line">window.width = stage.stageWidth;</span><br><span class="line">window.height = stage.stageHeight;</span><br><span class="line">this.scrollRect = window;</span><br><span class="line">this.addEventListener(MouseEvent.CLICK,onClick);</span><br><span class="line">&#125;</span><br><span class="line">private function onComplete(e:Event):void</span><br><span class="line">&#123;</span><br><span class="line">//......................</span><br><span class="line">&#125;</span><br><span class="line">private function onClick(e:MouseEvent):void</span><br><span class="line">&#123;</span><br><span class="line">var posX:Number = int(mouseX) - stage.stageWidth/2;</span><br><span class="line">var posY:Number = int(mouseY) - stage.stageWidth/2;</span><br><span class="line">if (posX &amp;lt; 0) </span><br><span class="line">                            posX = 0; </span><br><span class="line">                        else if ((posX+stage.stageWidth) &amp;gt; mapWidth)</span><br><span class="line">                            posX = mapWidth - stage.stageWidth;</span><br><span class="line">if (posY &amp;lt; 0) </span><br><span class="line">                            posY = 0;</span><br><span class="line">else if ((posY+stage.stageHeight) &amp;gt; mapHeight) </span><br><span class="line">                            posY = mapHeight - stage.stageHeight;</span><br><span class="line">window.x = posX;</span><br><span class="line">window.y = posY;</span><br><span class="line">trace(window.x,window.y);</span><br><span class="line">this.scrollRect = window;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;玩rpg游戏的时候，会看到角色始终在屏幕中间移动，感觉是地图在动，人物位置不动，这是如何来实现的呢？&lt;br&gt;看了下面这个简单例子你便知道其中的道理，原理是利用DisplayObject的ScrollRect：&lt;/p&gt;
+&lt;figure class=&quot;highlight pla
+      
+    
+    </summary>
+    
+    
+      <category term="game" scheme="http://localhost:4000/tags/game/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Memcached研发测试</title>
+    <link href="http://localhost:4000/20100517/memcached/"/>
+    <id>http://localhost:4000/20100517/memcached/</id>
+    <published>2010-05-16T16:00:00.000Z</published>
+    <updated>2018-05-21T15:58:01.501Z</updated>
+    
+    <content type="html"><![CDATA[<p>为准备公司网站的重构，前端时间研究Memcached分布式集群 和 Hiphop-php(Facebook的一个开源项目)的搭建 ，花了不少时间和精力，下边进行一下整理。。。</p><p>一、Memcached客户端库算法研究<br>取模算法与一致性算法</p><p>Memcached虽然被称为”分布式”缓存服务器，但是服务器段并没有分布式功能，实现分布式主要是通过客户端库来实现。无论使用哪种语言实现的客户端库都会包含至少一种分布算法来实现Memcached分布式。</p><p>因此笼统来说客户端库是通过一个分布算法和维护的一个服务器列表来实现Memcached分布式的，关于分布算法目前有两种选择：取模算法(modula hashing)和一致性算法(consistent hashing)。</p><p>取模算法(modula hashing)是当前多数客户端库默认算法 [Hash($key) % $svrNum ]，就是根据服务器节点数的余数来进行分散，就是通过hash函数求得的Key的整数哈希值再除以服务器节点数并取余数来选择服务器。这种算法取余计算简单，分散效果好，但是缺点是如果某一台机器宕机，那么应该落在该机器的请求就无法得到正确的处理，这时需要将当掉的服务器从算法从去除，此时候会有(N-1)/N的服务器的缓存数据需要重新进行计算；如果新增一台机器，会有N/(N+1)的服务器的缓存数据需要进行重新计算。对于系统而言，这通常是不可接受的颠簸（因为这意味着大量缓存的失效或者数据需要转移）。</p><p>一致性算法(consistent hashing)来源于p2p网络的路由算法，算法描述：hash值一般为unsigned int型，因此对于hash函数的结果应该均匀分布在[0,2^32-1]间，把一个圆环用2^32 个点来进行均匀切割，首先按照hash()函数算出服务器（节点）的哈希值， 并将其分布到0～2^32的圆上。用同样的hash()函数求出需要存储数据的键的哈希值，并映射到圆上。然后从数据映射到的位置开始顺时针查找，将数据保存到找到的第一个服务器（节点）上，新增一个节点的时候，只有在圆环上新增节点逆时针方向的第一个节点的数据会受到影响。删除一个节点的时候，只有在圆环上原来删除节点顺时针方向的第一个节点的数据会受到影响，因此通过Consistent Hashing很好地解决了负载均衡中由于新增节点、删除节点引起的hash值颠簸问题。</p><p>PHP的Memcached客户端库</p><p>目前有两个：PECL::memcache 和PECL::memcached，下边是两个库的比较：</p><p>两个库的稳定版本都是使用取模算法作为默认的分布算法，根据上面两个算法的解释可以看出，一致性算法是做memcached分布集群的最佳算法，因此我们需要将客户端库的默认分布算法改为一致性算法：</p><p>PECL::memcache库启用consistent一致性算法：<br>修改php.ini添加：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[Memcache]</span><br><span class="line">memcache.allow_failover= 1</span><br><span class="line">memcache.max_failover_attempts  = 20</span><br><span class="line">memcache.chunk_size= 32768</span><br><span class="line">memcache.hash_strategy = consistent</span><br><span class="line">memcache.hash_function= crc32</span><br></pre></td></tr></table></figure></p><p>或在PHP中使用ini_set方法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ini_set(&apos;memcache.hash_strategy&apos;,&apos; consistent&apos;);</span><br><span class="line">ini_set(&apos;memcache.hash_function &apos;,&apos; crc32&apos;);</span><br></pre></td></tr></table></figure></p><p>PECL::memcache模块使用手册<br><a href="http://www.php.net/manual/en/book.memcache.php" target="_blank" rel="noopener">http://www.php.net/manual/en/book.memcache.php</a><br>PECL::memcached(libmemcached)库启用consistent一致性算法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$mc = newMemcached();   </span><br><span class="line">$mc-&gt;setOption(Memcached::OPT_DISTRIBUTION,Memcached::DISTRIBUTION_CONSISTENT);</span><br><span class="line">$mc-&gt;setOption(Memcached::OPT_LIBKETAMA_COMPATIBLE, true);</span><br></pre></td></tr></table></figure></p><p>PECL::memcached模块使用手册<br><a href="http://www.php.net/manual/en/book.memcached.php" target="_blank" rel="noopener">http://www.php.net/manual/en/book.memcached.php</a></p><p>二、两个客户端库的性能测试<br>从上面的表格我们看出pecl::memcached库是基于libmemcached工具库的，我使用facebook的xprof库对二者进行了一下测试，基于libmemcached的pecl::memcached库性能要比pecl::memcache库高出很多，数据这里就不给了。<br>综上两点使用pecl::memcached库，并使用一致性算法并同时设置LIBKETAMA_COMPATIBLE选项为true，这是我们做memcached分布集群的最佳选择，即提高了性能，又减少了由增删节点而引起的大量数据迁移的风险。</p><p>使用facebook的xprof模块测试PHP程序性能：<br>从Facebook开源项目中下载xprof<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">http://github.com/facebook</span><br><span class="line">http://pecl.php.net/package/xhprof</span><br></pre></td></tr></table></figure></p><p>安装过程：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># tar zxvf xhprof-0.9.2.tar.gz</span><br><span class="line"># cd xhprof-0.9.2/extension</span><br><span class="line"># /usr/local/webserver/php/bin/phpize</span><br><span class="line"># ./configure--with-php-config=/usr/local/webserver/php/bin/php-config</span><br><span class="line"># make &amp;&amp; make install</span><br></pre></td></tr></table></figure></p><p>Xhprof.so模块生成目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/webserver/php/lib/php/extensions/no-debug-non-zts-20060613/</span><br></pre></td></tr></table></figure></p><p>手动在php.ini里面添加xprof段：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[xhprof]</span><br><span class="line">extension=xhprof.so</span><br><span class="line">xhprof.output_dir=/data0/htdocs/test.letv.com/logs/xhprof/</span><br></pre></td></tr></table></figure></p><p>用法：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php</span><br><span class="line">//启用初始化</span><br><span class="line">xhprof_enable(XHPROF_FLAGS_CPU + XHPROF_FLAGS_MEMORY);</span><br><span class="line">//...测试代码放在这里</span><br><span class="line">//生成性能分析数据文件</span><br><span class="line">$xhprof_data= xhprof_disable();</span><br><span class="line">//调用xhprof提供的web接口，通过Web方式查看性能数据</span><br><span class="line">include_once&quot;xhprof_lib/utils/xhprof_lib.php&quot;;</span><br><span class="line">include_once&quot;xhprof_lib/utils/xhprof_runs.php&quot;;</span><br><span class="line">$xhprof_runs= new XHProfRuns_Default();</span><br><span class="line">$run_id= $xhprof_runs-&gt;save_run($xhprof_data, &quot;xhprof_testUDP&quot;);</span><br><span class="line">echo&quot;---------------\n&quot;.</span><br><span class="line">     &quot;Assuming you have set up the httpbased UI for \n&quot;.</span><br><span class="line">     &quot;XHProf at some address, you can viewrun at \n&quot;.</span><br><span class="line">     &quot;http://10.57.30.70/xhprof_html/index.php?run=$run_id&amp;source=xhprof_testUDP\n&quot;.</span><br><span class="line">     &quot;---------------\n&quot;;</span><br></pre></td></tr></table></figure></p><p>xhprof参考文档：<br>xhprof手册：<a href="http://mirror.facebook.net/facebook/xhprof/doc.html#installation" target="_blank" rel="noopener">http://mirror.facebook.net/facebook/xhprof/doc.html#installation</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;为准备公司网站的重构，前端时间研究Memcached分布式集群 和 Hiphop-php(Facebook的一个开源项目)的搭建 ，花了不少时间和精力，下边进行一下整理。。。&lt;/p&gt;
+&lt;p&gt;一、Memcached客户端库算法研究&lt;br&gt;取模算法与一致性算法&lt;/p&gt;
+&lt;p&gt;M
+      
+    
+    </summary>
+    
+    
+      <category term="memcached" scheme="http://localhost:4000/tags/memcached/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Win7静态绑定网关MAC防止arp攻击</title>
+    <link href="http://localhost:4000/20100513/win7-arp/"/>
+    <id>http://localhost:4000/20100513/win7-arp/</id>
+    <published>2010-05-12T16:00:00.000Z</published>
+    <updated>2018-05-21T16:02:00.984Z</updated>
+    
+    <content type="html"><![CDATA[<p>Win7使用XP的方式静态绑定mac是行不通的：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arp -s 192.168.1.1 00-27-19-50-72-3c</span><br></pre></td></tr></table></figure></p><p>会提示你无权限等等…即使使用管理员方式运行cmd也无济于事</p><p>下面给出办法：<br>首先查出你的网卡物理接口ID<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt; netsh i i show in</span><br><span class="line">Idx     Met         MTU          状态                名称</span><br><span class="line">—-  —————  —————  ——————  —————————————-</span><br><span class="line">  1          50  4294967295  connected     Loopback Pseudo-Interface 1</span><br><span class="line"> 11          20        1500  connected     本地连接</span><br></pre></td></tr></table></figure></p><p>从输出可以看出我这个是 11</p><p>然后通过这个命令实现网关mac的静态绑定<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; netsh -c “i i” add neighbors 11 “192.168.1.1” “00-27-19-50-72-3c”</span><br></pre></td></tr></table></figure></p><p>其中：192.168.1.1是我的网关IP，00-27-19-50-72-3c 是网关的真实MAC地址</p><p>注：查出网关真实mac的方法有多种<br>你可以先用管理员身份运行cmd,使用arp -d，然后迅速执行arp -a ，一般情况下这个时候显示的是真实mac<br>或者下载一个arp防火墙先拦截攻击，然后查出真实mac，再进行网关mac静态绑定，然后arp防火墙就可以关掉不用了~</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;Win7使用XP的方式静态绑定mac是行不通的：&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;
+      
+    
+    </summary>
+    
+    
+      <category term="arp" scheme="http://localhost:4000/tags/arp/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>iftop用法</title>
+    <link href="http://localhost:4000/20100401/linux-iftop/"/>
+    <id>http://localhost:4000/20100401/linux-iftop/</id>
+    <published>2010-03-31T16:00:00.000Z</published>
+    <updated>2018-05-21T15:28:38.200Z</updated>
+    
+    <content type="html"><![CDATA[<p><img src="/20100401/linux-iftop/iftop.gif" alt="iftop"></p><blockquote><p>TX：发送流量<br>RX：接收流量<br>TOTAL：总流量<br>Cumm：运行iftop到目前时间的总流量<br>peak：流量峰值<br>rates：分别表示过去 2s 10s 40s 的平均流量</p></blockquote><p>查看eth0网卡的流量状况。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iftop -i eth0 -n</span><br></pre></td></tr></table></figure></p><p><strong>iftop 相关命令</strong></p><p>监控eth1的网卡的流量<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iftop -i eth1</span><br></pre></td></tr></table></figure></p><p>以位元组(bytes)为单位显示流量(预设是位元bits):<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iftop -B</span><br></pre></td></tr></table></figure></p><p>直接显示IP, 不进行DNS反解:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iftop -n</span><br></pre></td></tr></table></figure></p><p>直接显示连接埠编号, 不显示服务名称:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iftop -N</span><br></pre></td></tr></table></figure></p><p>显示某个网段进出封包流量<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iftop -F 192.168.1.0/24 or 192.168.1.0/255.255.255.0</span><br></pre></td></tr></table></figure></p><p>其他参数可下 <code>iftop -h</code> 看说明.<br>进入iftop画面时, 可按 <code>p</code> 切换是否显示连接埠, <code>n</code> 切换显示IP或主机的domain name, <code>N</code>切换显 示连接埠代号或名称, <code>p</code>暂停显示, <code>b</code>切换是否显示长条, <code>B</code>切换计算几秒内的平均流量, 其他按键 可以按<code>h</code>观看说明。</p><p>其他监控网卡流量，网络带宽状况的优秀软件：<code>bmon</code>、<code>nload</code>、<code>ifstat</code>、<code>vnstat</code>、<code>iptraf</code></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;&lt;img src=&quot;/20100401/linux-iftop/iftop.gif&quot; alt=&quot;iftop&quot;&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;TX：发送流量&lt;br&gt;RX：接收流量&lt;br&gt;TOTAL：总流量&lt;br&gt;Cumm：运行iftop到目前时间的总流量&lt;br&gt;p
+      
+    
+    </summary>
+    
+    
+      <category term="linux" scheme="http://localhost:4000/tags/linux/"/>
+    
+      <category term="iftop" scheme="http://localhost:4000/tags/iftop/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>通过SSH隧道绕过防火墙访问MYSQL</title>
+    <link href="http://localhost:4000/20100209/ssh-tunneling/"/>
+    <id>http://localhost:4000/20100209/ssh-tunneling/</id>
+    <published>2010-02-08T16:00:00.000Z</published>
+    <updated>2018-05-21T15:35:37.366Z</updated>
+    
+    <content type="html"><![CDATA[<p>今天突然想从本地访问远程服务器的MSYQL，但是数据库一般设置不会对公网开放3306端口的，一般都被防火墙挡了！那么我是不是就不能访问了呢？？？<br>不是，如果已经有了ssh权限，我们可以通过ssh隧道绕过防火墙访问服务器的任何端口，SSH隧道即SSH端口转发。拓扑图如下：</p><p><img src="/20100209/ssh-tunneling/ssh-tunneling-1.jpg" alt="ssh tunneling pic 1"></p><p>方法：拿SQLyog访问MYSQL为例<br>MYSQL host address填写localhost即可，这里填写数据库连接参数</p><p><img src="/20100209/ssh-tunneling/ssh-tunneling-2.jpg" alt="ssh tunneling pic 2"></p><p>SSH选项卡填写SSH登陆参数</p><p><img src="/20100209/ssh-tunneling/ssh-tunneling-3.jpg" alt="ssh tunneling pic 3"></p><p>工作中提供一些服务器给一个合作伙伴，他们有ssh权限，但是每次都要求需要远程访问数据库，要求防火墙打开3306，今天我突然才想到，为什么他们不通过SSH端口转发来连接呢？？？</p><p><code>注：</code>一点小小说明，MYSQL host address填写问题可能会困扰大家，这个是相对于SSH主机的<br>如果数据库在SSH主机上，则填写localhost，如果数据库在和SSH主机同一内网，例如数据库内网IP为192.168.1.8<br>则这里填写数据库内网IP192.168.1.8。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;今天突然想从本地访问远程服务器的MSYQL，但是数据库一般设置不会对公网开放3306端口的，一般都被防火墙挡了！那么我是不是就不能访问了呢？？？&lt;br&gt;不是，如果已经有了ssh权限，我们可以通过ssh隧道绕过防火墙访问服务器的任何端口，SSH隧道即SSH端口转发。拓扑图如下
+      
+    
+    </summary>
+    
+    
+      <category term="ssh" scheme="http://localhost:4000/tags/ssh/"/>
+    
+      <category term="tunneling" scheme="http://localhost:4000/tags/tunneling/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>iptables端口限制,简易防火墙</title>
+    <link href="http://localhost:4000/20100121/linux-iptables/"/>
+    <id>http://localhost:4000/20100121/linux-iptables/</id>
+    <published>2010-01-20T16:00:00.000Z</published>
+    <updated>2018-05-21T15:38:19.227Z</updated>
+    
+    <content type="html"><![CDATA[<p>脚本过滤掉无用的端口,减少安全隐患,可做简易的防火墙。</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">###############################################</span><br><span class="line"># Firewall Script &gt;&gt; Mail Server &lt;&lt;</span><br><span class="line"># 2010.1.21 jianzi</span><br><span class="line">###############################################</span><br><span class="line">#!/bin/sh</span><br><span class="line">/sbin/iptables -F</span><br><span class="line">#default rules</span><br><span class="line">/sbin/iptables -P INPUT ACCEPT</span><br><span class="line">/sbin/iptables -P OUTPUT ACCEPT</span><br><span class="line">/sbin/iptables -P FORWARD ACCEPT</span><br><span class="line">#--------&gt; SSH &lt;--------</span><br><span class="line">###&gt;&gt;&gt; Destination Port</span><br><span class="line">/sbin/iptables -A INPUT -m tcp -p tcp -i eth0 --dport 22 -j ACCEPT</span><br><span class="line">/sbin/iptables -A OUTPUT -m tcp -p tcp -o eth0 --dport 22 -j ACCEPT</span><br><span class="line">###&gt;&gt;&gt; Source Port</span><br><span class="line">/sbin/iptables -A INPUT -m tcp -p tcp -i eth0 --sport 22 -j ACCEPT</span><br><span class="line">/sbin/iptables -A OUTPUT -m tcp -p tcp -o eth0 --sport 22 -j ACCEPT</span><br><span class="line">#--------&gt; HTTP &lt;--------</span><br><span class="line">###&gt;&gt;&gt; TCP</span><br><span class="line">/sbin/iptables -A INPUT -m tcp -p tcp --dport 80 -j ACCEPT</span><br><span class="line">/sbin/iptables -A OUTPUT -m tcp -p tcp --dport 80 -j ACCEPT</span><br><span class="line">/sbin/iptables -A INPUT -m tcp -p tcp --sport 80 -j ACCEPT</span><br><span class="line">/sbin/iptables -A OUTPUT -m tcp -p tcp --sport 80 -j ACCEPT</span><br><span class="line">###&gt;&gt;&gt; UDP</span><br><span class="line">/sbin/iptables -A INPUT -m udp -p udp --dport 80 -j ACCEPT</span><br><span class="line">/sbin/iptables -A OUTPUT -m udp -p udp --dport 80 -j ACCEPT</span><br><span class="line">/sbin/iptables -A INPUT -m udp -p udp --sport 80 -j ACCEPT</span><br><span class="line">/sbin/iptables -A OUTPUT -m udp -p udp --sport 80 -j ACCEPT</span><br><span class="line">#-----------&gt; Mail Server &lt;----------</span><br><span class="line">/sbin/iptables -A INPUT -m tcp -p tcp --dport 25 -j ACCEPT</span><br><span class="line">/sbin/iptables -A OUTPUT -m tcp -p tcp --dport 25 -j ACCEPT</span><br><span class="line">/sbin/iptables -A INPUT -m tcp -p tcp --sport 25 -j ACCEPT</span><br><span class="line">/sbin/iptables -A OUTPUT -m tcp -p tcp --sport 25 -j ACCEPT</span><br><span class="line">/sbin/iptables -A INPUT -m udp -p udp --dport 25 -j ACCEPT</span><br><span class="line">/sbin/iptables -A OUTPUT -m udp -p udp --dport 25 -j ACCEPT</span><br><span class="line">/sbin/iptables -A INPUT -m udp -p udp --sport 25 -j ACCEPT</span><br><span class="line">/sbin/iptables -A OUTPUT -m udp -p udp --sport 25 -j ACCEPT</span><br><span class="line">/sbin/iptables -A INPUT -m tcp -p tcp --dport 110 -j ACCEPT</span><br><span class="line">/sbin/iptables -A OUTPUT -m tcp -p tcp --dport 110 -j ACCEPT</span><br><span class="line">/sbin/iptables -A INPUT -m tcp -p tcp --sport 110 -j ACCEPT</span><br><span class="line">/sbin/iptables -A OUTPUT -m tcp -p tcp --sport 110 -j ACCEPT</span><br><span class="line">/sbin/iptables -A INPUT -m udp -p udp --dport 110 -j ACCEPT</span><br><span class="line">/sbin/iptables -A OUTPUT -m udp -p udp --dport 110 -j ACCEPT</span><br><span class="line">/sbin/iptables -A INPUT -m udp -p udp --sport 110 -j ACCEPT</span><br><span class="line">/sbin/iptables -A OUTPUT -m udp -p udp --sport 110 -j ACCEPT</span><br><span class="line">#--------&gt; ETC port all drop &lt;--------</span><br><span class="line">/sbin/iptables -A INPUT -m tcp -p tcp -i eth0 --dport 1:30000 -j DROP</span><br><span class="line">/sbin/iptables -A OUTPUT -m tcp -p tcp -o eth0 --dport 1:30000 -j DROP</span><br><span class="line">/sbin/iptables -A FORWARD -m tcp -p tcp --dport 1:30000 -j DROP</span><br><span class="line">/sbin/iptables -A INPUT -m tcp -p tcp -i eth0 --sport 1:30000 -j DROP</span><br><span class="line">/sbin/iptables -A OUTPUT -m tcp -p tcp -o eth0 --sport 1:30000 -j DROP</span><br><span class="line">/sbin/iptables -A FORWARD -m tcp -p tcp --sport 1:30000 -j DROP</span><br></pre></td></tr></table></figure><p>配合修改SSH端口，hosts、hosts.allow、hosts.deny 可以将服务器做到相对比较安全一些！！！ ：D</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;脚本过滤掉无用的端口,减少安全隐患,可做简易的防火墙。&lt;/p&gt;
+&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span c
+      
+    
+    </summary>
+    
+    
+      <category term="linux" scheme="http://localhost:4000/tags/linux/"/>
+    
+      <category term="iptables" scheme="http://localhost:4000/tags/iptables/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>执行iptables脚本错误提示</title>
+    <link href="http://localhost:4000/20100121/linux-iptables-error/"/>
+    <id>http://localhost:4000/20100121/linux-iptables-error/</id>
+    <published>2010-01-20T16:00:00.000Z</published>
+    <updated>2018-05-21T15:40:49.799Z</updated>
+    
+    <content type="html"><![CDATA[<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# sh iptables_mail.sh </span><br><span class="line">iptables: No chain/target/match by that name</span><br><span class="line">iptables: Bad policy name</span><br><span class="line">iptables: Bad policy name</span><br><span class="line">iptables: Bad policy name</span><br><span class="line">: command not foundine 10: </span><br><span class="line">&apos;ptables v1.3.5: Invalid target name `ACCEPT</span><br><span class="line">Try `iptables -h&apos; or &apos;iptables --help&apos; for more information.</span><br><span class="line">&apos;ptables v1.3.5: Invalid target name `ACCEPT</span><br><span class="line">Try `iptables -h&apos; or &apos;iptables --help&apos; for more information.</span><br><span class="line">: command not foundine 15: </span><br><span class="line">&apos;ptables v1.3.5: Invalid target name `ACCEPT</span><br><span class="line">Try `iptables -h&apos; or &apos;iptables --help&apos; for more information.</span><br><span class="line">&apos;ptables v1.3.5: Invalid target name `ACCEPT</span><br><span class="line">Try `iptables -h&apos; or &apos;iptables --help&apos; for more information.</span><br><span class="line">: command not foundine 19: </span><br><span class="line">&apos;ptables v1.3.5: Invalid target name `ACCEPT</span><br><span class="line">Try `iptables -h&apos; or &apos;iptables --help&apos; for more information.</span><br><span class="line">&apos;ptables v1.3.5: Invalid target name `ACCEPT</span><br><span class="line">Try `iptables -h&apos; or &apos;iptables --help&apos; for more information.</span><br><span class="line">&apos;ptables v1.3.5: Invalid target name `ACCEPT</span><br><span class="line">Try `iptables -h&apos; or &apos;iptables --help&apos; for more information.</span><br><span class="line">&apos;ptables v1.3.5: Invalid target name `ACCEPT</span><br><span class="line">Try `iptables -h&apos; or &apos;iptables --help&apos; for more information.</span><br><span class="line">...</span><br></pre></td></tr></table></figure><p>这种情况出现的原因是 iptables_mail.sh 文件格式是Windows格式，是因为文件末尾<code>^M</code>导致。<br>需要将文件格式转化为Unix格式即可。<br>可以使用Gvim等编辑器帮助转换。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;2&lt;/span&gt;&lt;br&gt;&lt;span class
+      
+    
+    </summary>
+    
+    
+      <category term="linux" scheme="http://localhost:4000/tags/linux/"/>
+    
+      <category term="iptables" scheme="http://localhost:4000/tags/iptables/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>LINUX 下mysql的大小写区分问题</title>
+    <link href="http://localhost:4000/20090827/mysql-lower-case-table-names/"/>
+    <id>http://localhost:4000/20090827/mysql-lower-case-table-names/</id>
+    <published>2009-08-26T16:00:00.000Z</published>
+    <updated>2018-05-21T15:11:08.688Z</updated>
+    
+    <content type="html"><![CDATA[<p>三个情况：</p><blockquote><p>A. 库名和表名的大小写<br>B. 字段名的大小写<br>C. 字段值的大小写</p></blockquote><p>1、MySQL在Linux下数据库名、表名、列名、别名大小写规则是这样的：</p><blockquote><p>1、数据库名与表名是严格区分大小写的；<br>2、表的别名是严格区分大小写的；<br>3、字段和字段的别名在所有的情况下均是忽略大小写的；<br>4、变量名也是严格区分大小写的；</p></blockquote><p>Windows下都不区分大小写。</p><p>2、用root账号修改my.cnf：<br>在[mysqld]段添加：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lower_case_table_names=0  #区分表名大小写</span><br></pre></td></tr></table></figure></p><p>重启MYSQL服务，设置生效</p><p>lower_case_table_names参数解释：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lower_case_table_names = 0         其中 0：区分大小写，1：不区分大小写</span><br></pre></td></tr></table></figure></p><p>3、如果想在查询时区分字段值的大小写，则：字段值需要设置BINARY属性，设置的方法有多种：<br>A、创建时设置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">CREATE TABLE T(</span><br><span class="line">A VARCHAR(10) BINARY</span><br><span class="line">);</span><br></pre></td></tr></table></figure></p><p>B、使用alter修改：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE tablename MODIFY COLUMN cloname VARCHAR(45) BINARY;</span><br></pre></td></tr></table></figure></p><p>C、mysql table editor中直接勾选BINARY项。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;三个情况：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;A. 库名和表名的大小写&lt;br&gt;B. 字段名的大小写&lt;br&gt;C. 字段值的大小写&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;1、MySQL在Linux下数据库名、表名、列名、别名大小写规则是这样的：&lt;/p&gt;
+&lt;blockq
+      
+    
+    </summary>
+    
+    
+      <category term="mysql" scheme="http://localhost:4000/tags/mysql/"/>
+    
+      <category term="database" scheme="http://localhost:4000/tags/database/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Linux &amp; FreeBsd 修改hostname</title>
+    <link href="http://localhost:4000/20090826/linux-freebsk-hostname/"/>
+    <id>http://localhost:4000/20090826/linux-freebsk-hostname/</id>
+    <published>2009-08-25T16:00:00.000Z</published>
+    <updated>2018-05-21T15:13:50.685Z</updated>
+    
+    <content type="html"><![CDATA[<p>hostname命令修改主机名<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#hostname NewHostName</span><br></pre></td></tr></table></figure></p><p>重启之后会失效,需要修改下配置文件：</p><p>linux修改 /etc/sysconfig/network<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">NETWORKING=yes</span><br><span class="line">NETWORKING_IPV6=no</span><br><span class="line">HOSTNAME=NewHostName</span><br></pre></td></tr></table></figure></p><p>freebsd修改 /etc/rc.conf<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">— sysinstall generated deltas — # Mon Jun 23 16:50:35 2008</span><br><span class="line">…….</span><br><span class="line">defaultrouter=”10.0.0.1”</span><br><span class="line"></span><br><span class="line">hostname=”NewHostName”</span><br><span class="line">……</span><br></pre></td></tr></table></figure></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;hostname命令修改主机名&lt;br&gt;&lt;figure class=&quot;highlight plain&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;1&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;td class
+      
+    
+    </summary>
+    
+    
+      <category term="linux" scheme="http://localhost:4000/tags/linux/"/>
+    
+      <category term="freebsd" scheme="http://localhost:4000/tags/freebsd/"/>
+    
+      <category term="hostname" scheme="http://localhost:4000/tags/hostname/"/>
+    
+  </entry>
+  
+</feed>
