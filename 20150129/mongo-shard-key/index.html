@@ -100,7 +100,7 @@
 <p><strong>MongoDB的分片是如何工作的？</strong></p>
 <p>MongoDB的分片机制能够帮助你将你的数据库划分到多个服务器，通常在生产环境中可以将数据集划分到多个副本集中。但分片最好在数据库建立早期划分，因为一旦你的数据大于512GB那么分片划分就不是那么容易了。这受到MongoDB纵向扩展能力的限制。</p>
 <p>为了实现分片，你必须向MongoDB指定使用哪个索引作为片键，然后MongoDB会根据你的设置将你的数据划分到有着相同片键的数据块(Chunk)中。而后这些数据块将根据片键的大致顺序分散到副本集中。</p>
-<p><img src="/20150129/mongo-shard-key/sharding.png" alt="sharding"></p>
+<p><img src="sharding.png" alt="sharding"></p>
 <p><strong>如何选择MongoDB片键</strong></p>
 <p>正如你所见，分片之后数据的存放位置依赖于片键，所以合理的选择片键十分重要。</p>
 <p><strong>怎样设置一个好的片键 ( shard key )</strong></p>
