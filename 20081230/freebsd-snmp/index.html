@@ -97,7 +97,7 @@
     <div class="post-content">
       <p>要用到cacti通过net-snmp监控各个服务器的运行情况，这样要为每一台服务器安装snmp，虽然安装比较简单，还是偷偷懒写个脚本吧，CentOS下安装要换用yum来安装了。</p>
 <p>!/bin/sh<br>SNMPD_CONF_DIR=/usr/local/share/snmp</p>
-<p>if [ -f ‘/usr/local/sbin/snmpd’ ]<br>then<br>echo ‘snmpd already installed!’<br>else<br>cd /usr/ports/net-mgmt/net-snmp<br>echo “Installing…”<br>make install &gt; /dev/null<br>cd ~/manage_tools<br>echo “Setting…”<br>sleep 3<br>cat &lt;<eof> snmpd.conf<br>syslocation beijing<br>syscontact  jiangjian <a href="mailto:&#x6a;&#x69;&#x61;&#110;&#122;&#105;&#x30;&#51;&#x30;&#55;&#x40;&#x67;&#x6d;&#x61;&#105;&#108;&#46;&#x63;&#111;&#x6d;" target="_blank" rel="noopener">&#x6a;&#x69;&#x61;&#110;&#122;&#105;&#x30;&#51;&#x30;&#55;&#x40;&#x67;&#x6d;&#x61;&#105;&#108;&#46;&#x63;&#111;&#x6d;</a><br>sysservices 77<br>rocommunity jiangjian<br>load 12 12 12<br>EOF<br>mv snmpd.conf $SNMPD_CONF_DIR</eof></p>
+<p>if [ -f ‘/usr/local/sbin/snmpd’ ]<br>then<br>echo ‘snmpd already installed!’<br>else<br>cd /usr/ports/net-mgmt/net-snmp<br>echo “Installing…”<br>make install &gt; /dev/null<br>cd ~/manage_tools<br>echo “Setting…”<br>sleep 3<br>cat &lt;<eof> snmpd.conf<br>syslocation beijing<br>syscontact  jiangjian <a href="mailto:&#x6a;&#x69;&#x61;&#110;&#x7a;&#x69;&#x30;&#51;&#48;&#x37;&#64;&#x67;&#109;&#97;&#x69;&#x6c;&#46;&#x63;&#x6f;&#x6d;" target="_blank" rel="noopener">&#x6a;&#x69;&#x61;&#110;&#x7a;&#x69;&#x30;&#51;&#48;&#x37;&#64;&#x67;&#109;&#97;&#x69;&#x6c;&#46;&#x63;&#x6f;&#x6d;</a><br>sysservices 77<br>rocommunity jiangjian<br>load 12 12 12<br>EOF<br>mv snmpd.conf $SNMPD_CONF_DIR</eof></p>
 <p>cat &lt;<eof> snmpd.start</eof></p>
 <p>!/bin/sh<br>/usr/local/sbin/snmpd<br>EOF</p>
 <p>cat &lt;<eof> snmpd.stop</eof></p>
